@@ -1,569 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Life Chaos Board Game</title>
-<style>
-/* GLOBAL DARK MODE */
-body {
-    margin: 0;
-    background: #0a0a0a;
-    color: white;
-    font-family: Arial, sans-serif;
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
-}
-
-/* LEFT PANEL */
-#leftPanel {
-    width: 260px;
-    background: #111;
-    padding: 20px;
-    border-right: 2px solid #222;
-    overflow-y: auto;
-}
-
-/* BIG CSS AVATAR */
-#avatar {
-    width: 180px;
-    height: 180px;
-    margin: auto;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #ff00aa, #5500ff);
-    border: 4px solid white;
-}
-
-.stat {
-    margin-top: 8px;
-    font-size: 16px;
-}
-
-#currentPlayerLabel {
-    margin-top: 15px;
-    font-size: 18px;
-    font-weight: bold;
-    color: #00eaff;
-}
-
-/* MINI AVATAR STRIP */
-#miniAvatars {
-    margin-top: 15px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.miniAvatar {
-    width: 60px;
-    height: 34px;
-    border-radius: 8px;
-    border: 2px solid #444;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: bold;
-    color: #fff;
-    padding: 2px;
-    text-align: center;
-}
-
-.miniAvatar.active {
-    border-color: #00eaff;
-    box-shadow: 0 0 8px #00eaff;
-}
-
-/* ── DICE DISPLAY ── */
-#diceArea {
-    margin-top: 14px;
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-}
-
-.die {
-    width: 48px;
-    height: 48px;
-    background: #1e1e1e;
-    border: 2px solid #555;
-    border-radius: 8px;
-    display: grid;
-    padding: 6px;
-    box-sizing: border-box;
-    position: relative;
-}
-
-/* Each die face uses a named grid of 9 cells */
-.die .pip {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #fff;
-    align-self: center;
-    justify-self: center;
-}
-
-/* pip grid positions: rows 1-3, cols 1-3 */
-.pip.r1c1 { grid-area: 1/1; }
-.pip.r1c2 { grid-area: 1/2; }
-.pip.r1c3 { grid-area: 1/3; }
-.pip.r2c1 { grid-area: 2/1; }
-.pip.r2c2 { grid-area: 2/2; }
-.pip.r2c3 { grid-area: 2/3; }
-.pip.r3c1 { grid-area: 3/1; }
-.pip.r3c2 { grid-area: 3/2; }
-.pip.r3c3 { grid-area: 3/3; }
-
-@keyframes shake {
-    0%,100% { transform: rotate(0deg) scale(1); }
-    20%      { transform: rotate(-12deg) scale(1.1); }
-    40%      { transform: rotate(10deg) scale(0.95); }
-    60%      { transform: rotate(-8deg) scale(1.05); }
-    80%      { transform: rotate(6deg) scale(0.98); }
-}
-.die.rolling {
-    animation: shake 0.45s ease;
-}
-
-#diceRollResult {
-    margin-top: 6px;
-    text-align: center;
-    font-size: 13px;
-    color: #aaa;
-    min-height: 18px;
-}
-
-/* CENTER BOARD */
-#boardContainer {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-}
-
-#board {
-    width: 600px;
-    height: 600px;
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    grid-template-rows: repeat(12, 1fr);
-    gap: 2px;
-    position: relative;
-}
-
-/* BOARD SPACES */
-.space {
-    background: #1a1a1a;
-    border: 2px solid #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 9px;
-    text-align: center;
-    padding: 2px;
-    border-radius: 4px;
-    font-weight: bold;
-    overflow: hidden;
-}
-
-/* PLAYER TOKENS ON BOARD */
-.playerToken {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    border: 2px solid white;
-    position: absolute;
-    transform: translate(-50%, -50%);
-    z-index: 5;
-    transition: left 0.4s ease, top 0.4s ease;
-    pointer-events: none;
-}
-
-/* RIGHT PANEL */
-#rightPanel {
-    width: 300px;
-    background: #111;
-    padding: 20px;
-    border-left: 2px solid #222;
-    overflow-y: auto;
-}
-
-/* BUTTONS */
-.drawBtn {
-    width: 100%;
-    padding: 12px;
-    background: #00aaff;
-    border: none;
-    border-radius: 6px;
-    color: white;
-    font-size: 18px;
-    margin-top: 10px;
-    cursor: pointer;
-}
-
-.drawBtn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-/* CARD POPUP */
-#cardPopup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 260px;
-    padding: 20px;
-    background: #0d0d0d;
-    border-radius: 12px;
-    border: 3px solid #00ffff;
-    display: none;
-    text-align: center;
-    z-index: 100;
-}
-
-#cardPopup hr {
-    border: none;
-    border-top: 2px solid #00ffff;
-    margin: 10px 0;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHAOS - The Game of Life</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- LEFT PANEL -->
-<div id="leftPanel">
-    <div id="avatar"></div>
-    <div id="currentPlayerLabel">Current Player: </div>
-    <div class="stat">Money: $<span id="money">500</span></div>
-    <div class="stat">Happiness: <span id="happy">5</span></div>
-    <div class="stat">Job: <span id="job">None</span></div>
-    <div class="stat">Car: <span id="car">None</span></div>
-    <div class="stat">House: <span id="house">None</span></div>
-
-    <div id="miniAvatars"></div>
-
-    <!-- DICE DISPLAY -->
-    <div id="diceArea">
-        <div class="die" id="die1"></div>
-        <div class="die" id="die2"></div>
+    <!-- INTRO SCREEN -->
+    <div id="introScreen" class="screen">
+        <div class="prison-gates">
+            <h1>⛓️ CHAOS ⛓️</h1>
+            <p class="intro-text">You just got out of Prison...</p>
+            <p class="intro-text">It is your right to do whatever you want</p>
+            <p class="intro-text">But you have to follow the rules!</p>
+            <p class="money-text">💰 Here is $20,000 to start a new life!</p>
+            <button id="startBtn" class="btn">WALK OUT THE GATES</button>
+        </div>
     </div>
-    <div id="diceRollResult"></div>
 
-    <button class="drawBtn" id="rollBtn" onclick="rollDice()">Roll Dice</button>
-</div>
+    <!-- SETUP SCREEN -->
+    <div id="setupScreen" class="screen hidden">
+        <h1>⚡ CHAOS ⚡</h1>
+        <h2>Game Setup</h2>
+        
+        <!-- Number of Players -->
+        <div class="setup-section">
+            <h3>How Many Players?</h3>
+            <div class="player-buttons">
+                <button class="player-btn" onclick="setPlayers(2)">2</button>
+                <button class="player-btn" onclick="setPlayers(3)">3</button>
+                <button class="player-btn" onclick="setPlayers(4)">4</button>
+                <button class="player-btn" onclick="setPlayers(5)">5</button>
+                <button class="player-btn" onclick="setPlayers(6)">6</button>
+                <button class="player-btn" onclick="setPlayers(7)">7</button>
+                <button class="player-btn" onclick="setPlayers(8)">8</button>
+                <button class="player-btn" onclick="setPlayers(9)">9</button>
+                <button class="player-btn" onclick="setPlayers(10)">10</button>
+            </div>
+        </div>
 
-<!-- CENTER BOARD -->
-<div id="boardContainer">
-    <div id="board"></div>
-</div>
+        <!-- Win Goal -->
+        <div class="setup-section">
+            <h3>Win Goal?</h3>
+            <button class="goal-btn" onclick="setGoal(1000000)">$1,000,000</button>
+            <button class="goal-btn" onclick="setGoal(5000000)">$5,000,000</button>
+        </div>
 
-<!-- RIGHT PANEL -->
-<div id="rightPanel">
-    <h2>Draw Card</h2>
-    <button id="drawButton" class="drawBtn" style="display:none;"></button>
-</div>
+        <button id="setupDoneBtn" class="btn hidden" onclick="setupPlayers()">
+            NEXT - Setup Players
+        </button>
+    </div>
 
-<!-- CARD POPUP -->
-<div id="cardPopup"></div>
+    <!-- PLAYER SETUP SCREEN -->
+    <div id="playerSetupScreen" class="screen hidden">
+        <h1>⚡ CHAOS ⚡</h1>
+        <h2 id="playerSetupTitle">Player 1 Setup</h2>
 
-<script>
-/* ── CONFIG ── */
-const MAX_PLAYERS = 10;
-const PLAYER_COLORS = [
-    "#00eaff","#ff0077","#ffcc00","#00ff66","#ff6600",
-    "#aa00ff","#00ffaa","#ff0044","#66ff00","#0099ff"
-];
+        <!-- Avatar Selection -->
+        <div class="setup-section">
+            <h3>Choose Your Avatar!!</h3>
+            <div class="avatar-grid">
+                <button class="avatar-btn" onclick="selectAvatar('👨')">👨</button>
+                <button class="avatar-btn" onclick="selectAvatar('👩')">👩</button>
+                <button class="avatar-btn" onclick="selectAvatar('👦')">👦</button>
+                <button class="avatar-btn" onclick="selectAvatar('👧')">👧</button>
+                <button class="avatar-btn" onclick="selectAvatar('👴')">👴</button>
+                <button class="avatar-btn" onclick="selectAvatar('👵')">👵</button>
+                <button class="avatar-btn" onclick="selectAvatar('🧔')">🧔</button>
+                <button class="avatar-btn" onclick="selectAvatar('👱')">👱</button>
+                <button class="avatar-btn" onclick="selectAvatar('🧕')">🧕</button>
+                <button class="avatar-btn" onclick="selectAvatar('👮')">👮</button>
+            </div>
+        </div>
 
-const categoryColors = {
-    "Housing":      "#00A8FF",
-    "Cars":         "#FF2E2E",
-    "Avatar":       "#FF00C8",
-    "Life":         "#00FF6A",
-    "Job":          "#FFE600",
-    "Car Dealer":   "#FF7A00",
-    "Car Updates":  "#B300FF",
-    "House Updates":"#00FFD5",
-    "Craigslist":   "#9D00FF",
-    "Doordash":     "#FF5500",
-    "Job Fare":     "#FFB800"
-};
+        <!-- Job Selection -->
+        <div class="setup-section">
+            <h3>Choose Your Job!!</h3>
+            <select id="jobSelect" class="job-select">
+                <option value="">-- Pick a Job --</option>
+                <option value="Dog Walker">🐕 Dog Walker - $500 payday</option>
+                <option value="Fruit Picker">🍎 Fruit Picker - $800 payday</option>
+                <option value="Wendys">🍔 Wendys - $2,400 payday</option>
+                <option value="Walmart">🛒 Walmart - $2,800 payday</option>
+                <option value="Factory Worker">🏭 Factory Worker - $3,200 payday</option>
+                <option value="Trash Collector">🗑️ Trash Collector - $3,500 payday</option>
+                <option value="House Cleaner">🧹 House Cleaner - $3,800 payday</option>
+                <option value="Security">🔒 Security - $4,000 payday</option>
+                <option value="DoorDash">🚗 DoorDash - $3,000 payday</option>
+                <option value="Farmer">🌾 Farmer - $3,500 payday</option>
+                <option value="Catering">🍽️ Catering - $4,000 payday</option>
+                <option value="Labor">👷 Labor - $4,500 payday</option>
+                <option value="Amazon Driver">📦 Amazon Driver - $5,000 payday</option>
+                <option value="Police">👮 Police - $5,500 payday</option>
+                <option value="Prison Guard">🚔 Prison Guard - $6,000 payday</option>
+                <option value="Realtor">🏠 Realtor - $8,000 payday</option>
+                <option value="Microsoft">💻 Microsoft - $12,000 payday</option>
+            </select>
+        </div>
 
-const categories = Object.keys(categoryColors);
+        <!-- Player Name -->
+        <div class="setup-section">
+            <h3>Enter Your Name!!</h3>
+            <input type="text" id="playerName" class="name-input" placeholder="Enter your name"/>
+        </div>
 
-/* ── DICE FACE LAYOUTS ── */
-/* Each face is an array of [row, col] pip positions (1-indexed) */
-const FACES = {
-    1: [[2,2]],
-    2: [[1,1],[3,3]],
-    3: [[1,1],[2,2],[3,3]],
-    4: [[1,1],[1,3],[3,1],[3,3]],
-    5: [[1,1],[1,3],[2,2],[3,1],[3,3]],
-    6: [[1,1],[1,3],[2,1],[2,3],[3,1],[3,3]]
-};
+        <button id="nextPlayerBtn" class="btn" onclick="nextPlayer()">
+            NEXT PLAYER
+        </button>
+    </div>
 
-function renderDie(elId, value) {
-    const el = document.getElementById(elId);
-    el.style.gridTemplateRows = "repeat(3,1fr)";
-    el.style.gridTemplateColumns = "repeat(3,1fr)";
-    el.innerHTML = "";
-    /* Create all 9 cells, only light up pip positions */
-    const pips = new Set(FACES[value].map(([r,c]) => `${r}${c}`));
-    for (let r = 1; r <= 3; r++) {
-        for (let c = 1; c <= 3; c++) {
-            const cell = document.createElement("div");
-            if (pips.has(`${r}${c}`)) {
-                cell.className = `pip r${r}c${c}`;
-            }
-            el.appendChild(cell);
-        }
-    }
-}
+    <!-- GAME SCREEN -->
+    <div id="gameScreen" class="screen hidden">
+        <h1>⚡ CHAOS ⚡</h1>
+        
+        <!-- Player Info Bar -->
+        <div id="playerInfoBar" class="player-info-bar"></div>
 
-function animateDice(d1, d2) {
-    const die1El = document.getElementById("die1");
-    const die2El = document.getElementById("die2");
-    die1El.classList.remove("rolling");
-    die2El.classList.remove("rolling");
-    /* Force reflow to restart animation */
-    void die1El.offsetWidth;
-    void die2El.offsetWidth;
-    die1El.classList.add("rolling");
-    die2El.classList.add("rolling");
-    renderDie("die1", d1);
-    renderDie("die2", d2);
-    document.getElementById("diceRollResult").innerText =
-        `Rolled ${d1} + ${d2} = ${d1+d2}`;
-}
+        <!-- Game Board -->
+        <div id="gameBoard" class="game-board"></div>
 
-/* ── SAMPLE DECKS ── */
-let decks = {};
-categories.forEach(cat => {
-    decks[cat] = [];
-    for (let i = 1; i <= 40; i++) {
-        decks[cat].push({
-            category: cat,
-            type: i % 2 === 0 ? "GOOD" : "BAD",
-            title: `${cat} Event ${i}`,
-            effect: (i % 2 === 0 ? "+" : "-") + (10 + i)
-        });
-    }
-});
+        <!-- Game Controls -->
+        <div class="game-controls">
+            <div id="currentPlayerInfo" class="current-player-info"></div>
+            <button id="rollDiceBtn" class="btn dice-btn" onclick="rollDice()">
+                🎲 ROLL DICE
+            </button>
+            <div id="diceResult" class="dice-result"></div>
+            <div id="gameMessage" class="game-message"></div>
+        </div>
+    </div>
 
-/* ── BOARD ── */
-let boardSpaces = [];      // categories for each edge space
-let boardSpaceEls = [];    // actual DOM elements for edge spaces (in order)
+    <!-- POPUP/MODAL -->
+    <div id="popup" class="popup hidden">
+        <div class="popup-content">
+            <h2 id="popupTitle"></h2>
+            <p id="popupMessage"></p>
+            <button class="btn" onclick="closePopup()">OK!!</button>
+        </div>
+    </div>
 
-const boardEl = document.getElementById("board");
-
-/* BUILD BOARD — called ONCE at init only */
-function buildBoard() {
-    boardSpaces = [];
-    boardSpaceEls = [];
-    boardEl.innerHTML = "";
-
-    for (let i = 0; i < 144; i++) {
-        const isEdge =
-            i < 12 || i >= 132 ||
-            i % 12 === 0 || i % 12 === 11;
-
-        const div = document.createElement("div");
-
-        if (isEdge) {
-            const cat = categories[Math.floor(Math.random() * categories.length)];
-            boardSpaces.push(cat);
-            boardSpaceEls.push(div);          // ← track real DOM element
-
-            div.className = "space";
-            div.innerText = cat;
-            div.style.borderColor = categoryColors[cat];
-            div.style.color = categoryColors[cat];
-        } else {
-            div.style.background = "#000";
-        }
-
-        boardEl.appendChild(div);
-    }
-}
-
-/* ── PLAYERS ── */
-let players = [];
-let currentPlayerIndex = 0;
-
-function initPlayers() {
-    const container = document.getElementById("boardContainer");
-    const miniStrip  = document.getElementById("miniAvatars");
-
-    for (let i = 0; i < playerCount; i++) {
-        let name = prompt("Enter name for Player " + (i + 1), "Player " + (i + 1));
-        players.push({
-            id: i + 1,
-            name: name || ("Player " + (i + 1)),
-            pos: 0,
-            money: 500,
-            happiness: 5,
-            job: "None",
-            car: "None",
-            house: "None",
-            tokenEl: null,
-            miniEl: null
-        });
-
-        /* TOKEN — appended to boardContainer so absolute positioning
-           is relative to it */
-        const token = document.createElement("div");
-        token.className = "playerToken";
-        token.style.background = PLAYER_COLORS[i];
-        container.appendChild(token);
-        players[i].tokenEl = token;
-
-        /* MINI AVATAR */
-        const mini = document.createElement("div");
-        mini.className = "miniAvatar";
-        mini.style.background = PLAYER_COLORS[i];
-        mini.innerText = players[i].name;
-        miniStrip.appendChild(mini);
-        players[i].miniEl = mini;
-    }
-}
-
-/* PLACE ALL TOKENS */
-function updateAllTokens() {
-    for (let i = 0; i < playerCount; i++) {
-        movePlayerToken(i);
-    }
-}
-
-/* PLACE ONE TOKEN — coords relative to boardContainer */
-function movePlayerToken(playerIndex) {
-    const p         = players[playerIndex];
-    const spaceEl   = boardSpaceEls[p.pos];        // real edge-space element
-    if (!spaceEl) return;
-
-    const container = document.getElementById("boardContainer");
-    const spaceRect = spaceEl.getBoundingClientRect();
-    const contRect  = container.getBoundingClientRect();
-
-    /* Center of this space, relative to boardContainer */
-    let x = spaceRect.left - contRect.left + spaceRect.width  / 2;
-    let y = spaceRect.top  - contRect.top  + spaceRect.height / 2;
-
-    /* Spread tokens so they don't fully overlap */
-    const offsetAngle  = (playerIndex / playerCount) * 2 * Math.PI;
-    const offsetRadius = 8;
-    x += Math.cos(offsetAngle) * offsetRadius;
-    y += Math.sin(offsetAngle) * offsetRadius;
-
-    p.tokenEl.style.left = x + "px";
-    p.tokenEl.style.top  = y + "px";
-}
-
-/* ── UI ── */
-function updateCurrentPlayerUI() {
-    const p = players[currentPlayerIndex];
-    document.getElementById("currentPlayerLabel").innerText =
-        "Current Player: " + p.name;
-    document.getElementById("money").innerText    = p.money;
-    document.getElementById("happy").innerText    = p.happiness;
-    document.getElementById("job").innerText      = p.job;
-    document.getElementById("car").innerText      = p.car;
-    document.getElementById("house").innerText    = p.house;
-
-    players.forEach(pl => pl.miniEl.classList.remove("active"));
-    p.miniEl.classList.add("active");
-}
-
-/* ── ROLL DICE ── */
-function rollDice() {
-    const p  = players[currentPlayerIndex];
-    const d1 = Math.floor(Math.random() * 6) + 1;
-    const d2 = Math.floor(Math.random() * 6) + 1;
-
-    /* Show animated dice */
-    animateDice(d1, d2);
-
-    /* Advance position along edge spaces only */
-    p.pos = (p.pos + d1 + d2) % boardSpaces.length;
-
-    /* NOTE: buildBoard() is NOT called here — board stays fixed */
-
-    /* Move all tokens */
-    updateAllTokens();
-
-    /* Disable roll button until turn ends */
-    document.getElementById("rollBtn").disabled = true;
-
-    /* Trigger space card */
-    triggerSpace();
-}
-
-/* ── SPACE / CARD LOGIC ── */
-function triggerSpace() {
-    const p   = players[currentPlayerIndex];
-    const cat = boardSpaces[p.pos];
-    const btn = document.getElementById("drawButton");
-    btn.style.display = "block";
-    btn.innerText      = p.name + " — Draw " + cat + " Card";
-    btn.style.background = categoryColors[cat];
-    btn.onclick        = () => drawCard(cat);
-}
-
-function drawCard(cat) {
-    const deck = decks[cat];
-    const card = deck[Math.floor(Math.random() * deck.length)];
-    applyCardEffect(card);
-    showCard(card);
-}
-
-function applyCardEffect(card) {
-    const p   = players[currentPlayerIndex];
-    const val = parseInt(card.effect, 10);
-    if (!isNaN(val)) {
-        p.money += val;
-        if (p.money < 0) p.money = 0;
-    }
-    updateCurrentPlayerUI();
-}
-
-function showCard(card) {
-    const popup = document.getElementById("cardPopup");
-    popup.style.borderColor = categoryColors[card.category];
-    popup.innerHTML = `
-        <h3 style="color:${categoryColors[card.category]}">
-            ${card.category} — ${card.type}
-        </h3>
-        <hr style="border-top:2px solid ${categoryColors[card.category]}">
-        <h2>${card.title}</h2>
-        <p>${card.effect}</p>
-        <button class="drawBtn" onclick="endTurn()">End Turn</button>
-    `;
-    popup.style.display = "block";
-}
-
-function endTurn() {
-    document.getElementById("cardPopup").style.display = "none";
-    currentPlayerIndex = (currentPlayerIndex + 1) % playerCount;
-    updateCurrentPlayerUI();
-    document.getElementById("drawButton").style.display = "none";
-    document.getElementById("rollBtn").disabled = false;
-}
-
-/* ── INIT ── */
-let playerCount = parseInt(prompt("How many players? (1-10)", "3"), 10);
-if (isNaN(playerCount) || playerCount < 1) playerCount = 1;
-if (playerCount > MAX_PLAYERS) playerCount = MAX_PLAYERS;
-
-buildBoard();       // build once, never again
-initPlayers();
-updateAllTokens();
-updateCurrentPlayerUI();
-renderDie("die1", 1);
-renderDie("die2", 1);
-</script>
-
+    <script src="game.js"></script>
 </body>
 </html>
