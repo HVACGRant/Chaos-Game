@@ -25,7 +25,6 @@
         <h1>⚡ CHAOS ⚡</h1>
         <h2>Game Setup</h2>
         
-        <!-- Number of Players -->
         <div class="setup-section">
             <h3>How Many Players?</h3>
             <div class="player-buttons">
@@ -41,7 +40,6 @@
             </div>
         </div>
 
-        <!-- Win Goal -->
         <div class="setup-section">
             <h3>Win Goal?</h3>
             <button class="goal-btn" onclick="setGoal(1000000)">$1,000,000</button>
@@ -58,7 +56,6 @@
         <h1>⚡ CHAOS ⚡</h1>
         <h2 id="playerSetupTitle">Player 1 Setup</h2>
 
-        <!-- Avatar Selection -->
         <div class="setup-section">
             <h3>Choose Your Avatar!!</h3>
             <div class="avatar-grid">
@@ -75,32 +72,6 @@
             </div>
         </div>
 
-        <!-- Job Selection -->
-        <div class="setup-section">
-            <h3>Choose Your Job!!</h3>
-            <select id="jobSelect" class="job-select">
-                <option value="">-- Pick a Job --</option>
-                <option value="Dog Walker">🐕 Dog Walker - $500 payday</option>
-                <option value="Fruit Picker">🍎 Fruit Picker - $800 payday</option>
-                <option value="Wendys">🍔 Wendys - $2,400 payday</option>
-                <option value="Walmart">🛒 Walmart - $2,800 payday</option>
-                <option value="Factory Worker">🏭 Factory Worker - $3,200 payday</option>
-                <option value="Trash Collector">🗑️ Trash Collector - $3,500 payday</option>
-                <option value="House Cleaner">🧹 House Cleaner - $3,800 payday</option>
-                <option value="Security">🔒 Security - $4,000 payday</option>
-                <option value="DoorDash">🚗 DoorDash - $3,000 payday</option>
-                <option value="Farmer">🌾 Farmer - $3,500 payday</option>
-                <option value="Catering">🍽️ Catering - $4,000 payday</option>
-                <option value="Labor">👷 Labor - $4,500 payday</option>
-                <option value="Amazon Driver">📦 Amazon Driver - $5,000 payday</option>
-                <option value="Police">👮 Police - $5,500 payday</option>
-                <option value="Prison Guard">🚔 Prison Guard - $6,000 payday</option>
-                <option value="Realtor">🏠 Realtor - $8,000 payday</option>
-                <option value="Microsoft">💻 Microsoft - $12,000 payday</option>
-            </select>
-        </div>
-
-        <!-- Player Name -->
         <div class="setup-section">
             <h3>Enter Your Name!!</h3>
             <input type="text" id="playerName" class="name-input" placeholder="Enter your name"/>
@@ -114,14 +85,8 @@
     <!-- GAME SCREEN -->
     <div id="gameScreen" class="screen hidden">
         <h1>⚡ CHAOS ⚡</h1>
-        
-        <!-- Player Info Bar -->
         <div id="playerInfoBar" class="player-info-bar"></div>
-
-        <!-- Game Board -->
         <div id="gameBoard" class="game-board"></div>
-
-        <!-- Game Controls -->
         <div class="game-controls">
             <div id="currentPlayerInfo" class="current-player-info"></div>
             <button id="rollDiceBtn" class="btn dice-btn" onclick="rollDice()">
