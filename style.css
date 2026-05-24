@@ -327,7 +327,7 @@ body {
     grid-template-rows: repeat(11, 1fr);
     gap: 3px;
     width: 100%;
-    max-width: 900px;
+    max-width: 100vmin;
     aspect-ratio: 1;
     background: #0a0a1a;
     border: 3px solid #e94560;
@@ -345,7 +345,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 2px;
-    font-size: 0.5em;
+    font-size: 0.55em;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s ease;
