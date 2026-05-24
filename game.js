@@ -287,18 +287,18 @@ function selectAvatar(emoji) {
 
 function nextPlayer() {
     const name = document.getElementById('playerName').value.trim();
-    const jobVal = document.getElementById('jobSelect').value;
+    
 
     if (!tempSetup.avatar) { alert('Pick an avatar!'); return; }
-    if (!jobVal) { alert('Pick a job!'); return; }
+    
     if (!name) { alert('Enter your name!'); return; }
 
     const player = {
         id: gameState.currentSetupPlayer,
         name: name,
         avatar: tempSetup.avatar,
-        job: jobVal,
-        jobPay: JOB_PAYS[jobVal] || 2000,
+        job: 'Unemployed',
+        jobPay: 2000,
         money: 20000,
         position: 0,
         housingLevel: 0,
