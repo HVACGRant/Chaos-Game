@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHAOS - The Game of Life</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- INTRO SCREEN -->
+    <div id="introScreen" class="screen">
+        <div class="prison-gates">
+            <h1>⛓️ CHAOS ⛓️</h1>
+            <p class="intro-text">You just got out of Prison...</p>
+            <p class="intro-text">It is your right to do whatever you want</p>
+            <p class="intro-text">But you have to follow the rules!</p>
+            <p class="money-text">💰 Here is $20,000 to start a new life!</p>
+            <button id="startBtn" class="btn">WALK OUT THE GATES</button>
+        </div>
+    </div>
+
+    <!-- SETUP SCREEN -->
+    <div id="setupScreen" class="screen hidden">
+        <h1>⚡ CHAOS ⚡</h1>
+        <h2>Game Setup</h2>
+        
+        <!-- Number of Players -->
+        <div class="setup-section">
+            <h3>How Many Players?</h3>
+            <div class="player-buttons">
+                <button class="player-btn" onclick="setPlayers(2)">2</button>
+                <button class="player-btn" onclick="setPlayers(3)">3</button>
+                <button class="player-btn" onclick="setPlayers(4)">4</button>
+                <button class="player-btn" onclick="setPlayers(5)">5</button>
+                <button class="player-btn" onclick="setPlayers(6)">6</button>
+                <button class="player-btn" onclick="setPlayers(7)">7</button>
+                <button class="player-btn" onclick="setPlayers(8)">8</button>
+                <button class="player-btn" onclick="setPlayers(9)">9</button>
+                <button class="player-btn" onclick="setPlayers(10)">10</button>
+            </div>
+        </div>
+
+        <!-- Win Goal -->
+        <div class="setup-section">
+            <h3>Win Goal?</h3>
+            <button class="goal-btn" onclick="setGoal(1000000)">$1,000,000</button>
+            <button class="goal-btn" onclick="setGoal(5000000)">$5,000,000</button>
+        </div>
+
+        <button id="setupDoneBtn" class="btn hidden" onclick="setupPlayers()">
+            NEXT - Setup Players
+        </button>
+    </div>
+
+    <!-- PLAYER SETUP SCREEN -->
+    <div id="playerSetupScreen" class="screen hidden">
+        <h1>⚡ CHAOS ⚡</h1>
+        <h2 id="playerSetupTitle">Player 1 Setup</h2>
+
+        <!-- Avatar Selection -->
+        <div class="setup-section">
+            <h3>Choose Your Avatar!!</h3>
+            <div class="avatar-grid">
+                <button class="avatar-btn" onclick="selectAvatar('👨')">👨</button>
+                <button class="avatar-btn" onclick="selectAvatar('👩')">👩</button>
+                <button class="avatar-btn" onclick="selectAvatar('👦')">👦</button>
+                <button class="avatar-btn" onclick="selectAvatar('👧')">👧</button>
+                <button class="avatar-btn" onclick="selectAvatar('👴')">👴</button>
+                <button class="avatar-btn" onclick="selectAvatar('👵')">👵</button>
+                <button class="avatar-btn" onclick="selectAvatar('🧔')">🧔</button>
+                <button class="avatar-btn" onclick="selectAvatar('👱')">👱</button>
+                <button class="avatar-btn" onclick="selectAvatar('🧕')">🧕</button>
+                <button class="avatar-btn" onclick="selectAvatar('👮')">👮</button>
+            </div>
+        </div>
+
+        <!-- Job Selection -->
+        <div class="setup-section">
+            <h3>Choose Your Job!!</h3>
+            <select id="jobSelect" class="job-select">
+                <option value="">-- Pick a Job --</option>
+                <option value="Dog Walker">🐕 Dog Walker - $500 payday</option>
+                <option value="Fruit Picker">🍎 Fruit Picker - $800 payday</option>
+                <option value="Wendys">🍔 Wendys - $2,400 payday</option>
+                <option value="Walmart">🛒 Walmart - $2,800 payday</option>
+                <option value="Factory Worker">🏭 Factory Worker - $3,200 payday</option>
+                <option value="Trash Collector">🗑️ Trash Collector - $3,500 payday</option>
+                <option value="House Cleaner">🧹 House Cleaner - $3,800 payday</option>
+                <option value="Security">🔒 Security - $4,000 payday</option>
+                <option value="DoorDash">🚗 DoorDash - $3,000 payday</option>
+                <option value="Farmer">🌾 Farmer - $3,500 payday</option>
+                <option value="Catering">🍽️ Catering - $4,000 payday</option>
+                <option value="Labor">👷 Labor - $4,500 payday</option>
+                <option value="Amazon Driver">📦 Amazon Driver - $5,000 payday</option>
+                <option value="Police">👮 Police - $5,500 payday</option>
+                <option value="Prison Guard">🚔 Prison Guard - $6,000 payday</option>
+                <option value="Realtor">🏠 Realtor - $8,000 payday</option>
+                <option value="Microsoft">💻 Microsoft - $12,000 payday</option>
+            </select>
+        </div>
+
+        <!-- Player Name -->
+        <div class="setup-section">
+            <h3>Enter Your Name!!</h3>
+            <input type="text" id="playerName" class="name-input" placeholder="Enter your name"/>
+        </div>
+
+        <button id="nextPlayerBtn" class="btn" onclick="nextPlayer()">
+            NEXT PLAYER
+        </button>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="gameScreen" class="screen hidden">
+        <h1>⚡ CHAOS ⚡</h1>
+        
+        <!-- Player Info Bar -->
+        <div id="playerInfoBar" class="player-info-bar"></div>
+
+        <!-- Game Board -->
+        <div id="gameBoard" class="game-board"></div>
+
+        <!-- Game Controls -->
+        <div class="game-controls">
+            <div id="currentPlayerInfo" class="current-player-info"></div>
+            <button id="rollDiceBtn" class="btn dice-btn" onclick="rollDice()">
+                🎲 ROLL DICE
+            </button>
+            <div id="diceResult" class="dice-result"></div>
+            <div id="gameMessage" class="game-message"></div>
+        </div>
+    </div>
+
+    <!-- POPUP/MODAL -->
+    <div id="popup" class="popup hidden">
+        <div class="popup-content">
+            <h2 id="popupTitle"></h2>
+            <p id="popupMessage"></p>
+            <button class="btn" onclick="closePopup()">OK!!</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
