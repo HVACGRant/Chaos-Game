@@ -63,225 +63,203 @@
         <div class="logo-wrap"><h1 class="logo">⚡ CHAOS ⚡</h1></div>
         <h2 id="playerSetupTitle" class="setup-heading">Player 1 Setup</h2>
 
-        <div class="avatar-builder">
+        <!-- AVATAR BUILDER: preview on left, scrollable picker on right -->
+        <div class="ab-wrap">
 
-            <!-- Live preview -->
-            <div class="ab-preview-wrap">
+            <!-- Left: preview + layers -->
+            <div class="ab-left">
                 <div class="ab-preview" id="abPreview">❓</div>
                 <div class="ab-preview-label">YOUR AVATAR</div>
-                <button class="ab-reset-btn" onclick="abReset()">↺ RESET</button>
+                <div class="ab-slots" id="abSlots">
+                    <div class="ab-slot-row"><span class="ab-slot-lbl">Base:</span>   <span class="ab-slot-val" id="sl-base">—</span>   <button class="ab-clear-btn" onclick="abClear('base')">✕</button></div>
+                    <div class="ab-slot-row"><span class="ab-slot-lbl">Add-on:</span> <span class="ab-slot-val" id="sl-overlay">—</span> <button class="ab-clear-btn" onclick="abClear('overlay')">✕</button></div>
+                    <div class="ab-slot-row"><span class="ab-slot-lbl">Hat:</span>    <span class="ab-slot-val" id="sl-hat">—</span>    <button class="ab-clear-btn" onclick="abClear('hat')">✕</button></div>
+                    <div class="ab-slot-row"><span class="ab-slot-lbl">Item:</span>   <span class="ab-slot-val" id="sl-item">—</span>   <button class="ab-clear-btn" onclick="abClear('item')">✕</button></div>
+                    <div class="ab-slot-row"><span class="ab-slot-lbl">Vibe:</span>   <span class="ab-slot-val" id="sl-vibe">—</span>   <button class="ab-clear-btn" onclick="abClear('vibe')">✕</button></div>
+                </div>
+                <button class="ab-reset-btn" onclick="abReset()">↺ RESET ALL</button>
             </div>
 
-            <!-- Tabs -->
-            <div class="ab-tabs">
-                <button class="ab-tab active" data-panel="human"   onclick="abTab(this)">👤 Human</button>
-                <button class="ab-tab"        data-panel="alien"   onclick="abTab(this)">👽 Alien</button>
-                <button class="ab-tab"        data-panel="animal"  onclick="abTab(this)">🐾 Animal</button>
-                <button class="ab-tab"        data-panel="hybrid"  onclick="abTab(this)">🧬 Hybrid</button>
-                <button class="ab-tab"        data-panel="extras"  onclick="abTab(this)">🎩 Extras</button>
-            </div>
+            <!-- Right: all emoji in one scrollable box with section headers -->
+            <div class="ab-right">
 
-            <!-- HUMAN -->
-            <div class="ab-panel active" id="ab-panel-human">
-                <div class="ab-section-label">Light Skin</div>
+                <div class="ab-cat">👤 HUMAN — LIGHT</div>
                 <div class="ab-grid">
-                    <button class="ab-pick" data-slot="base" data-emoji="👨🏻" onclick="abPick('base','👨🏻')">👨🏻</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👩🏻" onclick="abPick('base','👩🏻')">👩🏻</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🧔🏻" onclick="abPick('base','🧔🏻')">🧔🏻</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👦🏻" onclick="abPick('base','👦🏻')">👦🏻</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👧🏻" onclick="abPick('base','👧🏻')">👧🏻</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👴🏻" onclick="abPick('base','👴🏻')">👴🏻</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👵🏻" onclick="abPick('base','👵🏻')">👵🏻</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👱🏻" onclick="abPick('base','👱🏻')">👱🏻</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👨🏻" onclick="abPick('base','👨🏻')">👨🏻</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👩🏻" onclick="abPick('base','👩🏻')">👩🏻</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🧔🏻" onclick="abPick('base','🧔🏻')">🧔🏻</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👦🏻" onclick="abPick('base','👦🏻')">👦🏻</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👧🏻" onclick="abPick('base','👧🏻')">👧🏻</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👴🏻" onclick="abPick('base','👴🏻')">👴🏻</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👵🏻" onclick="abPick('base','👵🏻')">👵🏻</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👱🏻" onclick="abPick('base','👱🏻')">👱🏻</button>
                 </div>
-                <div class="ab-section-label">Medium Skin</div>
-                <div class="ab-grid">
-                    <button class="ab-pick" data-slot="base" data-emoji="👨🏽" onclick="abPick('base','👨🏽')">👨🏽</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👩🏽" onclick="abPick('base','👩🏽')">👩🏽</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🧔🏽" onclick="abPick('base','🧔🏽')">🧔🏽</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👦🏽" onclick="abPick('base','👦🏽')">👦🏽</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👧🏽" onclick="abPick('base','👧🏽')">👧🏽</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👴🏽" onclick="abPick('base','👴🏽')">👴🏽</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👵🏽" onclick="abPick('base','👵🏽')">👵🏽</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🧕🏽" onclick="abPick('base','🧕🏽')">🧕🏽</button>
-                </div>
-                <div class="ab-section-label">Dark Skin</div>
-                <div class="ab-grid">
-                    <button class="ab-pick" data-slot="base" data-emoji="👨🏿" onclick="abPick('base','👨🏿')">👨🏿</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👩🏿" onclick="abPick('base','👩🏿')">👩🏿</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🧔🏿" onclick="abPick('base','🧔🏿')">🧔🏿</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👦🏿" onclick="abPick('base','👦🏿')">👦🏿</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👧🏿" onclick="abPick('base','👧🏿')">👧🏿</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👴🏿" onclick="abPick('base','👴🏿')">👴🏿</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👵🏿" onclick="abPick('base','👵🏿')">👵🏿</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👱🏿" onclick="abPick('base','👱🏿')">👱🏿</button>
-                </div>
-                <div class="ab-section-label">Classes</div>
-                <div class="ab-grid">
-                    <button class="ab-pick" data-slot="base" data-emoji="🤠" onclick="abPick('base','🤠')">🤠</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🥷" onclick="abPick('base','🥷')">🥷</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🦸" onclick="abPick('base','🦸')">🦸</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🦹" onclick="abPick('base','🦹')">🦹</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🕵️" onclick="abPick('base','🕵️')">🕵️</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👮🏽" onclick="abPick('base','👮🏽')">👮🏽</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👷🏽" onclick="abPick('base','👷🏽')">👷🏽</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🧙" onclick="abPick('base','🧙')">🧙</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🧛" onclick="abPick('base','🧛')">🧛</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🧟" onclick="abPick('base','🧟')">🧟</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🧝" onclick="abPick('base','🧝')">🧝</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🧚" onclick="abPick('base','🧚')">🧚</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🧜" onclick="abPick('base','🧜')">🧜</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🤡" onclick="abPick('base','🤡')">🤡</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👻" onclick="abPick('base','👻')">👻</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="💀" onclick="abPick('base','💀')">💀</button>
-                </div>
-            </div>
 
-            <!-- ALIEN -->
-            <div class="ab-panel" id="ab-panel-alien">
-                <div class="ab-section-label">Alien Base</div>
+                <div class="ab-cat">👤 HUMAN — MEDIUM</div>
                 <div class="ab-grid">
-                    <button class="ab-pick" data-slot="base" data-emoji="👽" onclick="abPick('base','👽')">👽</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="👾" onclick="abPick('base','👾')">👾</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🤖" onclick="abPick('base','🤖')">🤖</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🌀" onclick="abPick('base','🌀')">🌀</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🔮" onclick="abPick('base','🔮')">🔮</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="☄️" onclick="abPick('base','☄️')">☄️</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🌌" onclick="abPick('base','🌌')">🌌</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🌠" onclick="abPick('base','🌠')">🌠</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👨🏽" onclick="abPick('base','👨🏽')">👨🏽</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👩🏽" onclick="abPick('base','👩🏽')">👩🏽</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🧔🏽" onclick="abPick('base','🧔🏽')">🧔🏽</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👦🏽" onclick="abPick('base','👦🏽')">👦🏽</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👧🏽" onclick="abPick('base','👧🏽')">👧🏽</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👴🏽" onclick="abPick('base','👴🏽')">👴🏽</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👵🏽" onclick="abPick('base','👵🏽')">👵🏽</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🧕🏽" onclick="abPick('base','🧕🏽')">🧕🏽</button>
                 </div>
-                <div class="ab-section-label">Alien Add-on</div>
-                <div class="ab-grid">
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🛸" onclick="abPick('overlay','🛸')">🛸</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="⭐" onclick="abPick('overlay','⭐')">⭐</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🌟" onclick="abPick('overlay','🌟')">🌟</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="⚡" onclick="abPick('overlay','⚡')">⚡</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="💫" onclick="abPick('overlay','💫')">💫</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🧬" onclick="abPick('overlay','🧬')">🧬</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🔭" onclick="abPick('overlay','🔭')">🔭</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🌐" onclick="abPick('overlay','🌐')">🌐</button>
-                </div>
-            </div>
 
-            <!-- ANIMAL -->
-            <div class="ab-panel" id="ab-panel-animal">
-                <div class="ab-section-label">Cats</div>
+                <div class="ab-cat">👤 HUMAN — DARK</div>
                 <div class="ab-grid">
-                    <button class="ab-pick" data-slot="base" data-emoji="🐱" onclick="abPick('base','🐱')">🐱</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🐈" onclick="abPick('base','🐈')">🐈</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🐈‍⬛" onclick="abPick('base','🐈‍⬛')">🐈‍⬛</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="😸" onclick="abPick('base','😸')">😸</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="😼" onclick="abPick('base','😼')">😼</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🦁" onclick="abPick('base','🦁')">🦁</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🐯" onclick="abPick('base','🐯')">🐯</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🐆" onclick="abPick('base','🐆')">🐆</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👨🏿" onclick="abPick('base','👨🏿')">👨🏿</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👩🏿" onclick="abPick('base','👩🏿')">👩🏿</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🧔🏿" onclick="abPick('base','🧔🏿')">🧔🏿</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👦🏿" onclick="abPick('base','👦🏿')">👦🏿</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👧🏿" onclick="abPick('base','👧🏿')">👧🏿</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👴🏿" onclick="abPick('base','👴🏿')">👴🏿</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👵🏿" onclick="abPick('base','👵🏿')">👵🏿</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👱🏿" onclick="abPick('base','👱🏿')">👱🏿</button>
                 </div>
-                <div class="ab-section-label">Dogs</div>
-                <div class="ab-grid">
-                    <button class="ab-pick" data-slot="base" data-emoji="🐶" onclick="abPick('base','🐶')">🐶</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🐕" onclick="abPick('base','🐕')">🐕</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🦮" onclick="abPick('base','🦮')">🦮</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🐩" onclick="abPick('base','🐩')">🐩</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🐺" onclick="abPick('base','🐺')">🐺</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🦊" onclick="abPick('base','🦊')">🦊</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🦝" onclick="abPick('base','🦝')">🦝</button>
-                </div>
-                <div class="ab-section-label">Wild</div>
-                <div class="ab-grid">
-                    <button class="ab-pick" data-slot="base" data-emoji="🐻" onclick="abPick('base','🐻')">🐻</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🐼" onclick="abPick('base','🐼')">🐼</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🐨" onclick="abPick('base','🐨')">🐨</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🐮" onclick="abPick('base','🐮')">🐮</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🐷" onclick="abPick('base','🐷')">🐷</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🐸" onclick="abPick('base','🐸')">🐸</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🐧" onclick="abPick('base','🐧')">🐧</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🦆" onclick="abPick('base','🦆')">🦆</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🦅" onclick="abPick('base','🦅')">🦅</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🦉" onclick="abPick('base','🦉')">🦉</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🐊" onclick="abPick('base','🐊')">🐊</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🦖" onclick="abPick('base','🦖')">🦖</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🐢" onclick="abPick('base','🐢')">🐢</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🦋" onclick="abPick('base','🦋')">🦋</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🐲" onclick="abPick('base','🐲')">🐲</button>
-                    <button class="ab-pick" data-slot="base" data-emoji="🦄" onclick="abPick('base','🦄')">🦄</button>
-                </div>
-            </div>
 
-            <!-- HYBRID -->
-            <div class="ab-panel" id="ab-panel-hybrid">
-                <div class="ab-section-label">Step 1 — Pick a Human base from 👤 Human tab</div>
-                <div class="ab-section-label">Step 2 — Add an Animal part</div>
+                <div class="ab-cat">🎭 CHARACTERS</div>
                 <div class="ab-grid">
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🐱" onclick="abPick('overlay','🐱')">🐱</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🐶" onclick="abPick('overlay','🐶')">🐶</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🦊" onclick="abPick('overlay','🦊')">🦊</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🐺" onclick="abPick('overlay','🐺')">🐺</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🐻" onclick="abPick('overlay','🐻')">🐻</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🦁" onclick="abPick('overlay','🦁')">🦁</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🐯" onclick="abPick('overlay','🐯')">🐯</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🐸" onclick="abPick('overlay','🐸')">🐸</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🐲" onclick="abPick('overlay','🐲')">🐲</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🦋" onclick="abPick('overlay','🦋')">🦋</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🦅" onclick="abPick('overlay','🦅')">🦅</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🐍" onclick="abPick('overlay','🐍')">🐍</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🤠" onclick="abPick('base','🤠')">🤠</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🥷" onclick="abPick('base','🥷')">🥷</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🦸" onclick="abPick('base','🦸')">🦸</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🦹" onclick="abPick('base','🦹')">🦹</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🕵️" onclick="abPick('base','🕵️')">🕵️</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👮🏽" onclick="abPick('base','👮🏽')">👮🏽</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👷🏽" onclick="abPick('base','👷🏽')">👷🏽</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🧙" onclick="abPick('base','🧙')">🧙</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🧛" onclick="abPick('base','🧛')">🧛</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🧟" onclick="abPick('base','🧟')">🧟</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🧝" onclick="abPick('base','🧝')">🧝</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🧚" onclick="abPick('base','🧚')">🧚</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🧜" onclick="abPick('base','🧜')">🧜</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🤡" onclick="abPick('base','🤡')">🤡</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👻" onclick="abPick('base','👻')">👻</button>
+                    <button class="ab-e" data-slot="base" data-emoji="💀" onclick="abPick('base','💀')">💀</button>
                 </div>
-                <div class="ab-section-label">Step 2 (alt) — Add an Alien part</div>
-                <div class="ab-grid">
-                    <button class="ab-pick" data-slot="overlay" data-emoji="👽" onclick="abPick('overlay','👽')">👽</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🤖" onclick="abPick('overlay','🤖')">🤖</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🦾" onclick="abPick('overlay','🦾')">🦾</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🌀" onclick="abPick('overlay','🌀')">🌀</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="☢️" onclick="abPick('overlay','☢️')">☢️</button>
-                    <button class="ab-pick" data-slot="overlay" data-emoji="🧪" onclick="abPick('overlay','🧪')">🧪</button>
-                </div>
-            </div>
 
-            <!-- EXTRAS -->
-            <div class="ab-panel" id="ab-panel-extras">
-                <div class="ab-section-label">Hats</div>
+                <div class="ab-cat">👽 ALIENS &amp; ROBOTS</div>
                 <div class="ab-grid">
-                    <button class="ab-pick" data-slot="hat" data-emoji="🎩" onclick="abPick('hat','🎩')">🎩</button>
-                    <button class="ab-pick" data-slot="hat" data-emoji="👑" onclick="abPick('hat','👑')">👑</button>
-                    <button class="ab-pick" data-slot="hat" data-emoji="🪖" onclick="abPick('hat','🪖')">🪖</button>
-                    <button class="ab-pick" data-slot="hat" data-emoji="⛑️" onclick="abPick('hat','⛑️')">⛑️</button>
-                    <button class="ab-pick" data-slot="hat" data-emoji="🎓" onclick="abPick('hat','🎓')">🎓</button>
-                    <button class="ab-pick" data-slot="hat" data-emoji="🧢" onclick="abPick('hat','🧢')">🧢</button>
-                    <button class="ab-pick" data-slot="hat" data-emoji="👒" onclick="abPick('hat','👒')">👒</button>
-                    <button class="ab-pick" data-slot="hat" data-emoji="😎" onclick="abPick('hat','😎')">😎</button>
-                    <button class="ab-pick" data-slot="hat" data-emoji="🥽" onclick="abPick('hat','🥽')">🥽</button>
-                    <button class="ab-pick" data-slot="hat" data-emoji="🤿" onclick="abPick('hat','🤿')">🤿</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👽" onclick="abPick('base','👽')">👽</button>
+                    <button class="ab-e" data-slot="base" data-emoji="👾" onclick="abPick('base','👾')">👾</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🤖" onclick="abPick('base','🤖')">🤖</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🌀" onclick="abPick('base','🌀')">🌀</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🔮" onclick="abPick('base','🔮')">🔮</button>
+                    <button class="ab-e" data-slot="base" data-emoji="☄️" onclick="abPick('base','☄️')">☄️</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🌌" onclick="abPick('base','🌌')">🌌</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🌠" onclick="abPick('base','🌠')">🌠</button>
                 </div>
-                <div class="ab-section-label">Items</div>
-                <div class="ab-grid">
-                    <button class="ab-pick" data-slot="item" data-emoji="💰" onclick="abPick('item','💰')">💰</button>
-                    <button class="ab-pick" data-slot="item" data-emoji="💎" onclick="abPick('item','💎')">💎</button>
-                    <button class="ab-pick" data-slot="item" data-emoji="⚔️" onclick="abPick('item','⚔️')">⚔️</button>
-                    <button class="ab-pick" data-slot="item" data-emoji="🗡️" onclick="abPick('item','🗡️')">🗡️</button>
-                    <button class="ab-pick" data-slot="item" data-emoji="🏹" onclick="abPick('item','🏹')">🏹</button>
-                    <button class="ab-pick" data-slot="item" data-emoji="🪄" onclick="abPick('item','🪄')">🪄</button>
-                    <button class="ab-pick" data-slot="item" data-emoji="🎸" onclick="abPick('item','🎸')">🎸</button>
-                    <button class="ab-pick" data-slot="item" data-emoji="🏀" onclick="abPick('item','🏀')">🏀</button>
-                    <button class="ab-pick" data-slot="item" data-emoji="🎲" onclick="abPick('item','🎲')">🎲</button>
-                    <button class="ab-pick" data-slot="item" data-emoji="🍺" onclick="abPick('item','🍺')">🍺</button>
-                    <button class="ab-pick" data-slot="item" data-emoji="💊" onclick="abPick('item','💊')">💊</button>
-                    <button class="ab-pick" data-slot="item" data-emoji="🔑" onclick="abPick('item','🔑')">🔑</button>
-                </div>
-                <div class="ab-section-label">Vibes</div>
-                <div class="ab-grid">
-                    <button class="ab-pick" data-slot="vibe" data-emoji="🔥" onclick="abPick('vibe','🔥')">🔥</button>
-                    <button class="ab-pick" data-slot="vibe" data-emoji="⚡" onclick="abPick('vibe','⚡')">⚡</button>
-                    <button class="ab-pick" data-slot="vibe" data-emoji="❄️" onclick="abPick('vibe','❄️')">❄️</button>
-                    <button class="ab-pick" data-slot="vibe" data-emoji="💀" onclick="abPick('vibe','💀')">💀</button>
-                    <button class="ab-pick" data-slot="vibe" data-emoji="💸" onclick="abPick('vibe','💸')">💸</button>
-                    <button class="ab-pick" data-slot="vibe" data-emoji="🌈" onclick="abPick('vibe','🌈')">🌈</button>
-                    <button class="ab-pick" data-slot="vibe" data-emoji="🍀" onclick="abPick('vibe','🍀')">🍀</button>
-                    <button class="ab-pick" data-slot="vibe" data-emoji="💯" onclick="abPick('vibe','💯')">💯</button>
-                    <button class="ab-pick" data-slot="vibe" data-emoji="🎯" onclick="abPick('vibe','🎯')">🎯</button>
-                    <button class="ab-pick" data-slot="vibe" data-emoji="😤" onclick="abPick('vibe','😤')">😤</button>
-                </div>
-            </div>
 
-        </div>
+                <div class="ab-cat">🐱 CATS</div>
+                <div class="ab-grid">
+                    <button class="ab-e" data-slot="base" data-emoji="🐱" onclick="abPick('base','🐱')">🐱</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🐈" onclick="abPick('base','🐈')">🐈</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🐈‍⬛" onclick="abPick('base','🐈‍⬛')">🐈‍⬛</button>
+                    <button class="ab-e" data-slot="base" data-emoji="😸" onclick="abPick('base','😸')">😸</button>
+                    <button class="ab-e" data-slot="base" data-emoji="😼" onclick="abPick('base','😼')">😼</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🦁" onclick="abPick('base','🦁')">🦁</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🐯" onclick="abPick('base','🐯')">🐯</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🐆" onclick="abPick('base','🐆')">🐆</button>
+                </div>
+
+                <div class="ab-cat">🐶 DOGS</div>
+                <div class="ab-grid">
+                    <button class="ab-e" data-slot="base" data-emoji="🐶" onclick="abPick('base','🐶')">🐶</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🐕" onclick="abPick('base','🐕')">🐕</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🦮" onclick="abPick('base','🦮')">🦮</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🐩" onclick="abPick('base','🐩')">🐩</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🐺" onclick="abPick('base','🐺')">🐺</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🦊" onclick="abPick('base','🦊')">🦊</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🦝" onclick="abPick('base','🦝')">🦝</button>
+                </div>
+
+                <div class="ab-cat">🌿 WILD ANIMALS</div>
+                <div class="ab-grid">
+                    <button class="ab-e" data-slot="base" data-emoji="🐻" onclick="abPick('base','🐻')">🐻</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🐼" onclick="abPick('base','🐼')">🐼</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🐨" onclick="abPick('base','🐨')">🐨</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🐮" onclick="abPick('base','🐮')">🐮</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🐷" onclick="abPick('base','🐷')">🐷</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🐸" onclick="abPick('base','🐸')">🐸</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🐧" onclick="abPick('base','🐧')">🐧</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🦆" onclick="abPick('base','🦆')">🦆</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🦅" onclick="abPick('base','🦅')">🦅</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🦉" onclick="abPick('base','🦉')">🦉</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🐊" onclick="abPick('base','🐊')">🐊</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🦖" onclick="abPick('base','🦖')">🦖</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🐢" onclick="abPick('base','🐢')">🐢</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🦋" onclick="abPick('base','🦋')">🦋</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🐲" onclick="abPick('base','🐲')">🐲</button>
+                    <button class="ab-e" data-slot="base" data-emoji="🦄" onclick="abPick('base','🦄')">🦄</button>
+                </div>
+
+                <div class="ab-cat">🧬 ADD-ON (Hybrid layer)</div>
+                <div class="ab-grid">
+                    <button class="ab-e" data-slot="overlay" data-emoji="🐱" onclick="abPick('overlay','🐱')">🐱</button>
+                    <button class="ab-e" data-slot="overlay" data-emoji="🐶" onclick="abPick('overlay','🐶')">🐶</button>
+                    <button class="ab-e" data-slot="overlay" data-emoji="🦊" onclick="abPick('overlay','🦊')">🦊</button>
+                    <button class="ab-e" data-slot="overlay" data-emoji="🐺" onclick="abPick('overlay','🐺')">🐺</button>
+                    <button class="ab-e" data-slot="overlay" data-emoji="🐲" onclick="abPick('overlay','🐲')">🐲</button>
+                    <button class="ab-e" data-slot="overlay" data-emoji="🦋" onclick="abPick('overlay','🦋')">🦋</button>
+                    <button class="ab-e" data-slot="overlay" data-emoji="👽" onclick="abPick('overlay','👽')">👽</button>
+                    <button class="ab-e" data-slot="overlay" data-emoji="🤖" onclick="abPick('overlay','🤖')">🤖</button>
+                    <button class="ab-e" data-slot="overlay" data-emoji="🦾" onclick="abPick('overlay','🦾')">🦾</button>
+                    <button class="ab-e" data-slot="overlay" data-emoji="☢️" onclick="abPick('overlay','☢️')">☢️</button>
+                    <button class="ab-e" data-slot="overlay" data-emoji="🛸" onclick="abPick('overlay','🛸')">🛸</button>
+                    <button class="ab-e" data-slot="overlay" data-emoji="⭐" onclick="abPick('overlay','⭐')">⭐</button>
+                    <button class="ab-e" data-slot="overlay" data-emoji="⚡" onclick="abPick('overlay','⚡')">⚡</button>
+                    <button class="ab-e" data-slot="overlay" data-emoji="🧬" onclick="abPick('overlay','🧬')">🧬</button>
+                    <button class="ab-e" data-slot="overlay" data-emoji="💫" onclick="abPick('overlay','💫')">💫</button>
+                    <button class="ab-e" data-slot="overlay" data-emoji="🌀" onclick="abPick('overlay','🌀')">🌀</button>
+                </div>
+
+                <div class="ab-cat">🎩 HATS</div>
+                <div class="ab-grid">
+                    <button class="ab-e" data-slot="hat" data-emoji="🎩" onclick="abPick('hat','🎩')">🎩</button>
+                    <button class="ab-e" data-slot="hat" data-emoji="👑" onclick="abPick('hat','👑')">👑</button>
+                    <button class="ab-e" data-slot="hat" data-emoji="🪖" onclick="abPick('hat','🪖')">🪖</button>
+                    <button class="ab-e" data-slot="hat" data-emoji="⛑️" onclick="abPick('hat','⛑️')">⛑️</button>
+                    <button class="ab-e" data-slot="hat" data-emoji="🎓" onclick="abPick('hat','🎓')">🎓</button>
+                    <button class="ab-e" data-slot="hat" data-emoji="🧢" onclick="abPick('hat','🧢')">🧢</button>
+                    <button class="ab-e" data-slot="hat" data-emoji="👒" onclick="abPick('hat','👒')">👒</button>
+                    <button class="ab-e" data-slot="hat" data-emoji="😎" onclick="abPick('hat','😎')">😎</button>
+                    <button class="ab-e" data-slot="hat" data-emoji="🥽" onclick="abPick('hat','🥽')">🥽</button>
+                    <button class="ab-e" data-slot="hat" data-emoji="🤿" onclick="abPick('hat','🤿')">🤿</button>
+                </div>
+
+                <div class="ab-cat">💼 ITEMS</div>
+                <div class="ab-grid">
+                    <button class="ab-e" data-slot="item" data-emoji="💰" onclick="abPick('item','💰')">💰</button>
+                    <button class="ab-e" data-slot="item" data-emoji="💎" onclick="abPick('item','💎')">💎</button>
+                    <button class="ab-e" data-slot="item" data-emoji="⚔️" onclick="abPick('item','⚔️')">⚔️</button>
+                    <button class="ab-e" data-slot="item" data-emoji="🗡️" onclick="abPick('item','🗡️')">🗡️</button>
+                    <button class="ab-e" data-slot="item" data-emoji="🏹" onclick="abPick('item','🏹')">🏹</button>
+                    <button class="ab-e" data-slot="item" data-emoji="🪄" onclick="abPick('item','🪄')">🪄</button>
+                    <button class="ab-e" data-slot="item" data-emoji="🎸" onclick="abPick('item','🎸')">🎸</button>
+                    <button class="ab-e" data-slot="item" data-emoji="🏀" onclick="abPick('item','🏀')">🏀</button>
+                    <button class="ab-e" data-slot="item" data-emoji="🎲" onclick="abPick('item','🎲')">🎲</button>
+                    <button class="ab-e" data-slot="item" data-emoji="🍺" onclick="abPick('item','🍺')">🍺</button>
+                    <button class="ab-e" data-slot="item" data-emoji="💊" onclick="abPick('item','💊')">💊</button>
+                    <button class="ab-e" data-slot="item" data-emoji="🔑" onclick="abPick('item','🔑')">🔑</button>
+                </div>
+
+                <div class="ab-cat">🔥 VIBES</div>
+                <div class="ab-grid">
+                    <button class="ab-e" data-slot="vibe" data-emoji="🔥" onclick="abPick('vibe','🔥')">🔥</button>
+                    <button class="ab-e" data-slot="vibe" data-emoji="⚡" onclick="abPick('vibe','⚡')">⚡</button>
+                    <button class="ab-e" data-slot="vibe" data-emoji="❄️" onclick="abPick('vibe','❄️')">❄️</button>
+                    <button class="ab-e" data-slot="vibe" data-emoji="💀" onclick="abPick('vibe','💀')">💀</button>
+                    <button class="ab-e" data-slot="vibe" data-emoji="💸" onclick="abPick('vibe','💸')">💸</button>
+                    <button class="ab-e" data-slot="vibe" data-emoji="🌈" onclick="abPick('vibe','🌈')">🌈</button>
+                    <button class="ab-e" data-slot="vibe" data-emoji="🍀" onclick="abPick('vibe','🍀')">🍀</button>
+                    <button class="ab-e" data-slot="vibe" data-emoji="💯" onclick="abPick('vibe','💯')">💯</button>
+                    <button class="ab-e" data-slot="vibe" data-emoji="🎯" onclick="abPick('vibe','🎯')">🎯</button>
+                    <button class="ab-e" data-slot="vibe" data-emoji="😤" onclick="abPick('vibe','😤')">😤</button>
+                </div>
+
+            </div><!-- ab-right -->
+        </div><!-- ab-wrap -->
 
         <div class="setup-section" style="margin-top:10px">
             <h3>Enter Your Name!</h3>
