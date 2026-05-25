@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CHAOS - The Game of Life</title>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -48,14 +48,14 @@
         <div class="setup-section">
             <h3>Win Goal?</h3>
             <div class="goal-buttons">
-                <button class="goal-btn" onclick="setGoal(100000)">$100,000</button>
-                <button class="goal-btn" onclick="setGoal(250000)">$250,000</button>
-                <button class="goal-btn" onclick="setGoal(500000)">$500,000</button>
-                <button class="goal-btn" onclick="setGoal(1000000)">$1,000,000</button>
-                <button class="goal-btn" onclick="setGoal(5000000)">$5,000,000</button>
+                <button class="goal-btn" onclick="setGoal(100000)">$100K</button>
+                <button class="goal-btn" onclick="setGoal(250000)">$250K</button>
+                <button class="goal-btn" onclick="setGoal(500000)">$500K</button>
+                <button class="goal-btn" onclick="setGoal(1000000)">$1M</button>
+                <button class="goal-btn" onclick="setGoal(5000000)">$5M</button>
             </div>
         </div>
-        <button id="setupDoneBtn" class="btn hidden" onclick="setupPlayers()">NEXT - Setup Players</button>
+        <button id="setupDoneBtn" class="btn hidden" onclick="setupPlayers()">NEXT — Setup Players</button>
     </div>
 
     <!-- PLAYER SETUP SCREEN -->
@@ -65,7 +65,7 @@
         </div>
         <h2 id="playerSetupTitle" class="setup-heading">Player 1 Setup</h2>
         <div class="setup-section">
-            <h3>Choose Your Avatar!!</h3>
+            <h3>Choose Your Avatar!</h3>
             <div class="avatar-grid">
                 <button class="avatar-btn" onclick="selectAvatar('👨')">👨</button>
                 <button class="avatar-btn" onclick="selectAvatar('👩')">👩</button>
@@ -80,23 +80,18 @@
             </div>
         </div>
         <div class="setup-section">
-            <h3>Enter Your Name!!</h3>
-            <input type="text" id="playerName" class="name-input" placeholder="Enter your name"/>
+            <h3>Enter Your Name!</h3>
+            <input type="text" id="playerName" class="name-input" placeholder="Enter your name" autocomplete="off"/>
         </div>
         <button id="nextPlayerBtn" class="btn" onclick="nextPlayer()">NEXT PLAYER</button>
     </div>
 
-    <!-- GAME SCREEN -->
+    <!-- GAME SCREEN — 3-col layout: LEFT (players) | CENTER (board) | RIGHT (dice + active panel) -->
     <div id="gameScreen" class="screen hidden game-layout">
 
-        <!-- LEFT COLUMN: Logo + All Players List -->
+        <!-- LEFT COLUMN: All Players List -->
         <div class="left-col">
-            <div class="game-logo-block">
-                <div class="logo game-logo">⚡ CHAOS ⚡</div>
-                <div class="logo-sub">The Game of Life</div>
-                <div class="win-goal-display" id="winGoalDisplay"></div>
-            </div>
-            <div class="all-players-label">PLAYERS</div>
+            <div class="all-players-label">⚡ CHAOS ⚡<br><span class="win-goal-display" id="winGoalDisplay"></span></div>
             <div id="playerInfoBar" class="player-info-bar"></div>
         </div>
 
@@ -105,8 +100,20 @@
             <div id="gameBoard" class="game-board"></div>
         </div>
 
-        <!-- RIGHT COLUMN: Active Player + Assets + Dice -->
+        <!-- RIGHT COLUMN: Dice on top, then Active Player Panel -->
         <div class="right-col">
+            <!-- DICE + CONTROLS -->
+            <div class="game-controls">
+                <div class="dice-area">
+                    <div id="die1" class="die">🎲</div>
+                    <div id="die2" class="die">🎲</div>
+                </div>
+                <button id="rollDiceBtn" class="btn dice-btn" onclick="rollDice()">🎲 ROLL DICE</button>
+                <div id="diceResult" class="dice-result"></div>
+                <div id="gameMessage" class="game-message"></div>
+            </div>
+
+            <!-- ACTIVE PLAYER PANEL -->
             <div id="activePlayerPanel" class="active-player-panel">
                 <div class="ap-label">CURRENT TURN</div>
                 <div id="apAvatar" class="ap-avatar"></div>
@@ -114,6 +121,7 @@
                 <div id="apMoney" class="ap-money"></div>
                 <div id="apJob" class="ap-job"></div>
                 <div id="apHappiness" class="ap-detail"></div>
+                <div id="apLaps" class="ap-detail" style="font-size:0.65em;color:#6a6a7f;margin-top:2px;"></div>
                 <div id="apJail" class="ap-jail hidden"></div>
 
                 <!-- HOUSING UPGRADE TRACK -->
@@ -128,23 +136,13 @@
 
                 <!-- CAR UPGRADE TRACK -->
                 <div class="asset-section">
-                    <div class="asset-label">🚗 CAR</div>
+                    <div class="asset-label">🚗 CAR / TRANSPORT</div>
                     <div id="apCarDisplay" class="asset-display">
                         <div id="apCarIcon" class="asset-icon"></div>
                         <div id="apCarName" class="asset-name"></div>
                         <div class="upgrade-track" id="carTrack"></div>
                     </div>
                 </div>
-            </div>
-
-            <div class="game-controls">
-                <div class="dice-area">
-                    <div id="die1" class="die">🎲</div>
-                    <div id="die2" class="die">🎲</div>
-                </div>
-                <button id="rollDiceBtn" class="btn dice-btn" onclick="rollDice()">🎲 ROLL DICE</button>
-                <div id="diceResult" class="dice-result"></div>
-                <div id="gameMessage" class="game-message"></div>
             </div>
         </div>
     </div>
@@ -163,8 +161,31 @@
     <div id="popup" class="popup hidden">
         <div class="popup-content">
             <h2 id="popupTitle"></h2>
-            <p id="popupMessage"></p>
+            <p id="popupMessage" style="white-space:pre-line"></p>
             <button class="btn" onclick="closePopup()">OK!!</button>
+        </div>
+    </div>
+
+    <!-- MINI GAME OVERLAY -->
+    <div id="miniGameOverlay" class="popup hidden">
+        <div class="popup-content mini-game-content">
+            <h2 id="mgTitle">Mini Game!</h2>
+            <p id="mgDesc"></p>
+            <div id="mgArea"></div>
+        </div>
+    </div>
+
+    <!-- STEAL OVERLAY -->
+    <div id="stealOverlay" class="popup hidden">
+        <div class="popup-content">
+            <h2 id="stealTitle" style="color:var(--gold)">⚡ VEHICLE SHOWDOWN ⚡</h2>
+            <p id="stealDesc"></p>
+            <div class="dice-area" style="justify-content:center;margin:10px 0">
+                <div id="stealDie1" class="die">🎲</div>
+                <div id="stealDie2" class="die">🎲</div>
+            </div>
+            <div id="stealResult" style="color:var(--gold);font-size:1.1em;min-height:30px;margin:8px 0"></div>
+            <button id="stealRollBtn" class="btn" onclick="resolveSteal()">🎲 ROLL OFF!</button>
         </div>
     </div>
 
