@@ -255,14 +255,28 @@ function sendToJail(p) {
     if (p.carLevel > 0) p.carImpounded = true;
 }
 
+// Housing lap requirements: levels 0-3 free, 4-7 need lap 25+, 8-10 need lap 50+, 11-13 need lap 75+
+function housingLapRequired(level) {
+    if (level >= 11) return 75;
+    if (level >= 8)  return 50;
+    if (level >= 4)  return 25;
+    return 0;
+}
+
 function upgradeHousing(p, lvls) {
-    // Always only upgrade 1 level at a time regardless of lvls passed
     let nl = Math.min(HOUSING.length-1, p.housingLevel + 1);
     if (nl === p.housingLevel) return p.name + ' already has max housing!';
 
     // Block Car Living (level 1) if player has no car
     if (nl === 1 && p.carLevel === 0) {
-        return p.name + " can't live in a car — they don't own one! Buy a car first.";
+        return p.name + " can't live in a car — buy a car first!";
+    }
+
+    // Check lap requirement
+    const lapsNeeded = housingLapRequired(nl);
+    const laps = p.laps || 0;
+    if (laps < lapsNeeded) {
+        return p.name + ' needs Lap ' + lapsNeeded + ' to unlock ' + HOUSING[nl].name + '. Currently on Lap ' + laps + '.';
     }
 
     const cost = Math.max(0, HOUSING[nl].price - HOUSING[p.housingLevel].price);
@@ -274,16 +288,32 @@ function upgradeHousing(p, lvls) {
     return p.name + " can't afford " + HOUSING[nl].name + '. Need ' + fmt(cost) + ', have ' + fmt(p.money) + '.';
 }
 
+// Car lap requirements: 0-2 free, 3-5 need lap 25+, 6-8 need lap 50+, 9-10 need lap 75+
+function carLapRequired(level) {
+    if (level >= 9)  return 75;
+    if (level >= 6)  return 50;
+    if (level >= 3)  return 25;
+    return 0;
+}
+
 function upgradeCar(p, lvls) {
-    const nl = Math.min(CARS.length-1, p.carLevel+lvls);
+    const nl = Math.min(CARS.length-1, p.carLevel + 1);
     if (nl === p.carLevel) return p.name + ' already has max car!';
+
+    // Check lap requirement
+    const lapsNeeded = carLapRequired(nl);
+    const laps = p.laps || 0;
+    if (laps < lapsNeeded) {
+        return p.name + ' needs Lap ' + lapsNeeded + ' to unlock ' + CARS[nl].name + '. Currently on Lap ' + laps + '.';
+    }
+
     const cost = Math.max(0, CARS[nl].price - CARS[p.carLevel].price);
     if (p.money >= cost) {
         p.money -= cost; p.carLevel = nl;
         animateAssetIcon('apCarIcon');
         return p.name + ' upgraded to ' + CARS[nl].name + '!';
     }
-    return p.name + "'s broke - can't afford the car upgrade.";
+    return p.name + " can't afford " + CARS[nl].name + '. Need ' + fmt(cost) + ', have ' + fmt(p.money) + '.';
 }
 
 function animateAssetIcon(id) {
@@ -360,7 +390,7 @@ function nextPlayer() {
         housingLevel: 0, carLevel: 0,
         inJail: false, jailTurns: 0,
         carImpounded: false, jailFreeCards: 0,
-        happiness: 5, turnsPlayed: 0,
+        happiness: 5, turnsPlayed: 0, laps: 0,
         skipTurn: false,
     });
 
@@ -462,6 +492,7 @@ function updateActivePlayerPanel() {
     set('apMoney', fmt(p.money));
     set('apJob', '💼 ' + p.job);
     set('apHappiness', '😊 Happiness: ' + p.happiness + '/10');
+    set('apLaps', '🔄 Laps: ' + (p.laps||0) + ' | Tier: ' + getTierLabel(p.laps||0));
 
     const jailEl = document.getElementById('apJail');
     if (jailEl) {
@@ -649,8 +680,9 @@ function movePlayer(player, steps) {
     const newPos = (oldPos + steps) % 40;
     if (newPos <= oldPos && steps > 0) {
         player.money += player.jobPay;
+        player.laps++;
         document.getElementById('gameMessage').textContent =
-            `${player.name} passed START! +${fmt(player.jobPay)}`;
+            player.name + ' passed START! Lap ' + player.laps + ' | +' + fmt(player.jobPay);
     }
     player.position = newPos;
     player.turnsPlayed++;
@@ -722,6 +754,17 @@ function handleHouseSpace(player) {
     if (nextLvl === 1 && player.carLevel === 0) {
         showCardOverlay('🚗','NEED A CAR FIRST!','Car Living Blocked',
             player.name+" can't live in a car without owning one! Buy a car first.", 'bad');
+        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+        return;
+    }
+
+    // Check lap requirement
+    const lapsNeeded = housingLapRequired(nextLvl);
+    const playerLaps = player.laps || 0;
+    if (playerLaps < lapsNeeded) {
+        showCardOverlay('🔒','LOCKED','Lap ' + lapsNeeded + ' Required',
+            player.name + ' needs to complete Lap ' + lapsNeeded + ' to unlock ' + HOUSING[nextLvl].name +
+            '. Currently on Lap ' + playerLaps + '.', 'bad');
         setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
         return;
     }
@@ -838,6 +881,17 @@ function handleCarDealerSpace(player) {
         setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
         return;
     }
+    // Check lap requirement
+    const lapsNeededCar = carLapRequired(nextLvl);
+    const playerLapsCar = player.laps || 0;
+    if (playerLapsCar < lapsNeededCar) {
+        showCardOverlay('🔒','LOCKED','Lap ' + lapsNeededCar + ' Required',
+            player.name + ' needs to complete Lap ' + lapsNeededCar + ' to unlock ' + CARS[nextLvl].name +
+            '. Currently on Lap ' + playerLapsCar + '.', 'bad');
+        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+        return;
+    }
+
     const cost = Math.max(0, next.price - cur.price);
     const popup = document.getElementById('popup');
     const content = popup.querySelector('.popup-content');
@@ -1081,55 +1135,101 @@ function closePopup() { document.getElementById('popup').classList.add('hidden')
 function showMessage(msg) { document.getElementById('gameMessage').textContent=msg; }
 
 // ── Job Cards Deck ────────────────────────────────────────
+// ── All jobs sorted by tier ──────────────────────────────
+// Tier unlocked by turnsPlayed: early=0+, mid=8+, late=16+, top=24+
+const ALL_JOBS = [
+    { name: 'Dog Walker',     icon: '🐕', pay: 500,   tier: 0 },
+    { name: 'Fruit Picker',   icon: '🍎', pay: 800,   tier: 0 },
+    { name: 'Wendys',         icon: '🍔', pay: 2400,  tier: 0 },
+    { name: 'Walmart',        icon: '🛒', pay: 2800,  tier: 0 },
+    { name: 'DoorDash',       icon: '🚗', pay: 3000,  tier: 0 },
+    { name: 'Factory Worker', icon: '🏭', pay: 3200,  tier: 1 },
+    { name: 'Trash Collector',icon: '🗑️', pay: 3500,  tier: 1 },
+    { name: 'House Cleaner',  icon: '🧹', pay: 3800,  tier: 1 },
+    { name: 'Security',       icon: '🔒', pay: 4000,  tier: 1 },
+    { name: 'Farmer',         icon: '🌾', pay: 3500,  tier: 1 },
+    { name: 'Amazon Driver',  icon: '📦', pay: 5000,  tier: 2 },
+    { name: 'Police',         icon: '👮', pay: 5500,  tier: 2 },
+    { name: 'Prison Guard',   icon: '🚔', pay: 6000,  tier: 2 },
+    { name: 'Labor',          icon: '👷', pay: 4500,  tier: 2 },
+    { name: 'Catering',       icon: '🍽️', pay: 4000,  tier: 2 },
+    { name: 'Realtor',        icon: '🏠', pay: 8000,  tier: 3 },
+    { name: 'Microsoft',      icon: '💻', pay: 12000, tier: 3 },
+];
+
+function getTier(laps) {
+    if (laps >= 75) return 3;
+    if (laps >= 50) return 2;
+    if (laps >= 25) return 1;
+    return 0;
+}
+
+function getTierLabel(laps) {
+    if (laps >= 75) return 'Senior Level (Lap 75+)';
+    if (laps >= 50) return 'Mid Level (Lap 50+)';
+    if (laps >= 25) return 'Entry Level (Lap 25+)';
+    return 'Starting Out (Laps 1-24)';
+}
+
+function getAvailableJobs(player) {
+    const maxTier = getTier(player.laps || 0);
+    return ALL_JOBS.filter(j => j.tier <= maxTier);
+}
+
+// Job cards only draw from available tier
 const JOB_CARDS = [
-    { name: 'Dog Walker',     icon: '🐕', pay: 500,   effect: p => { p.job='Dog Walker';    p.jobPay=500;   return p.name+' got hired as a Dog Walker! Payday: $500'; } },
-    { name: 'Fruit Picker',   icon: '🍎', pay: 800,   effect: p => { p.job='Fruit Picker';  p.jobPay=800;   return p.name+' got hired as a Fruit Picker! Payday: $800'; } },
-    { name: 'Wendys',         icon: '🍔', pay: 2400,  effect: p => { p.job='Wendys';        p.jobPay=2400;  return p.name+' is flipping burgers at Wendys! Payday: $2,400'; } },
-    { name: 'Walmart',        icon: '🛒', pay: 2800,  effect: p => { p.job='Walmart';       p.jobPay=2800;  return p.name+' got hired at Walmart! Payday: $2,800'; } },
-    { name: 'Factory Worker', icon: '🏭', pay: 3200,  effect: p => { p.job='Factory Worker';p.jobPay=3200;  return p.name+' is working the line! Payday: $3,200'; } },
-    { name: 'Trash Collector',icon: '🗑️', pay: 3500,  effect: p => { p.job='Trash Collector';p.jobPay=3500; return p.name+' is on the truck! Payday: $3,500'; } },
-    { name: 'House Cleaner',  icon: '🧹', pay: 3800,  effect: p => { p.job='House Cleaner'; p.jobPay=3800;  return p.name+' is scrubbing floors! Payday: $3,800'; } },
-    { name: 'Security',       icon: '🔒', pay: 4000,  effect: p => { p.job='Security';      p.jobPay=4000;  return p.name+' is on patrol! Payday: $4,000'; } },
-    { name: 'DoorDash',       icon: '🚗', pay: 3000,  effect: p => { p.job='DoorDash';      p.jobPay=3000;  return p.name+' is delivering! Payday: $3,000'; } },
-    { name: 'Amazon Driver',  icon: '📦', pay: 5000,  effect: p => { p.job='Amazon Driver'; p.jobPay=5000;  return p.name+' is delivering packages! Payday: $5,000'; } },
-    { name: 'Police',         icon: '👮', pay: 5500,  effect: p => { p.job='Police';        p.jobPay=5500;  return p.name+' is on the force! Payday: $5,500'; } },
-    { name: 'Prison Guard',   icon: '🚔', pay: 6000,  effect: p => { p.job='Prison Guard';  p.jobPay=6000;  return p.name+' is guarding the pen! Payday: $6,000'; } },
-    { name: 'Realtor',        icon: '🏠', pay: 8000,  effect: p => { p.job='Realtor';       p.jobPay=8000;  return p.name+' is selling houses! Payday: $8,000'; } },
-    { name: 'Microsoft',      icon: '💻', pay: 12000, effect: p => { p.job='Microsoft';     p.jobPay=12000; return p.name+' landed a tech job at Microsoft! Payday: $12,000'; } },
-    { name: 'Got Fired!',     icon: '🔥', pay: 2000,  effect: p => { p.job='Unemployed';    p.jobPay=2000;  return p.name+' got FIRED! Back to Unemployed. Payday: $2,000'; } },
-    { name: 'Got Fired!',     icon: '🔥', pay: 2000,  effect: p => { p.job='Unemployed';    p.jobPay=2000;  return p.name+' got FIRED again! Payday: $2,000'; } },
+    { name: 'Got Hired!',  icon: '💼', effect: p => {
+        const pool = getAvailableJobs(p).filter(j => j.pay > p.jobPay);
+        if (pool.length === 0) return p.name + ' already has the best job available right now!';
+        const j = pool[Math.floor(Math.random()*pool.length)];
+        p.job = j.name; p.jobPay = j.pay;
+        return p.name + ' got hired as ' + j.icon + ' ' + j.name + '! Payday: $' + j.pay.toLocaleString();
+    }},
+    { name: 'Got Hired!',  icon: '💼', effect: p => {
+        const pool = getAvailableJobs(p).filter(j => j.pay > p.jobPay);
+        if (pool.length === 0) return p.name + ' already has the best job available right now!';
+        const j = pool[Math.floor(Math.random()*pool.length)];
+        p.job = j.name; p.jobPay = j.pay;
+        return p.name + ' got hired as ' + j.icon + ' ' + j.name + '! Payday: $' + j.pay.toLocaleString();
+    }},
+    { name: 'Got Fired!',  icon: '🔥', effect: p => {
+        p.job = 'Unemployed'; p.jobPay = 2000;
+        return p.name + ' got FIRED! Back to Unemployed. Payday: $2,000';
+    }},
+    { name: 'Got Fired!',  icon: '🔥', effect: p => {
+        p.job = 'Unemployed'; p.jobPay = 2000;
+        return p.name + ' got FIRED again! Payday: $2,000';
+    }},
 ];
 
 // ── Job Office Space ──────────────────────────────────────
 function handleJobOffice(player) {
-    const jobs = [
-        { name: 'Dog Walker',     icon: '🐕', pay: 500   },
-        { name: 'Fruit Picker',   icon: '🍎', pay: 800   },
-        { name: 'Wendys',         icon: '🍔', pay: 2400  },
-        { name: 'Walmart',        icon: '🛒', pay: 2800  },
-        { name: 'Factory Worker', icon: '🏭', pay: 3200  },
-        { name: 'Trash Collector',icon: '🗑️', pay: 3500  },
-        { name: 'House Cleaner',  icon: '🧹', pay: 3800  },
-        { name: 'Security',       icon: '🔒', pay: 4000  },
-        { name: 'DoorDash',       icon: '🚗', pay: 3000  },
-        { name: 'Amazon Driver',  icon: '📦', pay: 5000  },
-        { name: 'Police',         icon: '👮', pay: 5500  },
-        { name: 'Prison Guard',   icon: '🚔', pay: 6000  },
-        { name: 'Realtor',        icon: '🏠', pay: 8000  },
-        { name: 'Microsoft',      icon: '💻', pay: 12000 },
-    ];
-    // Pick a random job that pays more than current (or any if unemployed)
-    const better = jobs.filter(j => j.pay > player.jobPay);
-    const pool = better.length > 0 ? better : jobs;
+    const available = getAvailableJobs(player);
+    const tierLabel = getTierLabel(player.laps || 0);
+
+    // Offer a random job from available pool (can be any tier they've unlocked)
+    // Bias toward jobs better than current
+    const better = available.filter(j => j.pay > player.jobPay);
+    const pool = better.length > 0 ? better : available;
     const offer = pool[Math.floor(Math.random() * pool.length)];
+
+    // Show what's unlocked next if not max tier
+    const turns = player.turnsPlayed;
+    const laps = player.laps || 0;
+    let nextUnlock = '';
+    if (laps < 25)  nextUnlock = '\nEntry-level jobs unlock at Lap 25. (' + (25-laps) + ' laps away)';
+    else if (laps < 50) nextUnlock = '\nMid-level jobs unlock at Lap 50. (' + (50-laps) + ' laps away)';
+    else if (laps < 75) nextUnlock = '\nTop jobs unlock at Lap 75. (' + (75-laps) + ' laps away)';
+    else nextUnlock = '\nAll jobs unlocked — Senior Level!';
 
     const popup = document.getElementById('popup');
     const content = popup.querySelector('.popup-content');
-    document.getElementById('popupTitle').textContent = '💼 Job Office';
+    document.getElementById('popupTitle').textContent = '💼 Job Office — ' + tierLabel;
     document.getElementById('popupMessage').textContent =
         player.name + ', job offer: ' + offer.icon + ' ' + offer.name +
         ' | Payday: $' + offer.pay.toLocaleString() +
-        '\nCurrent: ' + player.job + ' | $' + player.jobPay.toLocaleString();
+        '\nCurrent: ' + player.job + ' ($' + player.jobPay.toLocaleString() + ')' +
+        nextUnlock;
     content.className = 'popup-content popup-good';
     popup.classList.remove('hidden');
     content.querySelectorAll('button').forEach(b => b.remove());
@@ -1154,7 +1254,7 @@ function handleJobCard(player) {
     const card = drawCard(JOB_CARDS);
     const result = card.effect(player);
     renderPlayerBar();
-    const isGood = card.pay > 2000 && card.name !== 'Got Fired!';
+    const isGood = !result.includes('FIRED') && !result.includes('best job');
     showCardOverlay(card.icon, 'JOB CARD', card.name, result, isGood ? 'good' : 'bad');
     setTimeout(() => { hideCardOverlay(); checkWinThenEnd(player); }, 5000);
 }
