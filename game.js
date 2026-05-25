@@ -1,5 +1,5 @@
 // ============================================================
-//  CHAOS - The Game of Life  |  game.js
+//  CHAOS - The Game of Life  |  game.js  (v3 — 21 updates)
 // ============================================================
 
 let gameState = {
@@ -9,331 +9,326 @@ let gameState = {
     winGoal: 100000,
     currentSetupPlayer: 0,
     phase: 'setup',
-    waitingForHoopty: false,
+    waitingForMove: false,   // #14 — player must click a space to move
+    pendingSteps: 0,
+    pendingPlayer: null,
+    stealContext: null,
 };
-
 let tempSetup = { avatar: '' };
 
-// ── Housing ──────────────────────────────────────────────
-const HOUSING = [
-    { level: 0,  name: 'Homeless',      icon: '🏚️', price: 0      },
-    { level: 1,  name: 'Car Living',    icon: '🚗', price: 0      },
-    { level: 2,  name: "Friend's Couch",icon: '🛋️', price: 500    },
-    { level: 3,  name: 'Apartment',     icon: '🏢', price: 2000   },
-    { level: 4,  name: 'Mobile Home',   icon: '🏠', price: 4000   },
-    { level: 5,  name: 'RV',            icon: '🚌', price: 6000   },
-    { level: 6,  name: 'Duplex',        icon: '🏘️', price: 10000  },
-    { level: 7,  name: 'Studio',        icon: '🏙️', price: 15000  },
-    { level: 8,  name: '1 Bedroom',     icon: '🏡', price: 20000  },
-    { level: 9,  name: '2 Bedroom',     icon: '🏡', price: 30000  },
-    { level: 10, name: '3 Bedroom',     icon: '🏠', price: 45000  },
-    { level: 11, name: '4 Bedroom',     icon: '🏠', price: 65000  },
-    { level: 12, name: 'Skyline Apt',   icon: '🌆', price: 90000  },
-    { level: 13, name: 'Mansion',       icon: '🏰', price: 150000 },
-];
-
-// ── Cars ─────────────────────────────────────────────────
-const CARS = [
-    { level: 0,  name: 'No Car',      icon: '🚶', price: 0,     impound: 0,   isHoopty: false },
-    { level: 1,  name: 'Bike',        icon: '🚲', price: 200,   impound: 50,  isHoopty: false },
-    { level: 2,  name: 'Hoopty',      icon: '🚗', price: 1000,  impound: 100, isHoopty: true  },
-    { level: 3,  name: 'Daily Fixer', icon: '🚙', price: 3000,  impound: 150, isHoopty: false },
-    { level: 4,  name: 'Gas Car',     icon: '🚗', price: 8000,  impound: 200, isHoopty: false },
-    { level: 5,  name: 'Hybrid',      icon: '🚘', price: 14000, impound: 250, isHoopty: false },
-    { level: 6,  name: 'Electric',    icon: '⚡',  price: 22000, impound: 300, isHoopty: false },
-    { level: 7,  name: 'Motorcycle',  icon: '🏍️', price: 10000, impound: 200, isHoopty: false },
-    { level: 8,  name: 'Truck',       icon: '🚚', price: 18000, impound: 300, isHoopty: false },
-    { level: 9,  name: 'Classic Car', icon: '🏎️', price: 35000, impound: 500, isHoopty: false },
-    { level: 10, name: 'Sports Car',  icon: '🚀', price: 60000, impound: 800, isHoopty: false },
-];
-
-// ── Job Paydays ───────────────────────────────────────────
-const JOB_PAYS = {
-    'Unemployed': 2000, 'Dog Walker': 500, 'Fruit Picker': 800,
-    'Wendys': 2400, 'Walmart': 2800, 'Factory Worker': 3200,
-    'Trash Collector': 3500, 'House Cleaner': 3800, 'Security': 4000,
-    'DoorDash': 3000, 'Farmer': 3500, 'Catering': 4000, 'Labor': 4500,
-    'Amazon Driver': 5000, 'Police': 5500, 'Prison Guard': 6000,
-    'Realtor': 8000, 'Microsoft': 12000,
-};
-
-// ── 40 Good Cards ─────────────────────────────────────────
-const GOOD_CARDS = [
-    { name: 'Tax Refund',          icon: '📋', effect: p => { p.money += 500;  return ['+$500', `${p.name} got a tax refund!`]; } },
-    { name: 'Side Hustle',         icon: '💼', effect: p => { p.money += 800;  return ['+$800', `${p.name}'s side hustle paid off!`]; } },
-    { name: 'Lottery Win',         icon: '🎰', effect: p => { p.money += 2000; return ['+$2,000', `${p.name} won the lottery!`]; } },
-    { name: 'Work Bonus',          icon: '💵', effect: p => { if(p.jobPay <= 2000){ return ['Free Pass!', p.name+' is unemployed - no bonus!']; } const b=p.jobPay; p.money+=b; return ['+'+fmt(b), p.name+' got a work bonus!']; } },
-    { name: 'Found $100',          icon: '💰', effect: p => { p.money += 100;  return ['+$100', `${p.name} found $100 on the ground!`]; } },
-    { name: 'Birthday Money',      icon: '🎂', effect: p => { p.money += 300;  return ['+$300', `Happy birthday ${p.name}! Grandma sent $300.`]; } },
-    { name: 'Garage Sale Win',     icon: '🏷️', effect: p => { p.money += 400;  return ['+$400', `${p.name} sold junk for $400!`]; } },
-    { name: 'Scratcher Win',       icon: '🎟️', effect: p => { p.money += 600;  return ['+$600', `${p.name} won $600 on a scratcher!`]; } },
-    { name: 'Free Housing Upgrade',icon: '🏠', effect: p => { const r = upgradeHousing(p,1); return [r.includes('upgraded')?'UPGRADE!':'No change', r]; } },
-    { name: 'Free Car Upgrade',    icon: '🚗', effect: p => { const r = upgradeCar(p,1);     return [r.includes('upgraded')?'UPGRADE!':'No change', r]; } },
-    { name: 'Vacation Pay',        icon: '✈️',  effect: p => { p.money += 1200; return ['+$1,200', `${p.name} cashed in vacation days!`]; } },
-    { name: 'Stock Dividend',      icon: '📈', effect: p => { p.money += 700;  return ['+$700', `${p.name}'s stocks paid dividends!`]; } },
-    { name: 'Overpaid on Taxes',   icon: '💸', effect: p => { p.money += 900;  return ['+$900', `${p.name} overpaid taxes and got money back!`]; } },
-    { name: 'Found Wallet',        icon: '👛', effect: p => { p.money += 250;  return ['+$250', `${p.name} found a wallet and returned it. Reward: $250!`]; } },
-    { name: 'Freelance Job',       icon: '💻', effect: p => { p.money += 1100; return ['+$1,100', `${p.name} landed a freelance gig!`]; } },
-    { name: 'Viral Post',          icon: '📱', effect: p => { p.money += 500;  return ['+$500', `${p.name} went viral and got paid!`]; } },
-    { name: 'Neighbor Owes You',   icon: '🤝', effect: p => { p.money += 350;  return ['+$350', `${p.name}'s neighbor finally paid back $350!`]; } },
-    { name: 'Free Meal',           icon: '🍔', effect: p => { p.money += 50;   return ['+$50', `${p.name} got a free meal. Every dollar counts!`]; } },
-    { name: 'Double Payday',       icon: '💰', effect: p => { p.money += p.jobPay * 2; return [`+${fmt(p.jobPay*2)}`, `${p.name} got a double payday!`]; } },
-    { name: 'Car Raffle Win',      icon: '🏎️', effect: p => { const r = upgradeCar(p,2); return [r.includes('upgraded')?'BIG UPGRADE!':'No change', r]; } },
-    { name: 'Rebate Check',        icon: '📬', effect: p => { p.money += 200;  return ['+$200', `${p.name} got a rebate check in the mail!`]; } },
-    { name: 'Craigslist Flip',     icon: '🛋️', effect: p => { p.money += 450;  return ['+$450', `${p.name} flipped furniture on Craigslist!`]; } },
-    { name: 'Happy Hour',          icon: '🍺', effect: p => { p.happiness = Math.min(10,p.happiness+2); return ['+2 Happiness', `${p.name} had a great time at happy hour!`]; } },
-    { name: 'Got a Raise',         icon: '⬆️',  effect: p => { if(p.jobPay <= 2000){ return ['Free Pass!', p.name+' is unemployed - no raise available!']; } p.jobPay = Math.round(p.jobPay * 1.2); return ['+20% Pay', p.name+' got a 20% raise! New payday: '+fmt(p.jobPay)]; } },
-    { name: 'Insurance Payout',    icon: '📄', effect: p => { p.money += 1500; return ['+$1,500', `${p.name} got an insurance payout!`]; } },
-    { name: 'Estate Check',        icon: '🏛️', effect: p => { p.money += 3000; return ['+$3,000', `${p.name} inherited $3,000 from a distant uncle!`]; } },
-    { name: 'Fantasy League Win',  icon: '🏈', effect: p => { p.money += 800;  return ['+$800', `${p.name} won the fantasy league!`]; } },
-    { name: 'Online Survey',       icon: '📊', effect: p => { p.money += 100;  return ['+$100', `${p.name} did a survey for $100!`]; } },
-    { name: 'Plasma Donation',     icon: '🩸', effect: p => { p.money += 150;  return ['+$150', `${p.name} donated plasma for $150!`]; } },
-    { name: 'Poker Night Win',     icon: '🃏', effect: p => { p.money += 600;  return ['+$600', `${p.name} cleaned up at poker night!`]; } },
-    { name: 'Promoted!',           icon: '🏆', effect: p => { if(p.jobPay <= 2000){ return ['Free Pass!', p.name+' is unemployed - no promotion available!']; } p.jobPay = Math.round(p.jobPay*1.3); return ['+30% Pay', p.name+' got promoted! New payday: '+fmt(p.jobPay)]; } },
-    { name: 'Home Raffle Win',     icon: '🏡', effect: p => { const r = upgradeHousing(p,2); return [r.includes('upgraded')?'BIG UPGRADE!':'Maxed', r]; } },
-    { name: 'Sold Shoes Online',   icon: '👟', effect: p => { p.money += 300;  return ['+$300', `${p.name} sold sneakers online for $300!`]; } },
-    { name: 'Cash Back',           icon: '💳', effect: p => { p.money += 175;  return ['+$175', `${p.name} redeemed credit card cash back!`]; } },
-    { name: 'Found Crypto',        icon: '🪙', effect: p => { p.money += 1000; return ['+$1,000', `${p.name} found an old crypto wallet worth $1,000!`]; } },
-    { name: 'Mowing Lawns',        icon: '🌿', effect: p => { p.money += 200;  return ['+$200', `${p.name} mowed lawns for $200!`]; } },
-    { name: 'Baby Shower Gifts',   icon: '🎁', effect: p => { p.money += 400;  return ['+$400', `${p.name} got $400 in gift cards!`]; } },
-    { name: 'Utility Refund',      icon: '💡', effect: p => { p.money += 120;  return ['+$120', `${p.name} got a utility refund!`]; } },
-    { name: 'Tips Were Fire',      icon: '🔥', effect: p => { p.money += 350;  return ['+$350', `${p.name} had an amazing tip night! +$350`]; } },
-    { name: 'Bet on Sports',       icon: '🏅', effect: p => { p.money += 900;  return ['+$900', `${p.name} won a sports bet! +$900`]; } },
-];
-
-// ── 40 Bad Cards ──────────────────────────────────────────
-const BAD_CARDS = [
-    { name: 'Speeding Ticket',     icon: '🚨', effect: p => { charge(p,200);  return ['-$200', `${p.name} got a speeding ticket!`]; } },
-    { name: 'Car Wreck',           icon: '💥', effect: p => { charge(p,500);  return ['-$500', `${p.name} had a car wreck!`]; } },
-    { name: 'Credit Card Bill',    icon: '💳', effect: p => { charge(p,300);  return ['-$300', `${p.name} has a credit card payment due!`]; } },
-    { name: 'Baby Surprise',       icon: '👶', effect: p => { charge(p,1000); return ['-$1,000', `${p.name} had a baby! There goes the savings!`]; } },
-    { name: 'Dentist',             icon: '🦷', effect: p => { charge(p,400);  return ['-$400', `${p.name} cracked a tooth!`]; } },
-    { name: 'Eye Doctor',          icon: '👁️',  effect: p => { charge(p,250);  return ['-$250', `${p.name} needs new glasses!`]; } },
-    { name: 'Chiropractor',        icon: '💆', effect: p => { charge(p,300);  return ['-$300', `${p.name} threw their back out!`]; } },
-    { name: 'Doctor Visit',        icon: '🏥', effect: p => { charge(p,350);  return ['-$350', `${p.name} is sick and the bill is $350!`]; } },
-    { name: 'Knee Surgery',        icon: '🩺', effect: p => { charge(p,2000); return ['-$2,000', `${p.name} needs knee surgery!`]; } },
-    { name: 'Got Robbed',          icon: '🔫', effect: p => { charge(p,500);  return ['-$500', `${p.name} got robbed!`]; } },
-    { name: 'Groceries',           icon: '🛒', effect: p => { charge(p,150);  return ['-$150', `${p.name} bought groceries. Life is expensive!`]; } },
-    { name: 'Go To Jail',          icon: '⛓️', effect: p => { sendToJail(p);  return ['JAIL!', `${p.name} is going to jail!`]; } },
-    { name: 'Rent Raised',         icon: '🏠', effect: p => { charge(p,500);  return ['-$500', `${p.name}'s landlord raised the rent!`]; } },
-    { name: 'Pipes Burst',         icon: '🚿', effect: p => { if(p.housingLevel < 3){ return ['Free Pass!', p.name+' has no plumbing to burst!']; } charge(p,800);  return ['-$800', p.name+"'s pipes burst!"]; } },
-    { name: 'Flat Tire',           icon: '🔧', effect: p => { if(p.carLevel === 0){ return ['Free Pass!', p.name+' has no car - no flat tire!']; } charge(p,150);  return ['-$150', p.name+' got a flat tire!']; } },
-    { name: 'Engine Blew Up',      icon: '💨', effect: p => { if(p.carLevel === 0){ return ['Free Pass!', p.name+' has no car - no engine to blow!']; } charge(p,1500); return ['-$1,500', p.name+"'s engine blew up!"]; } },
-    { name: 'Fender Bender',       icon: '🚗', effect: p => { if(p.carLevel === 0){ return ['Free Pass!', p.name+' has no car to fender bend!']; } charge(p,400);  return ['-$400', p.name+' had a fender bender!']; } },
-    { name: 'Car Stolen',          icon: '🔑', effect: p => { p.carLevel = Math.max(0,p.carLevel-1); return ['Car Downgraded', `${p.name}'s car got stolen!`]; } },
-    { name: 'IRS Audit',           icon: '📋', effect: p => { const t=p.jobPay*5; charge(p,t); return [`-${fmt(t)}`, `${p.name} got audited! Pay 5x payday!`]; } },
-    { name: 'Party Too Hard',      icon: '🍾', effect: p => { charge(p,600);  return ['-$600', `${p.name} spent $600 partying!`]; } },
-    { name: 'Phone Cracked',       icon: '📱', effect: p => { charge(p,200);  return ['-$200', `${p.name} cracked their phone screen!`]; } },
-    { name: 'Date Night Disaster', icon: '💔', effect: p => { charge(p,300);  return ['-$300', `${p.name} spent $300 on a date that ghosted them!`]; } },
-    { name: 'Prom Night',          icon: '🎓', effect: p => { charge(p,1000); return ['-$1,000', `${p.name} went to prom! -$1,000`]; } },
-    { name: 'Overdraft Fee',       icon: '🏦', effect: p => { charge(p,100);  return ['-$100', `${p.name} overdrafted! -$100 in fees!`]; } },
-    { name: 'Parking Tickets',     icon: '🅿️',  effect: p => { charge(p,250);  return ['-$250', `${p.name} had 5 unpaid parking tickets!`]; } },
-    { name: 'Plumber',             icon: '🔩', effect: p => { charge(p,450);  return ['-$450', `${p.name} paid $450 for a plumber!`]; } },
-    { name: 'Bail Out Friend',     icon: '🤦', effect: p => { charge(p,500);  return ['-$500', `${p.name} bailed out a friend! $500 gone!`]; } },
-    { name: 'Vet Bill',            icon: '🐕', effect: p => { charge(p,600);  return ['-$600', `${p.name}'s dog needed surgery! -$600`]; } },
-    { name: 'Bad Investment',      icon: '📉', effect: p => { charge(p,800);  return ['-$800', `${p.name} lost $800 on a bad investment!`]; } },
-    { name: 'Stolen Wallet',       icon: '👛', effect: p => { charge(p,350);  return ['-$350', `${p.name}'s wallet was stolen! -$350`]; } },
-    { name: 'Identity Theft',      icon: '🎭', effect: p => { charge(p,1000); return ['-$1,000', `${p.name} was a victim of identity theft! -$1,000`]; } },
-    { name: 'Utility Bills',       icon: '💡', effect: p => { charge(p,200);  return ['-$200', `${p.name}'s utility bills skyrocketed! -$200`]; } },
-    { name: 'Car Registration',    icon: '📄', effect: p => { charge(p,180);  return ['-$180', `${p.name}'s car registration is due! -$180`]; } },
-    { name: 'Subscriptions',       icon: '📺', effect: p => { charge(p,120);  return ['-$120', `${p.name} forgot to cancel 6 subscriptions! -$120`]; } },
-    { name: 'Move Back w/ Parents',icon: '🏚️', effect: p => { p.housingLevel=Math.max(0,p.housingLevel-2); return ['Housing Downgraded', `${p.name} had to move back with the parents!`]; } },
-    { name: 'Roof Caved In',       icon: '🏠', effect: p => { if(p.housingLevel < 3){ return ['Free Pass!', p.name+' has no roof to cave in!']; } charge(p,1200); return ['-$1,200', p.name+"'s roof caved in! -$1,200"]; } },
-    { name: 'Divorce',             icon: '💔', effect: p => { const h=Math.floor(p.money*0.3); charge(p,h); return [`-${fmt(h)}`, `${p.name} is getting divorced! Lost 30% of savings!`]; } },
-    { name: 'Gambling Debt',       icon: '🎲', effect: p => { charge(p,700);  return ['-$700', `${p.name} owes $700 in gambling debt!`]; } },
-    { name: 'Medical Bills',       icon: '🏥', effect: p => { charge(p,1800); return ['-$1,800', `${p.name} got a massive medical bill! -$1,800`]; } },
-    { name: 'DUI',                 icon: '🍺', effect: p => { charge(p,2500); sendToJail(p); return ['-$2,500 + JAIL', `${p.name} got a DUI! Pay $2,500 and go to jail!`]; } },
-];
-
-// ── 40 Sarcastic Cards ────────────────────────────────────
-const SARCASTIC_CARDS = [
-    { name: 'Congratulations!',    icon: '🎉', effect: p => { charge(p,100);  return ['-$100', `Congrats ${p.name}! You found a way to lose $100 doing nothing!`]; } },
-    { name: 'Great Job!',          icon: '👏', effect: p => { charge(p,50);   return ['-$50', `Amazing work ${p.name}! You somehow owe $50 for existing.`]; } },
-    { name: 'You\'re So Smart',    icon: '🧠', effect: p => { charge(p,300);  return ['-$300', `${p.name} made a "genius" investment. -$300. Big brain moves!`]; } },
-    { name: 'Free Money!',         icon: '💸', effect: p => { charge(p,200);  return ['-$200', `${p.name} found "free money"! Just kidding. -$200 in fees.`]; } },
-    { name: 'You Got This!',       icon: '💪', effect: p => { charge(p,400);  return ['-$400', `"You got this!" said no one. -$400`]; } },
-    { name: 'Living Your Best Life',icon:'🌟', effect: p => { charge(p,250);  return ['-$250', `${p.name} is living their best life... -$250 later.`]; } },
-    { name: 'Totally Adulting',    icon: '🧾', effect: p => { charge(p,350);  return ['-$350', `${p.name} is crushing adulting! Just lost $350.`]; } },
-    { name: 'Such a Deal!',        icon: '🏷️', effect: p => { charge(p,500);  return ['-$500', `${p.name} found a "deal"! Only cost $500 extra.`]; } },
-    { name: 'Smooth Move',         icon: '😎', effect: p => { charge(p,600);  return ['-$600', `Smooth move ${p.name}. Real smooth. -$600`]; } },
-    { name: 'Big Plans',           icon: '📝', effect: p => { charge(p,150);  return ['-$150', `${p.name} had big plans. They cost $150 and went nowhere.`]; } },
-    { name: 'Winning at Life',     icon: '🏆', effect: p => { charge(p,100);  return ['-$100', `${p.name} is WINNING at life! That's why they lost $100.`]; } },
-    { name: 'Peak Performance',    icon: '📊', effect: p => { charge(p,200);  return ['-$200', `${p.name} is at peak performance... of losing money!`]; } },
-    { name: 'New Year New You',    icon: '🥂', effect: p => { charge(p,300);  return ['-$300', `New year, new you! Same broke ${p.name}. -$300`]; } },
-    { name: 'Self Care',           icon: '🛁', effect: p => { charge(p,400);  return ['-$400', `${p.name} needed "self care." Therapist bill: $400.`]; } },
-    { name: 'Manifesting',         icon: '✨', effect: p => { charge(p,0);    return ['Nothing', `${p.name} manifested wealth. The universe said no.`]; } },
-    { name: 'Side Hustle',         icon: '😅', effect: p => { charge(p,200);  return ['-$200', `${p.name}'s side hustle cost more to set up than it made.`]; } },
-    { name: 'Investment Guru',     icon: '📉', effect: p => { charge(p,800);  return ['-$800', `${p.name} became an investment guru. -$800 says otherwise.`]; } },
-    { name: 'Networking Event',    icon: '🤝', effect: p => { charge(p,150);  return ['-$150', `${p.name} networked. Cost $150. Got zero jobs.`]; } },
-    { name: 'Meal Prepping',       icon: '🥗', effect: p => { charge(p,100);  return ['-$100', `${p.name} meal prepped. Bought $100 of food, ate pizza anyway.`]; } },
-    { name: 'Going to the Gym',    icon: '💪', effect: p => { charge(p,50);   return ['-$50', `${p.name} signed up for a gym. Went once. -$50/month forever.`]; } },
-    { name: 'Reading the Room',    icon: '📖', effect: p => { charge(p,0);    return ['Nothing', `${p.name} read the room. The room said nothing. Lost nothing.`]; } },
-    { name: 'Hot Take',            icon: '🌶️', effect: p => { charge(p,300);  return ['-$300', `${p.name} posted a hot take online. Got cancelled. Lost $300.`]; } },
-    { name: 'Influencer Life',     icon: '📸', effect: p => { charge(p,500);  return ['-$500', `${p.name} bought props for content. 3 views. -$500`]; } },
-    { name: 'Life Hack',           icon: '🔧', effect: p => { charge(p,250);  return ['-$250', `${p.name}'s "life hack" made things worse. -$250`]; } },
-    { name: 'Organic Groceries',   icon: '🥦', effect: p => { charge(p,200);  return ['-$200', `${p.name} bought organic groceries. Tasted the same. -$200`]; } },
-    { name: 'Crypto Expert',       icon: '🪙', effect: p => { charge(p,700);  return ['-$700', `${p.name} became a crypto expert. Lost $700. Classic.`]; } },
-    { name: 'Starting a Podcast',  icon: '🎙️', effect: p => { charge(p,400);  return ['-$400', `${p.name} started a podcast. 2 listeners. Both were bots. -$400`]; } },
-    { name: 'Being Extra',         icon: '💅', effect: p => { charge(p,350);  return ['-$350', `${p.name} was extra today. Extra expensive. -$350`]; } },
-    { name: 'Main Character Energy',icon:'⭐', effect: p => { charge(p,100);  return ['-$100', `${p.name} had main character energy. Reality disagrees. -$100`]; } },
-    { name: 'Grinding',            icon: '⚙️',  effect: p => { charge(p,0);    return ['Nothing', `${p.name} is grinding! No results. Just grinding.`]; } },
-    { name: 'Positive Vibes Only', icon: '☀️',  effect: p => { charge(p,200);  return ['-$200', `${p.name} chose positive vibes only. Vibes cost $200.`]; } },
-    { name: 'NFT Purchase',        icon: '🖼️',  effect: p => { charge(p,500);  return ['-$500', `${p.name} bought an NFT. It\'s now worth $0. -$500`]; } },
-    { name: 'Detox Cleanse',       icon: '🧃', effect: p => { charge(p,150);  return ['-$150', `${p.name} did a detox cleanse. Body was already fine. -$150`]; } },
-    { name: 'Hustle Culture',      icon: '😤', effect: p => { charge(p,0);    return ['Nothing', `${p.name} hustled for 18 hours. Made $0. Inspirational.`]; } },
-    { name: 'Life Coach',          icon: '🎯', effect: p => { charge(p,600);  return ['-$600', `${p.name} hired a life coach. Was told to "believe." -$600`]; } },
-    { name: 'Trendy Restaurant',   icon: '🍽️', effect: p => { charge(p,200);  return ['-$200', `${p.name} ate at a trendy spot. Tiny portions. -$200`]; } },
-    { name: 'The Algorithm',       icon: '🤖', effect: p => { charge(p,0);    return ['Nothing', `${p.name} fed the algorithm. The algorithm took nothing. This time.`]; } },
-    { name: 'Going Viral',         icon: '📣', effect: p => { charge(p,100);  return ['-$100', `${p.name} went viral for something embarrassing. -$100 in dignity.`]; } },
-    { name: 'Vision Board',        icon: '🗂️', effect: p => { charge(p,50);   return ['-$50', `${p.name} made a vision board. Vision: still broke. Cost: $50`]; } },
-    { name: 'Morning Routine',     icon: '⏰', effect: p => { charge(p,0);    p.happiness=Math.max(0,p.happiness-1); return ['-1 Happiness', `${p.name} woke up at 5am. Still miserable. -1 Happiness.`]; } },
-];
-
-// ── Board Layout ─────────────────────────────────────────
-// 40 spaces: 4 corners + 16 blanks (4 per side) + 20 action/hustle spaces
-const BOARD_SPACES = [
-    // Bottom row (START → JAIL), spaces 0-10 — 4 blanks: 1,3,6,8
-    { id: 0,  type: 'corner',  icon: '🏁', name: 'START',          desc: 'Begin your new life!' },
-    { id: 1,  type: 'hustle',  icon: '🛻', name: 'Junk Hauling',   desc: 'Haul junk for quick cash!' },
-    { id: 2,  type: 'hustle',  icon: '⛺', name: 'Pop Up Tent',    desc: 'Set up a pop-up shop for quick cash!' },
-    { id: 3,  type: 'hustle',  icon: '🐟', name: 'Fishing Trip',   desc: 'Sell your catch at the market!' },
-    { id: 4,  type: 'house',   icon: '🏠', name: 'House',          desc: 'Buy or upgrade housing!' },
-    { id: 5,  type: 'hustle',  icon: '🎨', name: 'Craft Show',     desc: 'Sell your crafts for cash!' },
-    { id: 6,  type: 'hustle',  icon: '🍕', name: 'Pizza Delivery',  desc: 'Deliver pizzas for tip money!' },
-    { id: 7,  type: 'hustle',  icon: '📦', name: 'Storage Locker', desc: 'Buy a storage locker auction!' },
-    { id: 8,  type: 'hustle',  icon: '📸', name: 'Photography',    desc: 'Shoot photos for quick cash!' },
-    { id: 9,  type: 'jcard',   icon: '📋', name: 'Job Card',       desc: 'Draw a Job Card!' },
-    { id: 10, type: 'corner',  icon: '⛓️', name: 'JAIL',           desc: 'Just Visiting... or IN!' },
-
-    // Right side (JAIL → FREE DAY), spaces 11-19 — 4 blanks: 12,14,17,18
-    { id: 11, type: 'hustle',  icon: '🌮', name: 'Food Truck',     desc: 'Run a food truck for the day!' },
-    { id: 12, type: 'hustle',  icon: '🪟', name: 'Window Washing', desc: 'Wash windows for quick cash!' },
-    { id: 13, type: 'car',     icon: '🚗', name: 'Car Dealer',     desc: 'Buy or upgrade your car!' },
-    { id: 14, type: 'hustle',  icon: '🐕', name: 'Dog Walking',    desc: 'Walk dogs for tip money!' },
-    { id: 15, type: 'payday',  icon: '💰', name: 'PAYDAY',         desc: 'Collect your paycheck!' },
-    { id: 16, type: 'hustle',  icon: '🏷️', name: 'Yard Sale',      desc: 'Hold a yard sale for quick cash!' },
-    { id: 17, type: 'hustle',  icon: '🃏', name: 'Card Games',     desc: 'Play cards for money!' },
-    { id: 18, type: 'hustle',  icon: '🎯', name: 'Odd Jobs',       desc: 'Whatever pays today!' },
-    { id: 19, type: 'bad',     icon: '🏥', name: 'Hospital',       desc: 'Pay $500!' },
-
-    // Top row (FREE DAY → GO TO JAIL), spaces 20-30 — 4 blanks: 21,23,28,29
-    { id: 20, type: 'corner',  icon: '🎁', name: 'FREE DAY',       desc: '+1 Happiness!' },
-    { id: 21, type: 'hustle',  icon: '🧺', name: 'Laundry Service', desc: 'Run a laundry hustle!' },
-    { id: 22, type: 'hustle',  icon: '🎪', name: 'Flea Market',    desc: 'Sell stuff at the flea market!' },
-    { id: 23, type: 'hustle',  icon: '🪴', name: 'Plant Selling',  desc: 'Sell plants from your yard!' },
-    { id: 24, type: 'bad',     icon: '📋', name: 'TAXES',          desc: 'Pay 10% of total assets!' },
-    { id: 25, type: 'house',   icon: '🏠', name: 'House',          desc: 'Buy or upgrade housing!' },
-    { id: 26, type: 'hustle',  icon: '🚜', name: 'Scrap Metal',    desc: 'Sell scrap metal for quick cash!' },
-    { id: 27, type: 'good',    icon: '✈️',  name: 'Vacation Pay',   desc: 'Collect $1,200!' },
-    { id: 28, type: 'hustle',  icon: '🎮', name: 'Gaming Tourney', desc: 'Enter a gaming tournament!' },
-    { id: 29, type: 'hustle',  icon: '🧁', name: 'Bake Sale',      desc: 'Sell baked goods!' },
-    { id: 30, type: 'corner',  icon: '🚔', name: 'GO TO JAIL',     desc: 'Go directly to Jail!' },
-
-    // Left side (GO TO JAIL → START), spaces 31-39 — 4 blanks: 31,34,37,38
-    { id: 31, type: 'hustle',  icon: '🚲', name: 'Bike Courier',   desc: 'Deliver packages by bike!' },
-    { id: 32, type: 'hustle',  icon: '🍋', name: 'Lemonade Stand', desc: 'Run a lemonade stand!' },
-    { id: 33, type: 'hustle',  icon: '🎸', name: 'Busking',        desc: 'Play music on the street!' },
-    { id: 34, type: 'hustle',  icon: '🪣', name: 'Power Washing',  desc: 'Power wash driveways!' },
-    { id: 35, type: 'hustle',  icon: '🌿', name: 'Lawn Mowing',    desc: 'Mow lawns for quick cash!' },
-    { id: 36, type: 'hustle',  icon: '🧹', name: 'Car Wash',       desc: 'Run a car wash!' },
-    { id: 37, type: 'hustle',  icon: '🐠', name: 'Fish Tank Setup', desc: 'Set up fish tanks for people!' },
-    { id: 38, type: 'hustle',  icon: '🎲', name: 'Street Dice',    desc: 'Roll dice for money on the corner!' },
-    { id: 39, type: 'job',     icon: '💼', name: 'Job Office',     desc: 'Get or change your job!' },
-];
-
-// Clockwise: START=bottom-right corner, goes left along bottom,
-// up left side, right along top, down right side back to jail
-function getGridPosition(id) {
-    if (id <= 10)  return { row: 10, col: 10 - id };       // bottom: right→left
-    if (id <= 20)  return { row: 10-(id-10), col: 0 };     // left: bottom→top
-    if (id <= 30)  return { row: 0, col: id-20 };           // top: left→right
-    return { row: id-30, col: 10 };                         // right: top→bottom
-}
-
-// ── Helpers ───────────────────────────────────────────────
+// ── HELPERS ──────────────────────────────────────────────
 function charge(p, amt) { p.money = Math.max(0, p.money - amt); }
 function fmt(n) { return '$' + Math.floor(n).toLocaleString(); }
+function rnd(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-function sendToJail(p) {
+// ── HAPPINESS (#16) ───────────────────────────────────────
+// Scale 0–10, starts at 5.0, +0.5 good / -0.5 bad
+function adjustHappiness(p, delta) {
+    p.happiness = Math.max(0, Math.min(10, +(p.happiness + delta).toFixed(1)));
+}
+
+// ── FINE SCALING (#17) ───────────────────────────────────
+// Fines scale up based on player's total assets / tier
+function scaledFine(p, base) {
+    const assets = p.money + HOUSING[p.housingLevel].price + CARS[p.carLevel].price;
+    let multiplier = 1;
+    if (assets > 200000) multiplier = 3;
+    else if (assets > 100000) multiplier = 2.5;
+    else if (assets > 50000) multiplier = 2;
+    else if (assets > 20000) multiplier = 1.5;
+    return Math.round(base * multiplier);
+}
+
+// ── HOUSING ──────────────────────────────────────────────
+const HOUSING = [
+    { level:0,  name:'Homeless',       icon:'🏚️',  price:0,      rent:0,    lapReq:0  },
+    { level:1,  name:'Car Living',     icon:'🚗',  price:0,      rent:0,    lapReq:0  },
+    { level:2,  name:"Friend's Couch", icon:'🛋️',  price:500,    rent:100,  lapReq:0  },
+    { level:3,  name:'Apartment',      icon:'🏢',  price:2000,   rent:300,  lapReq:0  },
+    { level:4,  name:'Mobile Home',    icon:'🏠',  price:4000,   rent:400,  lapReq:25 },
+    { level:5,  name:'RV',             icon:'🚌',  price:6000,   rent:500,  lapReq:25 },
+    { level:6,  name:'Duplex',         icon:'🏘️',  price:10000,  rent:700,  lapReq:25 },
+    { level:7,  name:'Studio',         icon:'🏙️',  price:15000,  rent:900,  lapReq:50 },
+    { level:8,  name:'1 Bedroom',      icon:'🏡',  price:20000,  rent:1100, lapReq:50 },
+    { level:9,  name:'2 Bedroom',      icon:'🏡',  price:30000,  rent:1400, lapReq:50 },
+    { level:10, name:'3 Bedroom',      icon:'🏠',  price:45000,  rent:1800, lapReq:75 },
+    { level:11, name:'4 Bedroom',      icon:'🏠',  price:65000,  rent:2200, lapReq:75 },
+    { level:12, name:'Skyline Apt',    icon:'🌆',  price:90000,  rent:3000, lapReq:75 },
+    { level:13, name:'Mansion',        icon:'🏰',  price:150000, rent:0,    lapReq:100},
+];
+
+// ── CARS ─────────────────────────────────────────────────
+const CARS = [
+    { level:0,  name:'No Car',      icon:'🚶',  price:0,     payment:0,   impound:0,   isHoopty:false, isBike:false },
+    { level:1,  name:'Bike',        icon:'🚲',  price:200,   payment:0,   impound:50,  isHoopty:false, isBike:true  },
+    { level:2,  name:'Hoopty',      icon:'🚗',  price:1000,  payment:100, impound:150, isHoopty:true,  isBike:false },
+    { level:3,  name:'Daily Fixer', icon:'🚙',  price:3000,  payment:150, impound:200, isHoopty:false, isBike:false },
+    { level:4,  name:'Gas Car',     icon:'🚗',  price:8000,  payment:250, impound:250, isHoopty:false, isBike:false },
+    { level:5,  name:'Hybrid',      icon:'🚘',  price:14000, payment:400, impound:300, isHoopty:false, isBike:false },
+    { level:6,  name:'Electric',    icon:'⚡',   price:22000, payment:550, impound:400, isHoopty:false, isBike:false },
+    { level:7,  name:'Motorcycle',  icon:'🏍️',  price:10000, payment:300, impound:250, isHoopty:false, isBike:false },
+    { level:8,  name:'Truck',       icon:'🚚',  price:18000, payment:450, impound:350, isHoopty:false, isBike:false },
+    { level:9,  name:'Classic Car', icon:'🏎️',  price:35000, payment:700, impound:500, isHoopty:false, isBike:false },
+    { level:10, name:'Sports Car',  icon:'🚀',  price:60000, payment:1000,impound:800, isHoopty:false, isBike:false },
+];
+
+// ── BOARD SPACES (#12 — 1 housing, 1 car dealer, 1 realtor per side) ──
+const BOARD_SPACES = [
+    // Bottom (START → JAIL) id 0–10
+    { id:0,  type:'corner',  icon:'🏁', name:'START',          desc:'Begin your new life!' },
+    { id:1,  type:'hustle',  icon:'🛻', name:'Junk Hauling',   desc:'Haul junk for quick cash!' },
+    { id:2,  type:'hustle',  icon:'⛺', name:'Pop Up Tent',    desc:'Set up a pop-up shop!' },
+    { id:3,  type:'hustle',  icon:'🐟', name:'Fishing Trip',   desc:'Sell your catch!' },
+    { id:4,  type:'car',     icon:'🚗', name:'AutoZone Deals', desc:'Budget cars — buy or upgrade!' },
+    { id:5,  type:'hustle',  icon:'🎨', name:'Craft Show',     desc:'Sell your crafts!' },
+    { id:6,  type:'hustle',  icon:'🍕', name:'Pizza Delivery', desc:'Deliver for tip money!' },
+    { id:7,  type:'house',   icon:'🏠', name:'Budget Housing', desc:'Affordable homes — buy/upgrade!', tier:'budget' },
+    { id:8,  type:'hustle',  icon:'📸', name:'Photography',    desc:'Shoot photos for cash!' },
+    { id:9,  type:'realtor', icon:'🏢', name:'City Realty',    desc:'Entry-level realtor — buy anything you qualify for!' },
+    { id:10, type:'corner',  icon:'⛓️', name:'JAIL',           desc:'Just Visiting... or IN!' },
+
+    // Right (JAIL → FREE DAY) id 11–20
+    { id:11, type:'hustle',  icon:'🌮', name:'Food Truck',     desc:'Run a food truck!' },
+    { id:12, type:'hustle',  icon:'🪟', name:'Window Washing', desc:'Wash windows for cash!' },
+    { id:13, type:'car',     icon:'🚘', name:'Mid Auto Sales', desc:'Mid-range cars — $3k–$22k!' },
+    { id:14, type:'hustle',  icon:'🐕', name:'Dog Walking',    desc:'Walk dogs for tips!' },
+    { id:15, type:'payday',  icon:'💰', name:'PAYDAY',         desc:'Collect your paycheck!' },
+    { id:16, type:'hustle',  icon:'🏷️', name:'Yard Sale',      desc:'Hold a yard sale!' },
+    { id:17, type:'hustle',  icon:'🃏', name:'Card Games',     desc:'Play cards for money!' },
+    { id:18, type:'house',   icon:'🏘️', name:'Mid Housing',    desc:'Mid-range homes $5k–$30k!', tier:'mid' },
+    { id:19, type:'bad',     icon:'🏥', name:'Hospital',       desc:'Emergency visit!' },
+    { id:20, type:'corner',  icon:'🎁', name:'FREE DAY',       desc:'+0.5 Happiness!' },
+
+    // Top (FREE DAY → GO TO JAIL) id 21–30
+    { id:21, type:'hustle',  icon:'🧺', name:'Laundry Service',desc:'Run a laundry hustle!' },
+    { id:22, type:'hustle',  icon:'🎪', name:'Flea Market',    desc:'Sell at the flea market!' },
+    { id:23, type:'realtor', icon:'🏡', name:'Prestige Homes', desc:'Luxury realtor — high end listings!', tier:'luxury' },
+    { id:24, type:'bad',     icon:'📋', name:'TAXES',          desc:'Pay 10% of total assets!' },
+    { id:25, type:'hustle',  icon:'🪴', name:'Plant Selling',  desc:'Sell plants from your yard!' },
+    { id:26, type:'hustle',  icon:'🚜', name:'Scrap Metal',    desc:'Sell scrap metal!' },
+    { id:27, type:'car',     icon:'🏎️', name:'Luxury Motors',  desc:'High-end cars $14k–$60k!' },
+    { id:28, type:'hustle',  icon:'🎮', name:'Gaming Tourney', desc:'Enter a gaming tournament!' },
+    { id:29, type:'good',    icon:'✈️',  name:'Vacation Pay',  desc:'Collect $1,200!' },
+    { id:30, type:'corner',  icon:'🚔', name:'GO TO JAIL',     desc:'Go directly to Jail!' },
+
+    // Left (GO TO JAIL → START) id 31–39
+    { id:31, type:'hustle',  icon:'🚲', name:'Bike Courier',   desc:'Deliver packages by bike!' },
+    { id:32, type:'hustle',  icon:'🍋', name:'Lemonade Stand', desc:'Run a lemonade stand!' },
+    { id:33, type:'hustle',  icon:'🎸', name:'Busking',        desc:'Play music on the street!' },
+    { id:34, type:'house',   icon:'🏰', name:'Elite Estates',  desc:'Luxury homes $45k–$150k!', tier:'luxury' },
+    { id:35, type:'hustle',  icon:'🌿', name:'Lawn Mowing',    desc:'Mow lawns for cash!' },
+    { id:36, type:'hustle',  icon:'🧹', name:'Car Wash',       desc:'Run a car wash!' },
+    { id:37, type:'realtor', icon:'🏦', name:'Metro Realty',   desc:'Mid-tier realtor — mid/luxury homes!', tier:'mid' },
+    { id:38, type:'hustle',  icon:'🎲', name:'Street Dice',    desc:'Roll dice for money!' },
+    { id:39, type:'job',     icon:'💼', name:'Job Office',     desc:'Get or change your job!' },
+];
+
+function getGridPosition(id) {
+    if (id <= 10) return { row:10, col:10-id };
+    if (id <= 20) return { row:10-(id-10), col:0 };
+    if (id <= 30) return { row:0, col:id-20 };
+    return { row:id-30, col:10 };
+}
+
+// ── JAIL REASONS (#20) ───────────────────────────────────
+const JAIL_REASONS = [
+    'Possession', 'Trespassing', 'Public Intoxication', 'Unpaid Fines',
+    'Disorderly Conduct', 'Shoplifting', 'Assault', 'Outstanding Warrant',
+    'Parole Violation', 'Drug Charges',
+];
+
+function sendToJail(p, reason) {
     p.position = 10;
     p.inJail = true;
     p.jailTurns = 0;
-    if (p.carLevel > 0) p.carImpounded = true;
+    p.jailReason = reason || rnd(JAIL_REASONS);
+    p.jailMaxTurns = Math.ceil(Math.random() * 5); // 1–5 turns
+    p.jailFine = 100 + Math.floor(Math.random() * 6) * 100; // $100–$600
+    // #6 — lose transportation on arrest
+    if (p.carLevel > 0) {
+        p.vehicleSeized = p.carLevel;
+        p.carLevel = 0;
+        p.carImpounded = true;
+    }
 }
 
-// Housing lap requirements: levels 0-3 free, 4-7 need lap 25+, 8-10 need lap 50+, 11-13 need lap 75+
-function housingLapRequired(level) {
-    if (level >= 11) return 75;
-    if (level >= 8)  return 50;
-    if (level >= 4)  return 25;
+// ── JOB TIERS ────────────────────────────────────────────
+const ALL_JOBS = [
+    { name:'Dog Walker',     icon:'🐕', pay:500,   tier:0 },
+    { name:'Fruit Picker',   icon:'🍎', pay:800,   tier:0 },
+    { name:'Wendys',         icon:'🍔', pay:2400,  tier:0 },
+    { name:'Walmart',        icon:'🛒', pay:2800,  tier:0 },
+    { name:'DoorDash',       icon:'🚗', pay:3000,  tier:0 },
+    { name:'Factory Worker', icon:'🏭', pay:3200,  tier:1 },
+    { name:'Trash Collector',icon:'🗑️', pay:3500,  tier:1 },
+    { name:'House Cleaner',  icon:'🧹', pay:3800,  tier:1 },
+    { name:'Security',       icon:'🔒', pay:4000,  tier:1 },
+    { name:'Farmer',         icon:'🌾', pay:3500,  tier:1 },
+    { name:'Amazon Driver',  icon:'📦', pay:5000,  tier:2 },
+    { name:'Police',         icon:'👮', pay:5500,  tier:2 },
+    { name:'Prison Guard',   icon:'🚔', pay:6000,  tier:2 },
+    { name:'Labor',          icon:'👷', pay:4500,  tier:2 },
+    { name:'Catering',       icon:'🍽️', pay:4000,  tier:2 },
+    { name:'Realtor',        icon:'🏠', pay:8000,  tier:3 },
+    { name:'Microsoft',      icon:'💻', pay:12000, tier:3 },
+];
+
+function getTier(laps) {
+    if (laps >= 75) return 3;
+    if (laps >= 50) return 2;
+    if (laps >= 25) return 1;
     return 0;
 }
+function getTierLabel(laps) {
+    if (laps >= 75)  return 'Senior Level (Lap 75+)';
+    if (laps >= 50)  return 'Mid Level (Lap 50+)';
+    if (laps >= 25)  return 'Entry Level (Lap 25+)';
+    return 'Starting Out';
+}
+function getAvailableJobs(p) {
+    const maxTier = getTier(p.laps || 0);
+    return ALL_JOBS.filter(j => j.tier <= maxTier);
+}
+
+// ── CARD DECKS ───────────────────────────────────────────
+// (happiness adjustments embedded #16)
 
 function upgradeHousing(p, lvls) {
-    let nl = Math.min(HOUSING.length-1, p.housingLevel + 1);
+    const nl = Math.min(HOUSING.length-1, p.housingLevel + 1);
     if (nl === p.housingLevel) return p.name + ' already has max housing!';
-
-    // Block Car Living (level 1) if player has no car
-    if (nl === 1 && p.carLevel === 0) {
-        return p.name + " can't live in a car — buy a car first!";
-    }
-
-    // Check lap requirement
-    const lapsNeeded = housingLapRequired(nl);
-    const laps = p.laps || 0;
-    if (laps < lapsNeeded) {
-        return p.name + ' needs Lap ' + lapsNeeded + ' to unlock ' + HOUSING[nl].name + '. Currently on Lap ' + laps + '.';
-    }
-
+    if (nl === 1 && p.carLevel === 0) return p.name + " can't live in a car — buy a car first! (#10)";
+    const lapsNeeded = HOUSING[nl].lapReq || 0;
+    if ((p.laps||0) < lapsNeeded) return p.name + ' needs Lap ' + lapsNeeded + ' for ' + HOUSING[nl].name + '.';
     const cost = Math.max(0, HOUSING[nl].price - HOUSING[p.housingLevel].price);
     if (p.money >= cost) {
         p.money -= cost; p.housingLevel = nl;
         animateAssetIcon('apHousingIcon');
         return p.name + ' upgraded to ' + HOUSING[nl].name + '!';
     }
-    return p.name + " can't afford " + HOUSING[nl].name + '. Need ' + fmt(cost) + ', have ' + fmt(p.money) + '.';
+    return p.name + " can't afford " + HOUSING[nl].name + '. Need ' + fmt(cost) + '.';
 }
 
-// Car lap requirements: 0-2 free, 3-5 need lap 25+, 6-8 need lap 50+, 9-10 need lap 75+
 function carLapRequired(level) {
-    if (level >= 9)  return 75;
-    if (level >= 6)  return 50;
-    if (level >= 3)  return 25;
+    if (level >= 9) return 75;
+    if (level >= 6) return 50;
+    if (level >= 3) return 25;
     return 0;
 }
 
 function upgradeCar(p, lvls) {
-    const nl = Math.min(CARS.length-1, p.carLevel + 1);
+    const nl = Math.min(CARS.length-1, p.carLevel + lvls);
     if (nl === p.carLevel) return p.name + ' already has max car!';
-
-    // Check lap requirement
     const lapsNeeded = carLapRequired(nl);
-    const laps = p.laps || 0;
-    if (laps < lapsNeeded) {
-        return p.name + ' needs Lap ' + lapsNeeded + ' to unlock ' + CARS[nl].name + '. Currently on Lap ' + laps + '.';
-    }
-
+    if ((p.laps||0) < lapsNeeded) return p.name + ' needs Lap ' + lapsNeeded + ' for ' + CARS[nl].name + '.';
     const cost = Math.max(0, CARS[nl].price - CARS[p.carLevel].price);
     if (p.money >= cost) {
         p.money -= cost; p.carLevel = nl;
         animateAssetIcon('apCarIcon');
         return p.name + ' upgraded to ' + CARS[nl].name + '!';
     }
-    return p.name + " can't afford " + CARS[nl].name + '. Need ' + fmt(cost) + ', have ' + fmt(p.money) + '.';
+    return p.name + " can't afford " + CARS[nl].name + '. Need ' + fmt(cost) + '.';
 }
 
 function animateAssetIcon(id) {
     const el = document.getElementById(id);
     if (!el) return;
-    el.classList.remove('upgraded');
-    void el.offsetWidth; // force reflow
-    el.classList.add('upgraded');
+    el.classList.remove('upgraded'); void el.offsetWidth; el.classList.add('upgraded');
     setTimeout(() => el.classList.remove('upgraded'), 600);
 }
-
 function drawCard(deck) { return deck[Math.floor(Math.random()*deck.length)]; }
 
-// ── Screens ───────────────────────────────────────────────
+// ── GOOD CARDS (#16 happiness) ────────────────────────────
+const GOOD_CARDS = [
+    { name:'Tax Refund',         icon:'📋', effect:p=>{ p.money+=500; adjustHappiness(p,0.5); return ['+$500','Tax refund!','good']; }},
+    { name:'Side Hustle',        icon:'💼', effect:p=>{ p.money+=800; adjustHappiness(p,0.5); return ['+$800',"Side hustle paid off!",'good']; }},
+    { name:'Lottery Win',        icon:'🎰', effect:p=>{ p.money+=2000; adjustHappiness(p,0.5); return ['+$2,000','Won the lottery!','good']; }},
+    { name:'Work Bonus',         icon:'💵', effect:p=>{ if(p.jobPay<=2000) return ['Free Pass!',p.name+' is unemployed.','sarcastic']; p.money+=p.jobPay; adjustHappiness(p,0.5); return ['+'+fmt(p.jobPay),'Work bonus!','good']; }},
+    { name:'Found $100',         icon:'💰', effect:p=>{ p.money+=100; adjustHappiness(p,0.5); return ['+$100','Found $100 on the ground!','good']; }},
+    { name:'Birthday Money',     icon:'🎂', effect:p=>{ p.money+=300; adjustHappiness(p,0.5); return ['+$300','Grandma sent $300!','good']; }},
+    { name:'Garage Sale Win',    icon:'🏷️', effect:p=>{ p.money+=400; adjustHappiness(p,0.5); return ['+$400','Sold junk for $400!','good']; }},
+    { name:'Scratcher Win',      icon:'🎟️', effect:p=>{ p.money+=600; adjustHappiness(p,0.5); return ['+$600','Won $600 on a scratcher!','good']; }},
+    { name:'Free Housing Upgrade',icon:'🏠',effect:p=>{ const r=upgradeHousing(p,1); adjustHappiness(p,0.5); return [r.includes('upgraded')?'UPGRADE!':'No change',r,'good']; }},
+    { name:'Free Car Upgrade',   icon:'🚗', effect:p=>{ const r=upgradeCar(p,1); adjustHappiness(p,0.5); return [r.includes('upgraded')?'UPGRADE!':'No change',r,'good']; }},
+    { name:'Vacation Pay',       icon:'✈️',  effect:p=>{ p.money+=1200; adjustHappiness(p,0.5); return ['+$1,200','Cashed in vacation days!','good']; }},
+    { name:'Stock Dividend',     icon:'📈', effect:p=>{ p.money+=700; adjustHappiness(p,0.5); return ['+$700','Stocks paid dividends!','good']; }},
+    { name:'Freelance Job',      icon:'💻', effect:p=>{ p.money+=1100; adjustHappiness(p,0.5); return ['+$1,100','Landed a freelance gig!','good']; }},
+    { name:'Got a Raise',        icon:'⬆️',  effect:p=>{ if(p.jobPay<=2000) return ['Free Pass!',p.name+' is unemployed.','sarcastic']; p.jobPay=Math.round(p.jobPay*1.2); adjustHappiness(p,0.5); return ['+20% Pay','Got a 20% raise! Payday: '+fmt(p.jobPay),'good']; }},
+    { name:'Insurance Payout',   icon:'📄', effect:p=>{ p.money+=1500; adjustHappiness(p,0.5); return ['+$1,500','Got an insurance payout!','good']; }},
+    { name:'Estate Check',       icon:'🏛️', effect:p=>{ p.money+=3000; adjustHappiness(p,0.5); return ['+$3,000','Inherited $3,000!','good']; }},
+    { name:'Double Payday',      icon:'💰', effect:p=>{ p.money+=p.jobPay*2; adjustHappiness(p,0.5); return ['+'+fmt(p.jobPay*2),'Double payday!','good']; }},
+    { name:'Promoted!',          icon:'🏆', effect:p=>{ if(p.jobPay<=2000) return ['Free Pass!',p.name+' is unemployed.','sarcastic']; p.jobPay=Math.round(p.jobPay*1.3); adjustHappiness(p,0.5); return ['+30% Pay','Got promoted! Payday: '+fmt(p.jobPay),'good']; }},
+    { name:'Found Crypto',       icon:'🪙', effect:p=>{ p.money+=1000; adjustHappiness(p,0.5); return ['+$1,000','Found an old crypto wallet!','good']; }},
+    { name:'Bet on Sports',      icon:'🏅', effect:p=>{ p.money+=900; adjustHappiness(p,0.5); return ['+$900','Won a sports bet!','good']; }},
+];
+
+const BAD_CARDS = [
+    { name:'Speeding Ticket',    icon:'🚨', effect:p=>{ const f=scaledFine(p,200); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Speeding ticket! -'+fmt(f),'bad']; }},
+    { name:'Car Wreck',          icon:'💥', effect:p=>{ const f=scaledFine(p,500); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Car wreck! -'+fmt(f),'bad']; }},
+    { name:'Baby Surprise',      icon:'👶', effect:p=>{ const f=scaledFine(p,1000); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Baby! There goes the savings!','bad']; }},
+    { name:'Dentist',            icon:'🦷', effect:p=>{ const f=scaledFine(p,400); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Cracked a tooth! -'+fmt(f),'bad']; }},
+    { name:'Doctor Visit',       icon:'🏥', effect:p=>{ const f=scaledFine(p,350); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Sick — bill is -'+fmt(f),'bad']; }},
+    { name:'Knee Surgery',       icon:'🩺', effect:p=>{ const f=scaledFine(p,2000); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Knee surgery! -'+fmt(f),'bad']; }},
+    { name:'Got Robbed',         icon:'🔫', effect:p=>{ const f=scaledFine(p,500); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Got robbed! -'+fmt(f),'bad']; }},
+    { name:'Go To Jail',         icon:'⛓️', effect:p=>{ sendToJail(p); adjustHappiness(p,-0.5); return ['JAIL!',p.name+' is going to jail! Reason: '+p.jailReason,'bad']; }},
+    { name:'Rent Raised',        icon:'🏠', effect:p=>{ const f=scaledFine(p,500); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Landlord raised the rent! -'+fmt(f),'bad']; }},
+    { name:'Pipes Burst',        icon:'🚿', effect:p=>{ if(p.housingLevel<3) return ['Free Pass!',p.name+' has no plumbing.','sarcastic']; const f=scaledFine(p,800); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Pipes burst! -'+fmt(f),'bad']; }},
+    { name:'Engine Blew Up',     icon:'💨', effect:p=>{ if(p.carLevel===0) return ['Free Pass!','No car.','sarcastic']; const f=scaledFine(p,1500); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Engine blew! -'+fmt(f),'bad']; }},
+    { name:'IRS Audit',          icon:'📋', effect:p=>{ const t=p.jobPay*5; charge(p,t); adjustHappiness(p,-0.5); return ['-'+fmt(t),'IRS Audit! Pay 5x payday!','bad']; }},
+    { name:'Identity Theft',     icon:'🎭', effect:p=>{ const f=scaledFine(p,1000); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Identity theft! -'+fmt(f),'bad']; }},
+    { name:'DUI',                icon:'🍺', effect:p=>{ const f=scaledFine(p,2500); charge(p,f); sendToJail(p,'DUI'); adjustHappiness(p,-1); return ['-'+fmt(f)+' + JAIL','DUI! Pay '+fmt(f)+' and go to jail!','bad']; }},
+    { name:'Divorce',            icon:'💔', effect:p=>{ const h=Math.floor(p.money*0.3); charge(p,h); adjustHappiness(p,-1); return ['-'+fmt(h),'Divorced! Lost 30% of savings!','bad']; }},
+    { name:'Medical Bills',      icon:'🏥', effect:p=>{ const f=scaledFine(p,1800); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Massive medical bill! -'+fmt(f),'bad']; }},
+    { name:'Bad Investment',     icon:'📉', effect:p=>{ const f=scaledFine(p,800); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Lost money on bad investment!','bad']; }},
+    { name:'Gambling Debt',      icon:'🎲', effect:p=>{ const f=scaledFine(p,700); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Gambling debt! -'+fmt(f),'bad']; }},
+    { name:'Car Stolen',         icon:'🔑', effect:p=>{ if(p.carLevel===0) return ['Free Pass!','No car.','sarcastic']; p.carLevel=Math.max(0,p.carLevel-1); adjustHappiness(p,-0.5); return ['Car Downgraded','Car got stolen!','bad']; }},
+    { name:'Move Back w/ Parents',icon:'🏚️',effect:p=>{ p.housingLevel=Math.max(0,p.housingLevel-2); adjustHappiness(p,-1); return ['Housing Downgraded','Had to move back with parents!','bad']; }},
+];
+
+const SARCASTIC_CARDS = [
+    { name:"You're So Smart",    icon:'🧠', effect:p=>{ const f=scaledFine(p,300); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'"Genius" investment. -'+fmt(f)+'. Big brain.','sarcastic']; }},
+    { name:'Free Money!',        icon:'💸', effect:p=>{ const f=scaledFine(p,200); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'"Free money!" Just kidding. -'+fmt(f)+' in fees.','sarcastic']; }},
+    { name:'Investment Guru',    icon:'📉', effect:p=>{ const f=scaledFine(p,800); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Became an investment guru. -'+fmt(f)+' says otherwise.','sarcastic']; }},
+    { name:'Influencer Life',    icon:'📸', effect:p=>{ const f=scaledFine(p,500); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Bought props for content. 3 views. -'+fmt(f),'sarcastic']; }},
+    { name:'Crypto Expert',      icon:'🪙', effect:p=>{ const f=scaledFine(p,700); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Crypto expert. Lost '+fmt(f)+'. Classic.','sarcastic']; }},
+    { name:'Starting a Podcast', icon:'🎙️', effect:p=>{ const f=scaledFine(p,400); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Started a podcast. 2 bot listeners. -'+fmt(f),'sarcastic']; }},
+    { name:'NFT Purchase',       icon:'🖼️', effect:p=>{ const f=scaledFine(p,500); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),"Bought an NFT. It's worth $0. -"+fmt(f),'sarcastic']; }},
+    { name:'Life Coach',         icon:'🎯', effect:p=>{ const f=scaledFine(p,600); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Hired a life coach. Was told to "believe." -'+fmt(f),'sarcastic']; }},
+    { name:'Manifesting',        icon:'✨', effect:p=>{ adjustHappiness(p,-0.5); return ['Nothing',p.name+' manifested wealth. Universe said no.','sarcastic']; }},
+    { name:'Morning Routine',    icon:'⏰', effect:p=>{ adjustHappiness(p,-1); return ['-1 Happiness','Woke up at 5am. Still miserable.','sarcastic']; }},
+    { name:'Vision Board',       icon:'🗂️', effect:p=>{ const f=50; charge(p,f); adjustHappiness(p,-0.5); return ['-$50','Made a vision board. Vision: still broke. Cost: $50','sarcastic']; }},
+    { name:'Hot Take',           icon:'🌶️', effect:p=>{ const f=scaledFine(p,300); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Posted a hot take. Got cancelled. Lost '+fmt(f),'sarcastic']; }},
+];
+
+// ── HOUSING CARDS ─────────────────────────────────────────
+const HOUSING_CARDS = [
+    { name:'Free Upgrade!',        icon:'🏠', effect:p=>{ const r=upgradeHousing(p,1); adjustHappiness(p,r.includes('upgraded')?0.5:-0.5); return [r.includes('upgraded')?'UPGRADE!':'No change',r,r.includes('upgraded')?'good':'bad']; }},
+    { name:'Landlord Raised Rent', icon:'🏠', effect:p=>{ if(p.housingLevel<3) return ['Free Pass!',p.name+' has no landlord.','sarcastic']; const f=scaledFine(p,500); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Landlord raised rent! -'+fmt(f),'bad']; }},
+    { name:'Pipes Burst',          icon:'🚿', effect:p=>{ if(p.housingLevel<3) return ['Free Pass!','No plumbing.','sarcastic']; const f=scaledFine(p,800); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Pipes burst! -'+fmt(f),'bad']; }},
+    { name:'Raffle Win!',          icon:'🎉', effect:p=>{ const r=upgradeHousing(p,2); adjustHappiness(p,0.5); return [r.includes('upgraded')?'BIG UPGRADE!':'Maxed',r,'good']; }},
+    { name:'Move Back w/ Parents', icon:'🏚️', effect:p=>{ p.housingLevel=Math.max(0,p.housingLevel-2); adjustHappiness(p,-1); return ['Downgraded','Moved back with the parents!','bad']; }},
+    { name:'Roof Caved In',        icon:'🏠', effect:p=>{ if(p.housingLevel<3) return ['Free Pass!','No roof.','sarcastic']; const f=scaledFine(p,1200); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Roof caved in! -'+fmt(f),'bad']; }},
+    { name:'House Party Damage',   icon:'🎉', effect:p=>{ const f=scaledFine(p,400); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Wild house party. Damage: '+fmt(f),'bad']; }},
+];
+
+const CAR_CARDS = [
+    { name:'Free Upgrade!',  icon:'🚗', effect:p=>{ const r=upgradeCar(p,1); adjustHappiness(p,r.includes('upgraded')?0.5:-0.5); return [r.includes('upgraded')?'UPGRADE!':'No change',r,r.includes('upgraded')?'good':'bad']; }},
+    { name:'Flat Tire',      icon:'🔧', effect:p=>{ if(p.carLevel===0) return ['Free Pass!','No car.','sarcastic']; const f=scaledFine(p,150); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Flat tire! -'+fmt(f),'bad']; }},
+    { name:'Engine Blew Up', icon:'💨', effect:p=>{ if(p.carLevel===0) return ['Free Pass!','No car.','sarcastic']; const f=scaledFine(p,1500); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Engine blew! -'+fmt(f),'bad']; }},
+    { name:'Car Raffle Win!',icon:'🏎️', effect:p=>{ const r=upgradeCar(p,2); adjustHappiness(p,0.5); return [r.includes('upgraded')?'BIG UPGRADE!':'Maxed',r,'good']; }},
+    { name:'Car Got Stolen', icon:'🔑', effect:p=>{ if(p.carLevel===0) return ['Free Pass!','No car.','sarcastic']; p.carLevel=Math.max(0,p.carLevel-1); adjustHappiness(p,-0.5); return ['Downgraded','Car got stolen!','bad']; }},
+    { name:'Free Oil Change',icon:'🛞', effect:p=>{ p.money+=80; adjustHappiness(p,0.5); return ['+$80','Free oil change coupon! +$80','good']; }},
+    { name:'Fender Bender',  icon:'🚗', effect:p=>{ if(p.carLevel===0) return ['Free Pass!','No car.','sarcastic']; const f=scaledFine(p,400); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Fender bender! -'+fmt(f),'bad']; }},
+];
+
+// ── JOB CARDS ─────────────────────────────────────────────
+const JOB_CARDS = [
+    { name:'Got Hired!', icon:'💼', effect:p=>{ const pool=getAvailableJobs(p).filter(j=>j.pay>p.jobPay); if(!pool.length) return p.name+' already has the best job available!'; const j=rnd(pool); p.job=j.name; p.jobPay=j.pay; adjustHappiness(p,0.5); return p.name+' hired as '+j.icon+' '+j.name+'! Payday: $'+j.pay.toLocaleString(); }},
+    { name:'Got Hired!', icon:'💼', effect:p=>{ const pool=getAvailableJobs(p).filter(j=>j.pay>p.jobPay); if(!pool.length) return p.name+' already has the best job available!'; const j=rnd(pool); p.job=j.name; p.jobPay=j.pay; adjustHappiness(p,0.5); return p.name+' hired as '+j.icon+' '+j.name+'! Payday: $'+j.pay.toLocaleString(); }},
+    { name:'Got Fired!', icon:'🔥', effect:p=>{ p.job='Unemployed'; p.jobPay=2000; adjustHappiness(p,-1); return p.name+' got FIRED! Back to Unemployed.'; }},
+    { name:'Got Fired!', icon:'🔥', effect:p=>{ p.job='Unemployed'; p.jobPay=2000; adjustHappiness(p,-1); return p.name+' got FIRED again!'; }},
+];
+
+// ── SCREENS ───────────────────────────────────────────────
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
@@ -347,26 +342,22 @@ function setPlayers(n) {
     event.target.classList.add('selected');
     checkSetupReady();
 }
-
 function setGoal(g) {
     gameState.winGoal = g;
     document.querySelectorAll('.goal-btn').forEach(b => b.classList.remove('selected'));
     event.target.classList.add('selected');
     checkSetupReady();
 }
-
 function checkSetupReady() {
     if (gameState.numPlayers > 0 && gameState.winGoal > 0)
         document.getElementById('setupDoneBtn').classList.remove('hidden');
 }
-
 function setupPlayers() {
     gameState.players = [];
     gameState.currentSetupPlayer = 0;
     showPlayerSetup();
     showScreen('playerSetupScreen');
 }
-
 function showPlayerSetup() {
     const idx = gameState.currentSetupPlayer;
     document.getElementById('playerSetupTitle').textContent = `Player ${idx+1} Setup`;
@@ -376,54 +367,53 @@ function showPlayerSetup() {
     document.getElementById('nextPlayerBtn').textContent =
         idx === gameState.numPlayers-1 ? 'START CHAOS!' : 'NEXT PLAYER';
 }
-
 function selectAvatar(emoji) {
     tempSetup.avatar = emoji;
     document.querySelectorAll('.avatar-btn').forEach(b =>
         b.classList.toggle('selected', b.textContent === emoji));
 }
-
 function nextPlayer() {
     const name = document.getElementById('playerName').value.trim();
     if (!tempSetup.avatar) { alert('Pick an avatar!'); return; }
     if (!name) { alert('Enter your name!'); return; }
-
     gameState.players.push({
         id: gameState.currentSetupPlayer,
         name, avatar: tempSetup.avatar,
-        job: 'Unemployed', jobPay: 2000,
-        money: 20000, position: 0,
-        housingLevel: 0, carLevel: 0,
-        inJail: false, jailTurns: 0,
-        carImpounded: false, jailFreeCards: 0,
-        happiness: 5, turnsPlayed: 0, laps: 0,
-        skipTurn: false,
+        job:'Unemployed', jobPay:2000,
+        money:20000, position:0,
+        housingLevel:0, carLevel:0,
+        inJail:false, jailTurns:0, jailMaxTurns:3,
+        jailReason:'', jailFine:200,
+        vehicleSeized:0, carImpounded:false,
+        jailFreeCards:0,
+        happiness:5.0,
+        turnsPlayed:0, laps:0,
+        skipTurn:false,
+        rentDue:0, carPaymentDue:0,
     });
-
     gameState.currentSetupPlayer++;
     if (gameState.currentSetupPlayer >= gameState.numPlayers) startGame();
     else showPlayerSetup();
 }
 
-// ── Start Game ────────────────────────────────────────────
+// ── START GAME ────────────────────────────────────────────
 function startGame() {
     gameState.currentPlayerIndex = 0;
     gameState.phase = 'playing';
     showScreen('gameScreen');
-    document.getElementById('winGoalDisplay').textContent = `🏆 Goal: ${fmt(gameState.winGoal)}`;
+    document.getElementById('winGoalDisplay').textContent = '🏆 ' + fmt(gameState.winGoal);
     buildBoard();
     renderPlayerBar();
     updateCurrentPlayerDisplay();
 }
 
-// ── Board ─────────────────────────────────────────────────
+// ── BOARD ─────────────────────────────────────────────────
 function buildBoard() {
     const board = document.getElementById('gameBoard');
     board.innerHTML = '';
     const cells = {};
     for (let r=0;r<=10;r++) for(let c=0;c<=10;c++) cells[`${r},${c}`]=null;
     BOARD_SPACES.forEach(s => { const p=getGridPosition(s.id); cells[`${p.row},${p.col}`]=s; });
-
     for (let r=0;r<=10;r++) {
         for (let c=0;c<=10;c++) {
             const space = cells[`${r},${c}`];
@@ -432,26 +422,55 @@ function buildBoard() {
                 div.className = `board-space ${space.type}`;
                 div.setAttribute('data-space-id', space.id);
                 div.innerHTML = `<div class="space-icon">${space.icon}</div><div class="space-name">${space.name}</div><div class="space-players" id="sp-${space.id}"></div>`;
+                // #14 — click to move
+                div.addEventListener('click', () => onSpaceClick(space.id));
             } else if (r>=1&&r<=9&&c>=1&&c<=9) {
                 if (r===5&&c===5) {
                     div.className='center-area';
                     div.style.gridColumn='2/11';
                     div.style.gridRow='2/11';
-                    div.innerHTML=`<div class="center-title">⚡ CHAOS ⚡</div><div class="center-sub">The Game of Life</div><div class="center-goal">🏆 Win: ${fmt(gameState.winGoal)}</div>`;
+                    div.innerHTML=`
+                        <div class="center-title">⚡ CHAOS ⚡</div>
+                        <div class="center-sub">The Game of Life</div>
+                        <div class="center-goal">🏆 Win: ${fmt(gameState.winGoal)}</div>
+                        <div class="card-stacks">
+                            <div class="card-stack" onclick="drawFromDeck('good')">
+                                <div class="card-stack-icon">✅</div>
+                                <div class="card-stack-label">GOOD</div>
+                            </div>
+                            <div class="card-stack" onclick="drawFromDeck('bad')">
+                                <div class="card-stack-icon">❌</div>
+                                <div class="card-stack-label">BAD</div>
+                            </div>
+                            <div class="card-stack" onclick="drawFromDeck('sarcastic')">
+                                <div class="card-stack-icon">😏</div>
+                                <div class="card-stack-label">CHAOS</div>
+                            </div>
+                        </div>`;
                 } else { div.style.display='none'; }
-            } else {
-                div.style.background='transparent';
-                div.style.border='none';
-            }
+            } else { div.style.background='transparent'; div.style.border='none'; }
             board.appendChild(div);
         }
     }
     updatePlayerPieces();
 }
 
+// Draw from center deck stack (#13)
+function drawFromDeck(type) {
+    if (gameState.phase !== 'playing') return;
+    const p = gameState.players[gameState.currentPlayerIndex];
+    let card, result;
+    if (type === 'good') { card = drawCard(GOOD_CARDS); result = card.effect(p); }
+    else if (type === 'bad') { card = drawCard(BAD_CARDS); result = card.effect(p); }
+    else { card = drawCard(SARCASTIC_CARDS); result = card.effect(p); }
+    renderPlayerBar();
+    const typeLabel = type==='good'?'GOOD CARD':type==='bad'?'BAD CARD':'CHAOS CARD';
+    showCardOverlay(card.icon, typeLabel, card.name, result[1], result[2]||type);
+    setTimeout(() => { hideCardOverlay(); checkWinThenEnd(p); }, 6000);
+}
+
 function updatePlayerPieces() {
     document.querySelectorAll('.space-players').forEach(el=>el.innerHTML='');
-
     gameState.players.forEach(p => {
         const el = document.getElementById(`sp-${p.position}`);
         if (el) {
@@ -462,15 +481,16 @@ function updatePlayerPieces() {
             el.appendChild(span);
         }
     });
-
-    // Center player cards removed
 }
 
-// ── Player Bar (left column - compact list) ───────────────
+// ── PLAYER BAR ────────────────────────────────────────────
 function renderPlayerBar() {
     const bar = document.getElementById('playerInfoBar');
     bar.innerHTML = '';
     gameState.players.forEach((p,i) => {
+        const h = p.happiness;
+        const hColor = h >= 7 ? '#4ecca3' : h >= 4 ? '#f5a623' : '#e94560';
+        const hPct = (h / 10 * 100).toFixed(0);
         const div = document.createElement('div');
         div.className = `player-token ${i===gameState.currentPlayerIndex?'active-player':''}`;
         div.innerHTML = `
@@ -479,43 +499,49 @@ function renderPlayerBar() {
                 <span class="token-name">${p.name}</span>
             </div>
             <div class="token-money">${fmt(p.money)}</div>
-            <div class="token-details">${p.job} | 😊${p.happiness}</div>
-            ${p.inJail?'<div class="token-jail">⛓️ IN JAIL</div>':''}
+            <div class="token-details">${p.job}</div>
+            <div class="token-details">${HOUSING[p.housingLevel].icon} ${HOUSING[p.housingLevel].name}</div>
+            <div class="token-details">${CARS[p.carLevel].icon} ${CARS[p.carLevel].name}</div>
+            <div class="happiness-bar-wrap">
+                <span style="font-size:0.75em;color:${hColor}">${h.toFixed(1)}😊</span>
+                <div class="happiness-bar"><div class="happiness-fill" style="width:${hPct}%;background:${hColor}"></div></div>
+            </div>
+            ${p.inJail?`<div class="token-jail">⛓️ JAIL (${p.jailReason})</div>`:''}
         `;
         bar.appendChild(div);
     });
     updateActivePlayerPanel();
 }
 
-// ── Active Player Panel (right column) ───────────────────
+// ── ACTIVE PANEL ──────────────────────────────────────────
 function updateActivePlayerPanel() {
     if (gameState.phase !== 'playing') return;
     const p = gameState.players[gameState.currentPlayerIndex];
     if (!p) return;
-    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
     set('apAvatar', p.avatar);
     set('apName', p.name);
     set('apMoney', fmt(p.money));
-    set('apJob', '💼 ' + p.job);
-    set('apHappiness', '😊 Happiness: ' + p.happiness + '/10');
-    set('apLaps', '🔄 Laps: ' + (p.laps||0) + ' | Tier: ' + getTierLabel(p.laps||0));
+    set('apJob', '💼 ' + p.job + ' | ' + fmt(p.jobPay));
+    const h = p.happiness;
+    const hColor = h >= 7 ? '#4ecca3' : h >= 4 ? '#f5a623' : '#e94560';
+    const hEl = document.getElementById('apHappiness');
+    if (hEl) { hEl.textContent = '😊 Mood: ' + h.toFixed(1) + '/10'; hEl.style.color = hColor; }
+    set('apLaps', '🔄 Laps: ' + (p.laps||0) + ' | ' + getTierLabel(p.laps||0));
 
     const jailEl = document.getElementById('apJail');
     if (jailEl) {
-        if (p.inJail) { jailEl.textContent = '⛓️ IN JAIL - Turn ' + (p.jailTurns+1) + '/3'; jailEl.classList.remove('hidden'); }
-        else { jailEl.classList.add('hidden'); }
+        if (p.inJail) {
+            jailEl.textContent = `⛓️ JAIL: ${p.jailReason} — Turn ${p.jailTurns+1}/${p.jailMaxTurns} | Bail: ${fmt(p.jailFine)}`;
+            jailEl.classList.remove('hidden');
+        } else { jailEl.classList.add('hidden'); }
     }
 
-    // Housing display
     const house = HOUSING[p.housingLevel];
-    set('apHousingIcon', house.icon);
-    set('apHousingName', house.name);
+    set('apHousingIcon', house.icon); set('apHousingName', house.name);
     renderUpgradeTrack('housingTrack', p.housingLevel, HOUSING.length);
-
-    // Car display
     const car = CARS[p.carLevel];
-    set('apCarIcon', car.icon);
-    set('apCarName', car.name);
+    set('apCarIcon', car.icon); set('apCarName', car.name);
     renderUpgradeTrack('carTrack', p.carLevel, CARS.length);
 }
 
@@ -523,52 +549,59 @@ function renderUpgradeTrack(trackId, currentLevel, totalLevels) {
     const el = document.getElementById(trackId);
     if (!el) return;
     el.innerHTML = '';
-    for (let i = 0; i < totalLevels; i++) {
+    for (let i=0; i<totalLevels; i++) {
         const dot = document.createElement('div');
-        if (i < currentLevel) {
-            dot.className = 'upgrade-dot filled';
-        } else if (i === currentLevel) {
-            dot.className = 'upgrade-dot current';
-        } else {
-            dot.className = 'upgrade-dot';
-        }
+        dot.className = 'upgrade-dot' + (i<currentLevel?' filled':i===currentLevel?' current':'');
         el.appendChild(dot);
     }
 }
 
+// ── CURRENT PLAYER DISPLAY ────────────────────────────────
 function updateCurrentPlayerDisplay() {
     const p = gameState.players[gameState.currentPlayerIndex];
-    const hoopty = CARS[p.carLevel].isHoopty;
     updateActivePlayerPanel();
-    let rollMsg = 'Roll the dice!';
-    if (p.inJail) rollMsg = 'In jail! Turn ' + (p.jailTurns+1) + '/3. Roll doubles to escape!';
-    else if (hoopty) rollMsg = '🚗 Hoopty! Roll 1 die — 1-3 dead battery, 4-6 it starts!';
-    else if (p.carLevel === 0) rollMsg = '🚶 Walking — Roll 1 die!';
-    else if (p.carLevel === 1) rollMsg = '🚲 On your bike — Roll 1 die!';
-    else rollMsg = '🚗 You have a ride — Roll 2 dice!';
+    const hoopty = CARS[p.carLevel].isHoopty;
+    const isBike = CARS[p.carLevel].isBike;
+
+    // #1 — explain then show what type of roll
+    let rollMsg = '';
+    if (p.inJail) {
+        rollMsg = `⛓️ In jail (${p.jailReason}). Turn ${p.jailTurns+1}/${p.jailMaxTurns}. Roll doubles to escape or pay ${fmt(p.jailFine)}.`;
+    } else if (hoopty) {
+        rollMsg = '🚗 Hoopty! First roll 1 die — 1-3 = dead battery (walk 1 die), 4-6 = starts (roll 2 dice).';
+    } else if (p.carLevel === 0) {
+        rollMsg = '🚶 Walking — roll 1 die.';
+    } else if (isBike) {
+        rollMsg = '🚲 On your bike — roll 1 die.';
+    } else {
+        rollMsg = `🚗 In the ${CARS[p.carLevel].name} — roll 2 dice!`;
+    }
     document.getElementById('gameMessage').textContent = rollMsg;
-    document.getElementById('diceResult').textContent='';
-    document.getElementById('rollDiceBtn').disabled=false;
-    gameState.waitingForHoopty = false;
+    document.getElementById('diceResult').textContent = '';
+    document.getElementById('rollDiceBtn').disabled = false;
+    gameState.waitingForMove = false;
+    gameState.pendingSteps = 0;
+    gameState.pendingPlayer = null;
+    clearClickableSpaces();
 }
 
-// ── Dice ──────────────────────────────────────────────────
+// ── DICE ─────────────────────────────────────────────────
 const DICE_FACES = ['','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣'];
 
 function animateDice(d1El, d2El, val1, val2, onDone) {
     d1El.classList.add('rolling');
-    d2El.classList.add('rolling');
-    let ticks = 0;
+    if (d2El) d2El.classList.add('rolling');
+    let ticks=0;
     const iv = setInterval(() => {
         d1El.textContent = DICE_FACES[Math.floor(Math.random()*6)+1];
-        d2El.textContent = DICE_FACES[Math.floor(Math.random()*6)+1];
+        if (d2El) d2El.textContent = DICE_FACES[Math.floor(Math.random()*6)+1];
         ticks++;
         if (ticks > 8) {
             clearInterval(iv);
             d1El.classList.remove('rolling');
-            d2El.classList.remove('rolling');
+            if (d2El) d2El.classList.remove('rolling');
             d1El.textContent = DICE_FACES[val1];
-            d2El.textContent = val2 ? DICE_FACES[val2] : '⬛';
+            if (d2El) d2El.textContent = val2 ? DICE_FACES[val2] : '⬛';
             onDone();
         }
     }, 80);
@@ -579,409 +612,543 @@ function rollDice() {
     const player = gameState.players[gameState.currentPlayerIndex];
     const d1El = document.getElementById('die1');
     const d2El = document.getElementById('die2');
-    const hoopty = CARS[player.carLevel].isHoopty;
 
-    if (player.inJail) {
-        const die1 = Math.ceil(Math.random()*6);
-        const die2 = Math.ceil(Math.random()*6);
-        const doubles = die1===die2;
-        animateDice(d1El, d2El, die1, die2, () => {
-            document.getElementById('diceResult').textContent =
-                `${DICE_FACES[die1]} ${DICE_FACES[die2]} = ${die1+die2}${doubles?' 🎲 DOUBLES!':''}`;
-            handleJailTurn(player, doubles, die1+die2);
-        });
-        return;
-    }
+    if (player.inJail) { handleJailRoll(player, d1El, d2El); return; }
+
+    const hoopty = CARS[player.carLevel].isHoopty;
+    const isBike = CARS[player.carLevel].isBike;
 
     if (hoopty) {
-        // Roll 1 die for hoopty check
+        // #1/#15 — hoopty: roll 1 die, explain result, then roll movement
         const die1 = Math.ceil(Math.random()*6);
+        document.getElementById('gameMessage').textContent = '🎲 Checking if the Hoopty starts...';
         animateDice(d1El, d2El, die1, null, () => {
-            document.getElementById('diceResult').textContent = `${DICE_FACES[die1]}`;
             if (die1 <= 3) {
-                document.getElementById('gameMessage').textContent = '🔋 Dead battery! Walking this round...';
-                showCardOverlay('😤','HOOPTY','Dead Battery!',`${player.name} rolled a ${die1}. Dead battery! Skip this turn, you\'re walking.`,'bad');
-                player.skipTurn = true;
-                setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
-            } else {
-                document.getElementById('gameMessage').textContent = `Hoopty started! Roll both dice!`;
-                showCardOverlay('🚗','HOOPTY','It Started!',`${player.name} rolled a ${die1}! The Hoopty starts! Now roll both dice to move.`,'good');
+                // #15 — dead battery, walk: roll 1 die
+                document.getElementById('diceResult').textContent = `${DICE_FACES[die1]} = ${die1} 🔋 Dead battery!`;
+                document.getElementById('gameMessage').textContent = '🚶 Dead battery — now walking. Rolling 1 die for movement...';
+                showCardOverlay('🚗','HOOPTY','Dead Battery!',`${player.name} rolled a ${die1}. Hoopty won't start — walking this turn!`,'bad');
                 setTimeout(() => {
                     hideCardOverlay();
-                    // Now roll 2 dice to move
-                    const m1 = Math.ceil(Math.random()*6);
-                    const m2 = Math.ceil(Math.random()*6);
+                    const moveDie = Math.ceil(Math.random()*6);
+                    animateDice(d1El, d2El, moveDie, null, () => {
+                        document.getElementById('diceResult').textContent = `🚶 Walking — moved ${moveDie} spaces.`;
+                        afterRoll(player, moveDie);
+                    });
+                }, 3000);
+            } else {
+                document.getElementById('diceResult').textContent = `${DICE_FACES[die1]} = ${die1} 🚗 It started!`;
+                document.getElementById('gameMessage').textContent = 'Hoopty started! Now rolling 2 dice for movement...';
+                showCardOverlay('🚗','HOOPTY','It Started!',`${player.name} rolled a ${die1}! Hoopty starts — rolling 2 dice to move.`,'good');
+                setTimeout(() => {
+                    hideCardOverlay();
+                    const m1=Math.ceil(Math.random()*6), m2=Math.ceil(Math.random()*6);
                     animateDice(d1El, d2El, m1, m2, () => {
                         document.getElementById('diceResult').textContent = `${DICE_FACES[m1]} ${DICE_FACES[m2]} = ${m1+m2}`;
-                        movePlayer(player, m1+m2);
+                        afterRoll(player, m1+m2);
                     });
-                }, 5000);
+                }, 3000);
             }
         });
         return;
     }
 
-    // No motor vehicle (no car or bike, levels 0-1) = 1 die
     if (player.carLevel <= 1) {
-        const label = player.carLevel === 0 ? '🚶 Walking' : '🚲 Biking';
+        // Walking or bike: 1 die
+        const label = player.carLevel===0?'🚶 Walking':'🚲 Biking';
         const die1 = Math.ceil(Math.random()*6);
+        document.getElementById('gameMessage').textContent = `Rolling 1 die (${label})...`;
         animateDice(d1El, d2El, die1, null, () => {
             document.getElementById('diceResult').textContent = `${DICE_FACES[die1]} = ${die1} (${label})`;
-            movePlayer(player, die1);
+            afterRoll(player, die1);
         });
         return;
     }
 
-    // Motor vehicle (level 2+ handled above for Hoopty, level 3+ = 2 dice)
-    // Normal roll - 2 dice
-    const die1 = Math.ceil(Math.random()*6);
-    const die2 = Math.ceil(Math.random()*6);
+    // 2 dice
+    const die1=Math.ceil(Math.random()*6), die2=Math.ceil(Math.random()*6);
     const doubles = die1===die2;
     animateDice(d1El, d2El, die1, die2, () => {
         document.getElementById('diceResult').textContent =
             `${DICE_FACES[die1]} ${DICE_FACES[die2]} = ${die1+die2}${doubles?' 🎲 DOUBLES!':''}`;
-        movePlayer(player, die1+die2);
+        afterRoll(player, die1+die2);
     });
 }
 
-// ── Jail ─────────────────────────────────────────────────
+// #14 — after rolling, highlight clickable destination and wait for tap
+function afterRoll(player, steps) {
+    const dest = (player.position + steps) % 40;
+    gameState.waitingForMove = true;
+    gameState.pendingSteps = steps;
+    gameState.pendingPlayer = player;
+    highlightDestination(dest);
+    document.getElementById('gameMessage').textContent =
+        `You rolled ${steps}. Tap your destination space to move! (space ${dest}: ${BOARD_SPACES[dest].name})`;
+}
+
+function highlightDestination(destId) {
+    clearClickableSpaces();
+    const el = document.querySelector(`[data-space-id="${destId}"]`);
+    if (el) el.classList.add('clickable-space');
+}
+
+function clearClickableSpaces() {
+    document.querySelectorAll('.clickable-space').forEach(el=>el.classList.remove('clickable-space'));
+}
+
+function onSpaceClick(spaceId) {
+    if (!gameState.waitingForMove) return;
+    const dest = (gameState.pendingPlayer.position + gameState.pendingSteps) % 40;
+    if (spaceId !== dest) return; // must click correct space
+    gameState.waitingForMove = false;
+    clearClickableSpaces();
+    movePlayer(gameState.pendingPlayer, gameState.pendingSteps);
+}
+
+// ── JAIL ROLL ─────────────────────────────────────────────
+function handleJailRoll(player, d1El, d2El) {
+    const die1=Math.ceil(Math.random()*6), die2=Math.ceil(Math.random()*6);
+    const doubles = die1===die2;
+    animateDice(d1El, d2El, die1, die2, () => {
+        document.getElementById('diceResult').textContent =
+            `${DICE_FACES[die1]} ${DICE_FACES[die2]} = ${die1+die2}${doubles?' 🎲 DOUBLES!':''}`;
+        handleJailTurn(player, doubles, die1+die2);
+    });
+}
+
+// ── JAIL (#20) ────────────────────────────────────────────
 function handleJailTurn(player, doubles, total) {
     if (doubles) {
         player.inJail = false;
-        player.carImpounded = false;
-        showCardOverlay('🎲','JAIL BREAK','Doubles! You\'re Free!',`${player.name} rolled doubles and escaped jail!`,'good');
-        setTimeout(() => { hideCardOverlay(); movePlayer(player, total); }, 5000);
+        // return impounded vehicle (#6)
+        if (player.vehicleSeized > 0) {
+            player.carLevel = player.vehicleSeized;
+            player.vehicleSeized = 0;
+            player.carImpounded = false;
+        }
+        renderPlayerBar();
+        showCardOverlay('🎲','JAIL BREAK','Doubles! You\'re Free!',`${player.name} rolled doubles and escaped jail from: ${player.jailReason}!`,'good');
+        setTimeout(() => { hideCardOverlay(); afterRoll(player, total); }, 4000);
         return;
     }
 
     player.jailTurns++;
 
-    if (player.jailTurns >= 3) {
-        // Must pay or game over
-        const cost = 100 + (player.carImpounded && player.carLevel > 0 ? CARS[player.carLevel].impound : 0);
-        if (player.money >= cost) {
-            charge(player, cost);
-            if (player.carImpounded) player.carImpounded = false;
+    if (player.jailTurns >= player.jailMaxTurns) {
+        // Must pay bail
+        const impoundFee = player.vehicleSeized > 0 ? CARS[player.vehicleSeized].impound : 0;
+        const total_cost = player.jailFine + impoundFee;
+        if (player.money >= total_cost) {
+            charge(player, total_cost);
+            if (player.vehicleSeized > 0) {
+                player.carLevel = player.vehicleSeized;
+                player.vehicleSeized = 0;
+                player.carImpounded = false;
+            }
             player.inJail = false;
             player.jailTurns = 0;
+            adjustHappiness(player, -0.5);
             renderPlayerBar();
-            showCardOverlay('⛓️','RELEASED',`Paid ${fmt(cost)} to get out`,`${player.name} paid their way out of jail!`,'bad');
+            showCardOverlay('⛓️','RELEASED',`Paid ${fmt(total_cost)}`,
+                `${player.name} paid bail ${fmt(player.jailFine)}${impoundFee>0?' + impound '+fmt(impoundFee):''} and is released from: ${player.jailReason}`,'bad');
             setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
         } else {
-            // Game over - sent back to prison
             gameState.phase = 'over';
-            showCardOverlay('🚔','GAME OVER','Sent Back to Prison',`${player.name} couldn't afford bail and is being sent back to prison! GAME OVER!`,'bad');
+            showCardOverlay('🚔','GAME OVER','Can\'t Afford Bail',`${player.name} can't afford bail of ${fmt(total_cost)}. Rotting in prison forever!`,'bad');
             setTimeout(() => { hideCardOverlay(); showGameOver(player); }, 5000);
         }
     } else {
         renderPlayerBar();
-        showCardOverlay('⛓️','STILL IN JAIL',`Turn ${player.jailTurns}/3`,`${player.name} stays in jail. Roll doubles to escape!`,'bad');
+        showCardOverlay('⛓️','STILL IN JAIL',`Turn ${player.jailTurns}/${player.jailMaxTurns}`,
+            `${player.name} stays in jail (${player.jailReason}). Roll doubles to escape! Bail: ${fmt(player.jailFine)}`,'bad');
         setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
     }
 }
 
-// ── Move ─────────────────────────────────────────────────
+// ── PAY BAIL BUTTON ───────────────────────────────────────
+function payBailEarly() {
+    const player = gameState.players[gameState.currentPlayerIndex];
+    if (!player.inJail) return;
+    const impoundFee = player.vehicleSeized > 0 ? CARS[player.vehicleSeized].impound : 0;
+    const total_cost = player.jailFine + impoundFee;
+    if (player.money >= total_cost) {
+        charge(player, total_cost);
+        if (player.vehicleSeized > 0) { player.carLevel=player.vehicleSeized; player.vehicleSeized=0; player.carImpounded=false; }
+        player.inJail = false;
+        player.jailTurns = 0;
+        renderPlayerBar();
+        showCardOverlay('⛓️','RELEASED','Bail Paid!',`${player.name} paid ${fmt(total_cost)} bail and is free!`,'good');
+        setTimeout(() => { hideCardOverlay(); endTurn(); }, 4000);
+    } else {
+        showCardOverlay('💸','CANT PAY','Not Enough',`${player.name} needs ${fmt(total_cost)} for bail but only has ${fmt(player.money)}.`,'bad');
+        setTimeout(hideCardOverlay, 3000);
+    }
+}
+
+// ── MOVE ─────────────────────────────────────────────────
 function movePlayer(player, steps) {
     const oldPos = player.position;
     const newPos = (oldPos + steps) % 40;
+
+    // Lap bonus
     if (newPos <= oldPos && steps > 0) {
         player.money += player.jobPay;
         player.laps++;
+        // collect rent from others (#19)
+        collectRent(player);
         document.getElementById('gameMessage').textContent =
-            player.name + ' passed START! Lap ' + player.laps + ' | +' + fmt(player.jobPay);
+            `${player.name} passed START! Lap ${player.laps} | +${fmt(player.jobPay)} 💰`;
     }
     player.position = newPos;
     player.turnsPlayed++;
     updatePlayerPieces();
     renderPlayerBar();
-    setTimeout(() => landOnSpace(player, BOARD_SPACES[newPos]), 500);
+
+    // #1 — delay before landing effect
+    setTimeout(() => {
+        document.getElementById('gameMessage').textContent =
+            `${player.name} landed on: ${BOARD_SPACES[newPos].name}`;
+        setTimeout(() => {
+            checkStealOpportunity(player, newPos, () => landOnSpace(player, BOARD_SPACES[newPos]));
+        }, 1500);
+    }, 600);
 }
 
-// ── Land ─────────────────────────────────────────────────
+// ── RENT/CAR PAYMENT (#19) ────────────────────────────────
+function collectRent(player) {
+    // Housing rent due each lap for levels 2–12
+    if (player.housingLevel >= 2 && player.housingLevel < 13) {
+        const rent = HOUSING[player.housingLevel].rent;
+        charge(player, rent);
+        // flash message handled inline
+    }
+    // Car payment due each lap for levels 2+
+    if (player.carLevel >= 2) {
+        const payment = CARS[player.carLevel].payment;
+        charge(player, payment);
+    }
+}
+
+// ── STEAL (#18) ───────────────────────────────────────────
+function checkStealOpportunity(movingPlayer, newPos, callback) {
+    if (movingPlayer.carLevel > 0) { callback(); return; } // already has transport
+    // Find players on same space with a vehicle
+    const targets = gameState.players.filter(p =>
+        p.id !== movingPlayer.id && p.position === newPos && p.carLevel > 0
+    );
+    if (!targets.length) { callback(); return; }
+
+    const target = targets[0];
+    gameState.stealContext = { thief: movingPlayer, victim: target, callback };
+    const overlay = document.getElementById('stealOverlay');
+    document.getElementById('stealTitle').textContent = '⚡ VEHICLE SHOWDOWN ⚡';
+    document.getElementById('stealDesc').textContent =
+        `${movingPlayer.name} (walking) landed on ${target.name}'s space!\n` +
+        `${movingPlayer.name} can try to steal the ${CARS[target.carLevel].icon} ${CARS[target.carLevel].name}!\n` +
+        `Both players roll — highest wins!`;
+    document.getElementById('stealResult').textContent = '';
+    document.getElementById('stealDie1').textContent = '🎲';
+    document.getElementById('stealDie2').textContent = '🎲';
+    overlay.classList.remove('hidden');
+}
+
+function resolveSteal() {
+    const { thief, victim, callback } = gameState.stealContext;
+    const d1 = Math.ceil(Math.random()*6);
+    const d2 = Math.ceil(Math.random()*6);
+    const sd1El = document.getElementById('stealDie1');
+    const sd2El = document.getElementById('stealDie2');
+    sd1El.textContent = DICE_FACES[d1];
+    sd2El.textContent = DICE_FACES[d2];
+    let result = '';
+    if (d1 > d2) {
+        // Thief wins!
+        const stolenLevel = victim.carLevel;
+        victim.carLevel = 0;
+        thief.carLevel = stolenLevel;
+        adjustHappiness(thief, 1);
+        adjustHappiness(victim, -1);
+        result = `${thief.name} rolled ${d1}, ${victim.name} rolled ${d2}. STEAL SUCCESSFUL! ${thief.name} took the ${CARS[stolenLevel].name}!`;
+    } else if (d2 > d1) {
+        result = `${thief.name} rolled ${d1}, ${victim.name} rolled ${d2}. ${victim.name} DEFENDS their ride! No steal.`;
+    } else {
+        result = `Tied at ${d1}! ${victim.name} keeps their vehicle.`;
+    }
+    document.getElementById('stealResult').textContent = result;
+    renderPlayerBar();
+    document.getElementById('stealRollBtn').disabled = true;
+    setTimeout(() => {
+        document.getElementById('stealOverlay').classList.add('hidden');
+        document.getElementById('stealRollBtn').disabled = false;
+        gameState.stealContext = null;
+        callback();
+    }, 3500);
+}
+
+// ── LAND ─────────────────────────────────────────────────
 function landOnSpace(player, space) {
     if (!space) { endTurn(); return; }
     try {
-    switch(space.type) {
-        case 'blank':    handleBlank(player, space); break;
-        case 'corner':  handleCorner(player, space); break;
-        case 'payday':  handlePayday(player); break;
-        case 'card':    handleCardSpace(player, space); break;
-        case 'good':    handleGoodSpace(player, space); break;
-        case 'bad':     handleBadSpace(player, space); break;
-        case 'house':   handleHouseSpace(player); break;
-        case 'car':     handleCarDealerSpace(player); break;
-        case 'hcard':   handleHousingCard(player); break;
-        case 'ccard':   handleCarCard(player); break;
-        case 'job':     handleJobOffice(player); break;
-        case 'jcard':   handleJobCard(player); break;
-        case 'hustle':  handleHustle(player, space); break;
-        default:        endTurn(); break;
-    }
-    } catch(e) { console.error("landOnSpace error:", e); endTurn(); }
-}
-
-
-// ── Housing Cards Deck ────────────────────────────────────
-const HOUSING_CARDS = [
-    { name: 'Free Upgrade!',         effect: p => { const r=upgradeHousing(p,1); return [r.includes('upgraded')?'UPGRADE!':'No change', r]; } },
-    { name: 'Landlord Raised Rent',  effect: p => { if(p.housingLevel < 3){ return ['Free Pass!', p.name+' has no landlord - living rough!']; } charge(p,500); return ['-$500', p.name+"'s landlord raised the rent! -$500"]; } },
-    { name: 'Pipes Burst',           effect: p => { if(p.housingLevel < 3){ return ['Free Pass!', p.name+' has no plumbing to burst!']; } charge(p,800); return ['-$800', p.name+"'s pipes burst! -$800"]; } },
-    { name: 'Raffle Win!',           effect: p => { const r=upgradeHousing(p,2); return [r.includes('upgraded')?'BIG UPGRADE!':'Maxed', r]; } },
-    { name: 'Move Back w/ Parents',  effect: p => { p.housingLevel=Math.max(0,p.housingLevel-2); return ['Downgraded', p.name+' moved back with the parents!']; } },
-    { name: 'Roof Caved In',         effect: p => { if(p.housingLevel < 3){ return ['Free Pass!', p.name+' has no roof to cave in!']; } charge(p,1200); return ['-$1,200', p.name+"'s roof caved in! -$1,200"]; } },
-    { name: 'Free Double Upgrade!',  effect: p => { const r=upgradeHousing(p,2); return [r.includes('upgraded')?'DOUBLE UPGRADE!':'Maxed', r]; } },
-    { name: 'House Party Damage',    effect: p => { charge(p,400); return ['-$400', p.name+' had a wild house party. Damage: $400']; } },
-];
-
-// ── Car Cards Deck ────────────────────────────────────────
-const CAR_CARDS = [
-    { name: 'Free Upgrade!',     effect: p => { const r=upgradeCar(p,1); return [r.includes('upgraded')?'UPGRADE!':'No change', r]; } },
-    { name: 'Flat Tire',         effect: p => { if(p.carLevel === 0){ return ['Free Pass!', p.name+' has no car - no flat tire!']; } charge(p,150); return ['-$150', p.name+' got a flat tire! -$150']; } },
-    { name: 'Engine Blew Up',    effect: p => { if(p.carLevel === 0){ return ['Free Pass!', p.name+' has no car - no engine to blow!']; } charge(p,1500); return ['-$1,500', p.name+" engine blew up! -$1,500"]; } },
-    { name: 'Car Raffle Win!',   effect: p => { const r=upgradeCar(p,2); return [r.includes('upgraded')?'BIG UPGRADE!':'Maxed', r]; } },
-    { name: 'Car Got Stolen',    effect: p => { if(p.carLevel === 0){ return ['Free Pass!', p.name+' has no car to steal!']; } p.carLevel=Math.max(0,p.carLevel-1); return ['Downgraded', p.name+" car got stolen!"]; } },
-    { name: 'Free Oil Change',   effect: p => { p.money+=80; return ['+$80', p.name+' got a free oil change coupon! +$80']; } },
-    { name: 'Double Upgrade!',   effect: p => { const r1=upgradeCar(p,1); const r2=upgradeCar(p,1); const bothUp=r1.includes('upgraded')&&r2.includes('upgraded'); const oneUp=r1.includes('upgraded')||r2.includes('upgraded'); return [bothUp?'DOUBLE UPGRADE!':oneUp?'UPGRADED!':'Maxed', oneUp?(r1+' '+r2):r1]; } },
-    { name: 'Fender Bender',     effect: p => { if(p.carLevel === 0){ return ['Free Pass!', p.name+' has no car to fender bend!']; } charge(p,400); return ['-$400', p.name+' had a fender bender! -$400']; } },
-];
-
-// ── House Space: buy/upgrade housing ─────────────────────
-function handleHouseSpace(player) {
-    const cur = HOUSING[player.housingLevel];
-    const nextLvl = player.housingLevel + 1;
-    const alreadyMax = player.housingLevel >= HOUSING.length-1;
-
-    if (alreadyMax) {
-        showCardOverlay('🏰','HOUSE','You Are Maxed Out!', player.name+' already lives in a Mansion!','good');
-        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
-        return;
-    }
-
-    // Block Car Living if no car
-    if (nextLvl === 1 && player.carLevel === 0) {
-        showCardOverlay('🚗','NEED A CAR FIRST!','Car Living Blocked',
-            player.name+" can't live in a car without owning one! Buy a car first.", 'bad');
-        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
-        return;
-    }
-
-    // Check lap requirement
-    const lapsNeeded = housingLapRequired(nextLvl);
-    const playerLaps = player.laps || 0;
-    if (playerLaps < lapsNeeded) {
-        showCardOverlay('🔒','LOCKED','Lap ' + lapsNeeded + ' Required',
-            player.name + ' needs to complete Lap ' + lapsNeeded + ' to unlock ' + HOUSING[nextLvl].name +
-            '. Currently on Lap ' + playerLaps + '.', 'bad');
-        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
-        return;
-    }
-
-    const next = HOUSING[nextLvl];
-    const cost = Math.max(0, next.price - cur.price);
-    const popup = document.getElementById('popup');
-    const content = popup.querySelector('.popup-content');
-    document.getElementById('popupTitle').textContent = '🏠 House';
-    document.getElementById('popupMessage').textContent =
-        player.name+', upgrade from '+cur.icon+' '+cur.name+' → '+next.icon+' '+next.name+
-        (cost > 0 ? '\nCost: '+fmt(cost) : '\nFREE!');
-    content.className = 'popup-content popup-good';
-    popup.classList.remove('hidden');
-    content.querySelectorAll('button').forEach(b=>b.remove());
-    const yesBtn = document.createElement('button');
-    yesBtn.className='btn'; yesBtn.style.marginRight='10px'; yesBtn.textContent='UPGRADE!';
-    yesBtn.onclick = () => {
-        if (player.money >= cost) {
-            player.money -= cost;
-            player.housingLevel = nextLvl;
-            animateAssetIcon('apHousingIcon');
-            renderPlayerBar();
-            closePopup();
-            showCardOverlay('🏠','UPGRADED!',next.icon+' '+next.name, player.name+' upgraded their home!','good');
-            setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
-        } else {
-            closePopup();
-            showCardOverlay('💸','CANT AFFORD IT','Not Enough Money',
-                player.name+' needs '+fmt(cost)+' but only has '+fmt(player.money),'bad');
-            setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+        switch(space.type) {
+            case 'corner':  handleCorner(player, space); break;
+            case 'payday':  handlePayday(player); break;
+            case 'good':    handleGoodSpace(player, space); break;
+            case 'bad':     handleBadSpace(player, space); break;
+            case 'house':   handleHouseSpace(player, space); break;
+            case 'car':     handleCarDealerSpace(player, space); break;
+            case 'realtor': handleRealtorSpace(player, space); break;
+            case 'job':     handleJobOffice(player); break;
+            case 'jcard':   handleJobCard(player); break;
+            case 'hustle':  handleHustle(player, space); break;
+            default:        endTurn(); break;
         }
-    };
-    const noBtn = document.createElement('button');
-    noBtn.className='btn'; noBtn.style.background='linear-gradient(135deg,#0f3460,#16213e)'; noBtn.textContent='PASS';
-    noBtn.onclick = () => { closePopup(); endTurn(); };
-    content.appendChild(yesBtn);
-    content.appendChild(noBtn);
+    } catch(e) { console.error('landOnSpace error:', e); endTurn(); }
 }
 
-// ── Car Dealer Space: buy/upgrade car ────────────────────
-function handleCarDealerSpace(player) {
-    const cur = CARS[player.carLevel];
-    const next = CARS[Math.min(CARS.length-1, player.carLevel+1)];
-    const alreadyMax = player.carLevel >= CARS.length-1;
-    if (alreadyMax) {
-        showCardOverlay('🚀','CAR DEALER',"Already Maxed!", player.name+' already drives a '+cur.name+'!','good');
-        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
-        return;
-    }
-    const cost = Math.max(0, next.price - cur.price);
-    const popup = document.getElementById('popup');
-    const title = document.getElementById('popupTitle');
-    const message = document.getElementById('popupMessage');
-    const content = popup.querySelector('.popup-content');
-    title.textContent = '🚗 Car Dealer';
-    message.textContent = player.name+', upgrade from '+cur.icon+' '+cur.name+' to '+next.icon+' '+next.name+'?'+(cost>0?' Cost: '+fmt(cost):' FREE!');
-    content.className = 'popup-content popup-good';
-    popup.classList.remove('hidden');
-    content.querySelectorAll('button').forEach(b=>b.remove());
-    const yesBtn = document.createElement('button');
-    yesBtn.className='btn'; yesBtn.style.marginRight='10px'; yesBtn.textContent='BUY IT!';
-    yesBtn.onclick = () => {
-        if (player.money >= cost) {
-            player.money -= cost;
-            player.carLevel++;
-            renderPlayerBar();
-            closePopup();
-            showCardOverlay('🚗','NEW RIDE!',next.icon+' '+next.name,player.name+' got a new car!','good');
-            setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
-        } else {
-            closePopup();
-            showCardOverlay('💸','CANT AFFORD IT','Not Enough Money',player.name+' needs '+fmt(cost)+' but only has '+fmt(player.money),'bad');
-            setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
-        }
-    };
-    const noBtn = document.createElement('button');
-    noBtn.className='btn'; noBtn.style.background='linear-gradient(135deg,#0f3460,#16213e)'; noBtn.textContent='PASS';
-    noBtn.onclick = () => { closePopup(); endTurn(); };
-    content.appendChild(yesBtn);
-    content.appendChild(noBtn);
-}
-
-// ── Housing Card Draw ─────────────────────────────────────
-function handleHousingCard(player) {
-    const card = drawCard(HOUSING_CARDS);
-    const result = card.effect(player);
-    renderPlayerBar();
-    const isGood = result[1].includes('upgrade') || result[1].includes('Upgrade') || result[1].includes('Raffle') || result[1].includes('Free');
-    showCardOverlay('🏘️','HOUSE CARD', card.name, result[1], isGood?'good':'bad');
-    setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
-}
-
-// ── Car Card Draw ─────────────────────────────────────────
-function handleCarCard(player) {
-    const card = drawCard(CAR_CARDS);
-    const result = card.effect(player);
-    renderPlayerBar();
-    const isGood = result[1].includes('upgrade') || result[1].includes('Upgrade') || result[1].includes('Raffle') || result[1].includes('Free') || result[1].includes('+');
-    showCardOverlay('🔧','CAR CARD', card.name, result[1], isGood?'good':'bad');
-    setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
-}
-
-
-// ── Car Dealer Space ──────────────────────────────────────
-
-// ── Housing Card Draw ─────────────────────────────────────
-
-// ── Car Card Draw ─────────────────────────────────────────
-
-
-function handleBlank(player, space) {
-    document.getElementById('gameMessage').textContent = player.name + ' landed on an empty space. Nothing happens!';
-    setTimeout(() => { endTurn(); }, 1200);
-}
-
+// ── CORNERS ───────────────────────────────────────────────
 function handleCorner(player, space) {
     if (space.id === 0) {
-        showCardOverlay('🏁','START','Begin!',`${player.name} landed on START!`,'good');
-        setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
+        showCardOverlay('🏁','START','Back at the Beginning!',`${player.name} landed on START!`,'good');
+        setTimeout(() => { hideCardOverlay(); endTurn(); }, 4000);
     } else if (space.id === 10) {
-        showCardOverlay('⛓️','JAIL','Just Visiting',`${player.name} is just visiting jail. Stay cool!`,'');
-        setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
+        showCardOverlay('⛓️','JAIL','Just Visiting',`${player.name} is just visiting. Stay cool!`,'');
+        setTimeout(() => { hideCardOverlay(); endTurn(); }, 4000);
     } else if (space.id === 20) {
-        player.happiness = Math.min(10, player.happiness + 1);
+        adjustHappiness(player, 0.5);
         renderPlayerBar();
-        showCardOverlay('🎁','FREE DAY','Nothing Happens! +1 Happiness',player.name+' gets a free day! Enjoy the peace. +1 Happiness!','good');
-        setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
+        showCardOverlay('🎁','FREE DAY','Nothing Happens! +0.5 Mood',`${player.name} gets a free day off! Enjoy. +0.5 Happiness!`,'good');
+        setTimeout(() => { hideCardOverlay(); endTurn(); }, 4000);
     } else if (space.id === 30) {
         sendToJail(player);
         renderPlayerBar();
         updatePlayerPieces();
-        showCardOverlay('🚔','GO TO JAIL','Busted!',`${player.name} is going directly to jail!${player.carLevel>0?' Car impounded!':''}`,'bad');
+        showCardOverlay('🚔','GO TO JAIL','Busted!',
+            `${player.name} is going to jail!\nReason: ${player.jailReason}\nUp to ${player.jailMaxTurns} turns | Bail: ${fmt(player.jailFine)}${player.vehicleSeized>0?'\n'+CARS[player.vehicleSeized].icon+' '+CARS[player.vehicleSeized].name+' impounded! Fee: '+fmt(CARS[player.vehicleSeized].impound):''}`,
+            'bad');
+        setTimeout(() => { hideCardOverlay(); endTurn(); }, 6000);
+    }
+}
+
+// ── PAYDAY ────────────────────────────────────────────────
+function handlePayday(player) {
+    player.money += player.jobPay;
+    collectRent(player);
+    adjustHappiness(player, 0.5);
+    renderPlayerBar();
+    showCardOverlay('💰','PAYDAY','Collect Your Check!',
+        `${player.name} collects ${fmt(player.jobPay)} from ${player.job}!\nRent/payment deducted automatically.`,'good');
+    setTimeout(() => { hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+}
+
+// ── GOOD SPACE ────────────────────────────────────────────
+function handleGoodSpace(player, space) {
+    if (space.name === 'Vacation Pay') { player.money+=1200; adjustHappiness(player,0.5); renderPlayerBar(); showCardOverlay('✈️','LUCKY!','Vacation Pay',`${player.name} cashed in vacation days! +$1,200`,'good'); setTimeout(()=>{hideCardOverlay();checkWinThenEnd(player);},5000); }
+    else { player.money+=100; renderPlayerBar(); showCardOverlay('✅','LUCKY!',space.name,`${player.name} got lucky! +$100`,'good'); setTimeout(()=>{hideCardOverlay();checkWinThenEnd(player);},5000); }
+}
+
+// ── BAD SPACE (#11 — hospital with tow choice) ────────────
+function handleBadSpace(player, space) {
+    if (space.name === 'TAXES') {
+        const assets = player.money + HOUSING[player.housingLevel].price + CARS[player.carLevel].price;
+        const t = Math.max(1, Math.round(assets * 0.10));
+        charge(player, t); adjustHappiness(player, -0.5); renderPlayerBar();
+        showCardOverlay('📋','TAXES','Pay 10%!',`${player.name} owes 10% on assets (${fmt(assets)})! Tax: ${fmt(t)}`,'bad');
+        setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
+    } else if (space.name === 'Hospital') {
+        // #11 — hospital: charge, then offer car tow question
+        const medBill = scaledFine(player, 500);
+        charge(player, medBill); adjustHappiness(player, -0.5); renderPlayerBar();
+        if (player.carLevel > 0) {
+            // Car was towed while in hospital
+            const towFee = 300;
+            showTowChoice(player, medBill, towFee, () => endTurn());
+        } else {
+            showCardOverlay('🏥','HOSPITAL','Emergency Visit!',`${player.name} paid ${fmt(medBill)} in medical bills!`,'bad');
+            setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
+        }
+    } else {
+        const f = scaledFine(player, 100);
+        charge(player, f); adjustHappiness(player, -0.5); renderPlayerBar();
+        showCardOverlay('❌','OUCH!',space.name,`${player.name} had bad luck! -${fmt(f)}`,'bad');
         setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
     }
 }
 
-function handlePayday(player) {
-    player.money += player.jobPay;
-    renderPlayerBar();
-    showCardOverlay('💰','PAYDAY','Collect Your Check!',`${player.name} collects ${fmt(player.jobPay)} from ${player.job}!`,'good');
-    setTimeout(() => { hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+// #11 — Tow choice popup
+function showTowChoice(player, medBill, towFee, callback) {
+    const popup = document.getElementById('popup');
+    const content = popup.querySelector('.popup-content');
+    document.getElementById('popupTitle').textContent = '🚗 Car Towed!';
+    document.getElementById('popupMessage').textContent =
+        `${player.name} was in the hospital — ${CARS[player.carLevel].icon} ${CARS[player.carLevel].name} got towed!\n\n` +
+        `Medical bill: ${fmt(medBill)} (already paid)\n` +
+        `Impound fee: ${fmt(towFee)}\n\nPay the impound fee to get your car back?`;
+    content.className = 'popup-content popup-bad';
+    popup.classList.remove('hidden');
+    content.querySelectorAll('button').forEach(b=>b.remove());
+
+    const yesBtn = document.createElement('button');
+    yesBtn.className='btn'; yesBtn.style.marginRight='10px'; yesBtn.textContent='PAY $300 — GET CAR';
+    yesBtn.onclick = () => {
+        if (player.money >= towFee) {
+            charge(player, towFee); renderPlayerBar(); closePopup();
+            showCardOverlay('🚗','CAR BACK','Paid Impound!',`${player.name} paid ${fmt(towFee)} to get their car back.`,'good');
+            setTimeout(() => { hideCardOverlay(); callback(); }, 4000);
+        } else {
+            closePopup();
+            showCardOverlay('💸','CANT PAY','Left the Car',`${player.name} can't afford ${fmt(towFee)} impound. Car left behind.`,'bad');
+            player.carLevel = 0;
+            renderPlayerBar();
+            setTimeout(() => { hideCardOverlay(); callback(); }, 4000);
+        }
+    };
+    const noBtn = document.createElement('button');
+    noBtn.className='btn'; noBtn.style.background='linear-gradient(135deg,#0f3460,#16213e)'; noBtn.textContent='LEAVE CAR';
+    noBtn.onclick = () => {
+        closePopup();
+        player.carLevel = 0; renderPlayerBar();
+        showCardOverlay('🚗','LEFT BEHIND','Car Gone',`${player.name} left the car in impound. Back to walking.`,'bad');
+        setTimeout(() => { hideCardOverlay(); callback(); }, 4000);
+    };
+    content.appendChild(yesBtn); content.appendChild(noBtn);
 }
 
-function handleCardSpace(player, space) {
-    let card, result, cardType;
+// ── HOUSING SPACE (#12 — tiered, with pricing) ────────────
+function handleHouseSpace(player, space) {
+    const tier = space.tier || 'budget';
+    const tierRange = {
+        budget:  { min:0,  max:5  },
+        mid:     { min:3,  max:9  },
+        luxury:  { min:8,  max:13 },
+    }[tier];
 
-    if (space.name === 'Good Card') {
-        card = drawCard(GOOD_CARDS); cardType = 'good';
-    } else if (space.name === 'Bad Card') {
-        card = drawCard(BAD_CARDS); cardType = 'bad';
-    } else if (space.name === 'Sarcastic Card') {
-        card = drawCard(SARCASTIC_CARDS); cardType = 'sarcastic';
-    } else {
-        endTurn(); return;
+    const cur = HOUSING[player.housingLevel];
+    const nextLvl = player.housingLevel + 1;
+
+    if (player.housingLevel >= HOUSING.length-1) {
+        showCardOverlay('🏰','HOUSING','Maxed Out!',`${player.name} already lives in a ${cur.name}!`,'good');
+        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 4000); return;
+    }
+    if (nextLvl > tierRange.max) {
+        showCardOverlay('🔒','WRONG DEALER','Out of Range',
+            `${space.name} only sells levels ${tierRange.min}–${tierRange.max}. Current: level ${player.housingLevel}. Try another housing dealer!`,'bad');
+        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000); return;
+    }
+    if (nextLvl === 1 && player.carLevel === 0) {
+        showCardOverlay('🚗','NEED A CAR','Car Living Blocked',`${player.name} can't live in a car without owning one! (#10)`,'bad');
+        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000); return;
+    }
+    const lapsNeeded = HOUSING[nextLvl].lapReq || 0;
+    if ((player.laps||0) < lapsNeeded) {
+        showCardOverlay('🔒','LOCKED',`Lap ${lapsNeeded} Required`,`${player.name} needs Lap ${lapsNeeded} for ${HOUSING[nextLvl].name}.`,'bad');
+        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000); return;
     }
 
-    // Check if card effect applies (housing/car cards blocked if player has none)
-    if ((card.name === 'Free Housing Upgrade' || card.name === 'Home Raffle Win') && player.housingLevel === 0) {
-        card = { name: 'Free Pass', icon: '🎫', effect: () => ['Free Pass!', `${player.name} has no housing to upgrade. Free turn!`] };
-    }
-    if ((card.name === 'Free Car Upgrade' || card.name === 'Car Raffle Win') && player.carLevel === 0) {
-        card = { name: 'Free Pass', icon: '🎫', effect: () => ['Free Pass!', `${player.name} has no car to upgrade. Free turn!`] };
-    }
-
-    result = card.effect(player);
-    renderPlayerBar();
-    updatePlayerPieces();
-
-    const typeLabel = cardType === 'good' ? 'GOOD CARD' : cardType === 'bad' ? 'BAD CARD' : 'CHAOS CARD';
-    showCardOverlay(card.icon, typeLabel, card.name, result[1], cardType);
-    setTimeout(() => { hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+    const next = HOUSING[nextLvl];
+    const cost = Math.max(0, next.price - cur.price);
+    const rentInfo = next.rent > 0 ? `\nMonthly rent: ${fmt(next.rent)} (due each lap)` : '';
+    showUpgradePopup(`🏠 ${space.name}`, `${player.name}, upgrade:\n${cur.icon} ${cur.name} → ${next.icon} ${next.name}\nCost: ${cost>0?fmt(cost):'FREE!'}${rentInfo}`,
+        'MOVE IN!', () => {
+            if (player.money >= cost) {
+                player.money -= cost; player.housingLevel = nextLvl;
+                animateAssetIcon('apHousingIcon'); renderPlayerBar(); closePopup();
+                showCardOverlay('🏠','UPGRADED!',next.icon+' '+next.name,`${player.name} upgraded their home!`,'good');
+                setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+            } else {
+                closePopup();
+                showCardOverlay('💸','CANT AFFORD IT','Not Enough',`${player.name} needs ${fmt(cost)} but has ${fmt(player.money)}`,'bad');
+                setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+            }
+        }, () => { closePopup(); endTurn(); });
 }
 
-function handleGoodSpace(player, space) {
-    let msg='', label='';
-    if (space.name==='Found $20')   { player.money+=20;   label='+$20';    msg=`${player.name} found $20!`; }
-    else if (space.name==='Found $50')  { player.money+=50;   label='+$50';    msg=`${player.name} found $50!`; }
-    else if (space.name==='Found $100') { player.money+=100;  label='+$100';   msg=`${player.name} found $100!`; }
-    else if (space.name==='Picnic')     { player.happiness=Math.min(10,player.happiness+1); label='+1 😊'; msg=`${player.name} had a lovely picnic!`; }
-    else if (space.name==='Vacation Pay'){ player.money+=1200; label='+$1,200'; msg=`${player.name} cashed in vacation days!`; }
-    else if (space.name==='Casino Win') { player.money+=1400; label='+$1,400'; msg=`${player.name} hit the jackpot!`; }
-    else { player.money+=100; label='+$100'; msg=`${player.name} got lucky!`; }
-    renderPlayerBar();
-    showCardOverlay('✅','LUCKY!',space.name,msg,'good');
-    setTimeout(() => { hideCardOverlay(); checkWinThenEnd(player); }, 5000);
-}
+// ── CAR DEALER SPACE (#12 — tiered pricing) ───────────────
+function handleCarDealerSpace(player, space) {
+    const tierRange = {
+        4:  { min:0,  max:4,  label:'Budget' },  // AutoZone Deals (id 4)
+        13: { min:2,  max:7,  label:'Mid-Range' },// Mid Auto Sales (id 13)
+        27: { min:5,  max:10, label:'Luxury' },   // Luxury Motors (id 27)
+    }[space.id] || { min:0, max:10, label:'All' };
 
-function handleBadSpace(player, space) {
-    let msg='', label='';
-    if (space.name==='Scuffed Rims')   { charge(player,100); player.happiness=Math.max(0,player.happiness-2); label='-$100'; msg=`${player.name} scuffed their rims! -$100, -2 Happiness.`; }
-    else if (space.name==='Lost Backpack') { charge(player,30);  label='-$30';    msg=`${player.name} lost their backpack!`; }
-    else if (space.name==='Out of Gas')    { charge(player,150); label='-$150';   msg=`${player.name} ran out of gas! Tow: $150.`; }
-    else if (space.name==='TAXES') { const assets=player.money+HOUSING[player.housingLevel].price+CARS[player.carLevel].price; const t=Math.max(1,Math.round(assets*0.10)); charge(player,t); label='-'+fmt(t); msg=player.name+' owes 10% tax on total assets ('+fmt(assets)+')! Tax bill: '+fmt(t); }
-    else if (space.name==='Hospital')      { charge(player,500); label='-$500';   msg=`${player.name} had a hospital visit!`; }
-    else if (space.name==='Prom Night')    { charge(player,1000);label='-$1,000'; msg=`${player.name} went to prom! -$1,000`; }
-    else if (space.name==='Mugged')        { charge(player,400); label='-$400';   msg=`${player.name} got mugged! -$400`; }
-    else if (space.name==='Fender Bender') { charge(player,400); label='-$400';   msg=`${player.name} had a fender bender! -$400`; }
-    else if (space.name==='Casino')        {
-        const win=Math.random()>0.5;
-        if(win){player.money+=200;label='+$200';msg=`${player.name} gambled and WON! +$200!`;}
-        else{charge(player,200);label='-$200';msg=`${player.name} gambled and LOST! -$200.`;}
+    const cur = CARS[player.carLevel];
+    const nextLvl = player.carLevel + 1;
+
+    if (player.carLevel >= CARS.length-1) {
+        showCardOverlay('🚀','CAR DEALER','Maxed Out!',`${player.name} already drives a ${cur.name}!`,'good');
+        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 4000); return;
     }
-    else { charge(player,100); label='-$100'; msg=`${player.name} had bad luck! -$100.`; }
-    renderPlayerBar();
-    showCardOverlay('❌','OUCH!',space.name,msg,'bad');
-    setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
+    if (nextLvl > tierRange.max) {
+        showCardOverlay('🔒','WRONG DEALER','Out of Range',
+            `${space.name} sells levels ${tierRange.min}–${tierRange.max}. Need a ${nextLvl >= 8?'luxury':'higher-end'} dealer!`,'bad');
+        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000); return;
+    }
+    const lapsNeeded = carLapRequired(nextLvl);
+    if ((player.laps||0) < lapsNeeded) {
+        showCardOverlay('🔒','LOCKED',`Lap ${lapsNeeded} Required`,`${player.name} needs Lap ${lapsNeeded} for ${CARS[nextLvl].name}.`,'bad');
+        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000); return;
+    }
+    const next = CARS[nextLvl];
+    const cost = Math.max(0, next.price - cur.price);
+    const payInfo = next.payment > 0 ? `\nMonthly payment: ${fmt(next.payment)} (due each lap)` : '';
+    showUpgradePopup(`🚗 ${space.name}`, `${player.name}, upgrade:\n${cur.icon} ${cur.name} → ${next.icon} ${next.name}\nCost: ${cost>0?fmt(cost):'FREE!'}${payInfo}`,
+        'BUY IT!', () => {
+            if (player.money >= cost) {
+                player.money -= cost; player.carLevel = nextLvl;
+                animateAssetIcon('apCarIcon'); renderPlayerBar(); closePopup();
+                showCardOverlay('🚗','NEW RIDE!',next.icon+' '+next.name,`${player.name} got a new ride!`,'good');
+                setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+            } else {
+                closePopup();
+                showCardOverlay('💸','CANT AFFORD IT','Not Enough',`${player.name} needs ${fmt(cost)} but has ${fmt(player.money)}`,'bad');
+                setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+            }
+        }, () => { closePopup(); endTurn(); });
 }
 
-// ── Card Overlay ─────────────────────────────────────────
+// ── REALTOR (#12) ─────────────────────────────────────────
+function handleRealtorSpace(player, space) {
+    // Show ALL housing options they qualify for by lap
+    const available = HOUSING.filter((h,i) => i > player.housingLevel && (player.laps||0) >= (h.lapReq||0));
+    if (!available.length) {
+        showCardOverlay('🏢','REALTOR','Nothing Available',`${player.name} doesn't qualify for any upgrades yet. Keep playing!`,'bad');
+        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000); return;
+    }
+    const best = available[available.length-1];
+    const cost = Math.max(0, best.price - HOUSING[player.housingLevel].price);
+    showUpgradePopup(`🏢 ${space.name}`, `${player.name}, best available:\n${best.icon} ${best.name}\nCost: ${fmt(cost)}\nRent: ${best.rent>0?fmt(best.rent)+'/lap':'none'}\n\n(Or upgrade 1 level for less)`,
+        'BEST UPGRADE', () => {
+            if (player.money >= cost) {
+                player.money -= cost; player.housingLevel = HOUSING.indexOf(best);
+                animateAssetIcon('apHousingIcon'); renderPlayerBar(); closePopup();
+                showCardOverlay('🏢','UPGRADED!',best.icon+' '+best.name,`${player.name} moved into ${best.name}!`,'good');
+                setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+            } else {
+                closePopup();
+                showCardOverlay('💸','CANT AFFORD IT','Not Enough',`${player.name} needs ${fmt(cost)}.`,'bad');
+                setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+            }
+        }, () => { closePopup(); endTurn(); });
+}
+
+// ── GENERIC UPGRADE POPUP ────────────────────────────────
+function showUpgradePopup(title, message, yesText, onYes, onNo) {
+    const popup = document.getElementById('popup');
+    const content = popup.querySelector('.popup-content');
+    document.getElementById('popupTitle').textContent = title;
+    document.getElementById('popupMessage').textContent = message;
+    content.className = 'popup-content popup-good';
+    popup.classList.remove('hidden');
+    content.querySelectorAll('button').forEach(b=>b.remove());
+    const yesBtn = document.createElement('button');
+    yesBtn.className='btn'; yesBtn.style.marginRight='10px'; yesBtn.textContent=yesText;
+    yesBtn.onclick = onYes;
+    const noBtn = document.createElement('button');
+    noBtn.className='btn'; noBtn.style.background='linear-gradient(135deg,#0f3460,#16213e)'; noBtn.textContent='PASS';
+    noBtn.onclick = onNo;
+    content.appendChild(yesBtn); content.appendChild(noBtn);
+}
+
+// ── CARD OVERLAY ─────────────────────────────────────────
 function showCardOverlay(icon, typeLabel, title, body, type) {
     const overlay = document.getElementById('cardOverlay');
     const display = document.getElementById('cardDisplay');
@@ -995,22 +1162,216 @@ function showCardOverlay(icon, typeLabel, title, body, type) {
     else if (type==='sarcastic') display.classList.add('card-sarcastic');
     overlay.classList.remove('hidden');
 }
-
 function hideCardOverlay() {
     const overlay = document.getElementById('cardOverlay');
     const display = document.getElementById('cardDisplay');
     display.classList.add('card-fade-out');
-    setTimeout(() => {
-        overlay.classList.add('hidden');
-        display.classList.remove('card-fade-out');
-    }, 500);
+    setTimeout(() => { overlay.classList.add('hidden'); display.classList.remove('card-fade-out'); }, 450);
 }
 
-// ── Win / Game Over ───────────────────────────────────────
-function checkWinThenEnd(player) {
-    if (!checkWin(player)) endTurn();
+// ── JOB OFFICE ───────────────────────────────────────────
+function handleJobOffice(player) {
+    const available = getAvailableJobs(player);
+    const better = available.filter(j=>j.pay > player.jobPay);
+    const pool = better.length > 0 ? better : available;
+    const offer = rnd(pool);
+    const laps = player.laps||0;
+    let nextUnlock = laps<25?`\nEntry jobs unlock at Lap 25 (${25-laps} away)`:laps<50?`\nMid jobs at Lap 50 (${50-laps} away)`:laps<75?`\nTop jobs at Lap 75 (${75-laps} away)`:'All jobs unlocked!';
+    showUpgradePopup(
+        '💼 Job Office — '+getTierLabel(laps),
+        `${player.name}, job offer:\n${offer.icon} ${offer.name} | Payday: ${fmt(offer.pay)}\nCurrent: ${player.job} (${fmt(player.jobPay)})${nextUnlock}`,
+        'TAKE IT!', () => {
+            player.job=offer.name; player.jobPay=offer.pay; adjustHappiness(player,0.5); renderPlayerBar(); closePopup();
+            showCardOverlay('💼','NEW JOB!',offer.icon+' '+offer.name,`${player.name} is now working as ${offer.name}! Payday: ${fmt(offer.pay)}`,'good');
+            setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+        }, () => { closePopup(); endTurn(); });
 }
 
+function handleJobCard(player) {
+    const card = drawCard(JOB_CARDS);
+    const result = card.effect(player);
+    renderPlayerBar();
+    const isGood = !result.includes('FIRED') && !result.includes('best job');
+    showCardOverlay(card.icon,'JOB CARD',card.name,result,isGood?'good':'bad');
+    setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+}
+
+// ── HOUSING/CAR CARD ──────────────────────────────────────
+function handleHousingCard(player) {
+    const card = drawCard(HOUSING_CARDS);
+    const result = card.effect(player);
+    renderPlayerBar();
+    showCardOverlay(card.icon||'🏘️','HOUSE CARD',card.name,result[1],result[2]||'bad');
+    setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+}
+function handleCarCard(player) {
+    const card = drawCard(CAR_CARDS);
+    const result = card.effect(player);
+    renderPlayerBar();
+    showCardOverlay(card.icon||'🔧','CAR CARD',card.name,result[1],result[2]||'bad');
+    setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+}
+
+// ── HUSTLE SPACES ─────────────────────────────────────────
+const HUSTLE_DATA = {
+    'Pop Up Tent':     { bad:[{die:1,earn:-80,msg:'Permit officer shut you down. -$80'},{die:2,earn:-50,msg:'Rain killed the crowd. -$50'},{die:3,earn:-30,msg:'Nobody came. -$30'}], good:[{die:4,earn:200,msg:'Decent foot traffic! +$200'},{die:5,earn:350,msg:'Sold out by noon! +$350'},{die:6,earn:500,msg:'VIRAL — line around the block! +$500'}] },
+    'Craft Show':      { bad:[{die:1,earn:-100,msg:'Booth fee wasted, zero sales. -$100'},{die:2,earn:-60,msg:'Dropped your best piece. -$60'},{die:3,earn:-30,msg:'Slow show. -$30'}], good:[{die:4,earn:250,msg:'People loved your work! +$250'},{die:5,earn:400,msg:'Custom orders coming in! +$400'},{die:6,earn:600,msg:'Local news featured you! +$600'}] },
+    'Storage Locker':  { bad:[{die:1,earn:-200,msg:'Full of wet trash. Lost bid. -$200'},{die:2,earn:-100,msg:'Nothing sellable. -$100'},{die:3,earn:-50,msg:'Bidding war, overpaid. -$50'}], good:[{die:4,earn:400,msg:'Electronics to flip! +$400'},{die:5,earn:700,msg:'Found antiques! +$700'},{die:6,earn:1200,msg:'JACKPOT — hidden cash! +$1,200'}] },
+    'Food Truck':      { bad:[{die:1,earn:-200,msg:'Health inspector shut you down. -$200'},{die:2,earn:-100,msg:'Generator died. -$100'},{die:3,earn:-50,msg:'Parked wrong, got towed. -$50'}], good:[{die:4,earn:300,msg:'Steady lunch crowd! +$300'},{die:5,earn:500,msg:'Cleaned out! +$500'},{die:6,earn:800,msg:'Food festival — 3hr wait! +$800'}] },
+    'Yard Sale':       { bad:[{die:1,earn:-40,msg:"Sold grandma's china for $2. -$40"},{die:2,earn:-20,msg:'Rain soaked everything. -$20'},{die:3,earn:0,msg:'Only your neighbor came. Bought nothing.'}], good:[{die:4,earn:150,msg:'Cleared out clutter! +$150'},{die:5,earn:280,msg:'Collectibles sold fast! +$280'},{die:6,earn:450,msg:'Antique hunter paid top dollar! +$450'}] },
+    'Flea Market':     { bad:[{die:1,earn:-80,msg:'Table fee, zero sales. -$80'},{die:2,earn:-50,msg:'Someone stole from your table. -$50'},{die:3,earn:-20,msg:'Slow Sunday. -$20'}], good:[{die:4,earn:200,msg:'Solid hustle day! +$200'},{die:5,earn:380,msg:'Everything went! +$380'},{die:6,earn:550,msg:'Resellers buying bulk! +$550'}] },
+    'Scrap Metal':     { bad:[{die:1,earn:-100,msg:'Truck broke hauling. Repair bill. -$100'},{die:2,earn:-60,msg:'Prices dropped. -$60'},{die:3,earn:-30,msg:'Yard was closed. -$30'}], good:[{die:4,earn:200,msg:'Good haul! +$200'},{die:5,earn:350,msg:'Found copper wire! +$350'},{die:6,earn:500,msg:'Full dumpster score! +$500'}] },
+    'Lemonade Stand':  { bad:[{die:1,earn:-30,msg:'City shut you down, no permit. -$30'},{die:2,earn:-20,msg:'Dog knocked over pitcher. -$20'},{die:3,earn:0,msg:'Cold day. Nobody wanted lemonade.'}], good:[{die:4,earn:80,msg:'Hot day, good spot! +$80'},{die:5,earn:150,msg:'Line around the block! +$150'},{die:6,earn:250,msg:'Influencer posted your stand! +$250'}] },
+    'Busking':         { bad:[{die:1,earn:-50,msg:'Broke a string, no backup. -$50'},{die:2,earn:-20,msg:'Cop moved you along. -$20'},{die:3,earn:0,msg:'Crickets. Nobody looked up.'}], good:[{die:4,earn:100,msg:'Tips rolling in! +$100'},{die:5,earn:200,msg:'Crowd gathered! +$200'},{die:6,earn:350,msg:'Talent scout gave you a card! +$350'}] },
+    'Lawn Mowing':     { bad:[{die:1,earn:-100,msg:'Mower seized. Repair bill. -$100'},{die:2,earn:-60,msg:'Hit a sprinkler head. -$60'},{die:3,earn:-20,msg:'Job canceled last minute. -$20'}], good:[{die:4,earn:150,msg:'Got a few yards done! +$150'},{die:5,earn:280,msg:'Whole street hired you! +$280'},{die:6,earn:400,msg:'HOA contracted you for the season! +$400'}] },
+    'Junk Hauling':    { bad:[{die:1,earn:-100,msg:'Truck overloaded, blew a tire. -$100'},{die:2,earn:-60,msg:'Dumped in wrong spot, fined. -$60'},{die:3,earn:-30,msg:'Job canceled, wasted gas. -$30'}], good:[{die:4,earn:150,msg:'Cleared a garage! +$150'},{die:5,earn:280,msg:'Found sellable stuff! +$280'},{die:6,earn:400,msg:'Estate cleanout, big payday! +$400'}] },
+    'Fishing Trip':    { bad:[{die:1,earn:-50,msg:'Lost all gear in water. -$50'},{die:2,earn:-30,msg:'Zero bites all day. -$30'},{die:3,earn:-20,msg:'Fishing license expired. Fine. -$20'}], good:[{die:4,earn:100,msg:'Decent catch! +$100'},{die:5,earn:200,msg:'Sold fresh fish roadside! +$200'},{die:6,earn:350,msg:'Trophy fish at auction! +$350'}] },
+    'Pizza Delivery':  { bad:[{die:1,earn:-80,msg:'Fender bender delivering. -$80'},{die:2,earn:-40,msg:'Wrong address, cold pizza, no tip. -$40'},{die:3,earn:-20,msg:'Terrible shift, stiffed. -$20'}], good:[{die:4,earn:120,msg:'Good tip night! +$120'},{die:5,earn:220,msg:'Rush hour tips flying! +$220'},{die:6,earn:350,msg:'Someone tipped $200 on one order! +$350'}] },
+    'Photography':     { bad:[{die:1,earn:-100,msg:'Dropped your camera. Repair. -$100'},{die:2,earn:-50,msg:'Client hated the photos, no pay. -$50'},{die:3,earn:-20,msg:'Memory card corrupted. -$20'}], good:[{die:4,earn:200,msg:'Headshot session! +$200'},{die:5,earn:350,msg:'Event photography gig! +$350'},{die:6,earn:600,msg:'Wedding photographer no-showed — you filled in! +$600'}] },
+    'Window Washing':  { bad:[{die:1,earn:-80,msg:'Fell off ladder. Medical bill. -$80'},{die:2,earn:-40,msg:'Broke a window. Had to pay. -$40'},{die:3,earn:-20,msg:'Client canceled after you drove over. -$20'}], good:[{die:4,earn:150,msg:'Knocked out a whole building! +$150'},{die:5,earn:260,msg:'Commercial contract! +$260'},{die:6,earn:400,msg:'Hotel hired you on the spot! +$400'}] },
+    'Dog Walking':     { bad:[{die:1,earn:-100,msg:'Dog bit someone. Covered bill. -$100'},{die:2,earn:-50,msg:'Dog got loose. Hours finding it. -$50'},{die:3,earn:-20,msg:'Owner canceled. -$20'}], good:[{die:4,earn:80,msg:'Easy walk, good tip! +$80'},{die:5,earn:160,msg:'Walked five dogs at once! +$160'},{die:6,earn:280,msg:'Rich neighbor wants daily walks! +$280'}] },
+    'Card Games':      { bad:[{die:1,earn:-200,msg:'Got cleaned out. -$200'},{die:2,earn:-100,msg:'Bad hand after bad hand. -$100'},{die:3,earn:-50,msg:'Lost focus, paid for it. -$50'}], good:[{die:4,earn:150,msg:'Read the table right! +$150'},{die:5,earn:300,msg:'Big pot, better bluff! +$300'},{die:6,earn:500,msg:'Royal flush baby! +$500'}] },
+    'Laundry Service': { bad:[{die:1,earn:-80,msg:"Shrunk someone's clothes. -$80"},{die:2,earn:-40,msg:'Washing machine flooded. -$40'},{die:3,earn:-20,msg:'Mixed whites and colors. -$20'}], good:[{die:4,earn:100,msg:'Neighborhood orders! +$100'},{die:5,earn:200,msg:'Picked up a regular client! +$200'},{die:6,earn:320,msg:'Airbnb host hired you weekly! +$320'}] },
+    'Plant Selling':   { bad:[{die:1,earn:-50,msg:'Frost killed inventory. -$50'},{die:2,earn:-30,msg:"Nobody wanted succulents. -$30"},{die:3,earn:-20,msg:'Dropped and smashed best pots. -$20'}], good:[{die:4,earn:100,msg:'Farmers market sold out! +$100'},{die:5,earn:200,msg:'Rare plant collectors! +$200'},{die:6,earn:350,msg:'Florist bought your whole stock! +$350'}] },
+    'Gaming Tourney':  { bad:[{die:1,earn:-100,msg:'Entry fee, knocked out round 1. -$100'},{die:2,earn:-50,msg:'Lag spike cost you. -$50'},{die:3,earn:-30,msg:'Rage quit, lost buy-in. -$30'}], good:[{die:4,earn:150,msg:'Made it to semis! +$150'},{die:5,earn:300,msg:'Runner up prize! +$300'},{die:6,earn:600,msg:'CHAMPION — took the whole pot! +$600'}] },
+    'Bake Sale':       { bad:[{die:1,earn:-60,msg:'Burned whole batch. -$60'},{die:2,earn:-30,msg:'Rain killed foot traffic. -$30'},{die:3,earn:-20,msg:'Forgot sugar. Nobody bought twice. -$20'}], good:[{die:4,earn:100,msg:'Sold out by lunch! +$100'},{die:5,earn:200,msg:'Office ordered 5 dozen cookies! +$200'},{die:6,earn:350,msg:'Catering order from the bake sale! +$350'}] },
+    'Bike Courier':    { bad:[{die:1,earn:-80,msg:'Bike got stolen. -$80'},{die:2,earn:-50,msg:'Flat tire, missed deliveries. -$50'},{die:3,earn:-20,msg:'Wrong address twice. No tip. -$20'}], good:[{die:4,earn:120,msg:'Fast routes, good tips! +$120'},{die:5,earn:230,msg:'Surge pricing hour! +$230'},{die:6,earn:380,msg:'VIP same-day contract! +$380'}] },
+    'Street Dice':     { bad:[{die:1,earn:-200,msg:'Cops showed up. Lost everything. -$200'},{die:2,earn:-100,msg:'Hot streak ended cold. -$100'},{die:3,earn:-50,msg:'Bad roll, lost stake. -$50'}], good:[{die:4,earn:150,msg:'Lucky streak! +$150'},{die:5,earn:300,msg:'Cleaned out two opponents! +$300'},{die:6,earn:500,msg:'On fire — nobody could touch you! +$500'}] },
+    'Car Wash':        { bad:[{die:1,earn:-80,msg:'Scratched a Mercedes. -$80'},{die:2,earn:-40,msg:'Hose burst, water everywhere. -$40'},{die:3,earn:-20,msg:'Only 2 cars all day. -$20'}], good:[{die:4,earn:180,msg:'Solid Saturday hustle! +$180'},{die:5,earn:300,msg:'Line wrapped around the block! +$300'},{die:6,earn:450,msg:'Car show came through — 40 cars! +$450'}] },
+    'Power Washing':   { bad:[{die:1,earn:-80,msg:'Pressure too high, blasted paint off. -$80'},{die:2,earn:-50,msg:'Equipment cost more than you made. -$50'},{die:3,earn:-20,msg:'Client not happy, no pay. -$20'}], good:[{die:4,earn:180,msg:'Driveway and patio! +$180'},{die:5,earn:320,msg:'HOA hired you for the street! +$320'},{die:6,earn:500,msg:'Commercial contract! +$500'}] },
+};
+
+// ── MINI GAMES (#21) ──────────────────────────────────────
+// Odd jobs get a mini-game
+const ODD_JOB_MINI_GAMES = [
+    {
+        name: 'Math Sprint',
+        desc: 'Quick — answer the math problem to earn more!',
+        run: (player, onDone) => {
+            const a = Math.floor(Math.random()*10)+1;
+            const b = Math.floor(Math.random()*10)+1;
+            const op = ['+','-','×'][Math.floor(Math.random()*3)];
+            let ans;
+            if (op==='+') ans=a+b;
+            else if (op==='-') ans=a-b;
+            else ans=a*b;
+            const wrongs = new Set();
+            while (wrongs.size < 3) {
+                const w = ans + Math.floor(Math.random()*10)-5;
+                if (w !== ans) wrongs.add(w);
+            }
+            const choices = [...wrongs, ans].sort(()=>Math.random()-0.5);
+            document.getElementById('mgTitle').textContent = '🧮 Math Sprint!';
+            document.getElementById('mgDesc').textContent = `What is ${a} ${op} ${b}?`;
+            const area = document.getElementById('mgArea');
+            area.innerHTML = '';
+            let done = false;
+            choices.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className='mg-btn'; btn.textContent=c;
+                btn.onclick = () => {
+                    if (done) return; done=true;
+                    const correct = c===ans;
+                    btn.classList.add(correct?'selected':'wrong');
+                    const earn = correct ? 300 : 50;
+                    if (correct) player.money+=earn; else { /* just base pay */ }
+                    setTimeout(()=>{ document.getElementById('miniGameOverlay').classList.add('hidden'); onDone(correct, earn); }, 1200);
+                };
+                area.appendChild(btn);
+            });
+            document.getElementById('miniGameOverlay').classList.remove('hidden');
+        }
+    },
+    {
+        name: 'Reaction Time',
+        desc: 'Tap the button the instant it turns green to earn a bonus!',
+        run: (player, onDone) => {
+            document.getElementById('mgTitle').textContent = '⚡ Reaction Time!';
+            document.getElementById('mgDesc').textContent = 'Wait for it... then tap!';
+            const area = document.getElementById('mgArea');
+            area.innerHTML = '';
+            const btn = document.createElement('button');
+            btn.className='mg-btn'; btn.textContent='WAIT...'; btn.style.width='100%'; btn.style.padding='20px';
+            btn.style.background='var(--red)'; btn.style.borderColor='var(--red)';
+            let ready=false, started=false;
+            btn.onclick = () => {
+                if (!ready) { btn.textContent='TOO EARLY! -$50'; player.money=Math.max(0,player.money-50); setTimeout(()=>{ document.getElementById('miniGameOverlay').classList.add('hidden'); onDone(false,50); },1000); return; }
+                if (started) return; started=true;
+                btn.textContent='✅ Got it!'; btn.style.background='var(--green)';
+                setTimeout(()=>{ document.getElementById('miniGameOverlay').classList.add('hidden'); player.money+=400; onDone(true,400); },800);
+            };
+            area.appendChild(btn);
+            document.getElementById('miniGameOverlay').classList.remove('hidden');
+            const delay = 1500 + Math.random()*2000;
+            setTimeout(()=>{ ready=true; btn.textContent='NOW! TAP!'; btn.style.background='var(--green)'; btn.style.borderColor='var(--green)'; },delay);
+            // timeout
+            setTimeout(()=>{ if(!started){ ready=false; document.getElementById('miniGameOverlay').classList.add('hidden'); onDone(false,0); } }, delay+2000);
+        }
+    },
+    {
+        name: 'Pick a Door',
+        desc: 'One door hides the big tip. Pick wisely!',
+        run: (player, onDone) => {
+            document.getElementById('mgTitle').textContent = '🚪 Pick a Door!';
+            document.getElementById('mgDesc').textContent = 'One hides $500. The others: nothing.';
+            const area = document.getElementById('mgArea');
+            area.innerHTML = '';
+            const win = Math.floor(Math.random()*3);
+            let picked = false;
+            ['🚪A','🚪B','🚪C'].forEach((label,i) => {
+                const btn = document.createElement('button');
+                btn.className='mg-btn'; btn.textContent=label; btn.style.fontSize='1.5em';
+                btn.onclick = () => {
+                    if (picked) return; picked=true;
+                    if (i===win) { btn.textContent='💰$500'; btn.classList.add('selected'); player.money+=500; setTimeout(()=>{ document.getElementById('miniGameOverlay').classList.add('hidden'); onDone(true,500); },1500); }
+                    else { btn.textContent='😔0'; btn.classList.add('wrong'); setTimeout(()=>{ document.getElementById('miniGameOverlay').classList.add('hidden'); onDone(false,0); },1500); }
+                };
+                area.appendChild(btn);
+            });
+            document.getElementById('miniGameOverlay').classList.remove('hidden');
+        }
+    },
+];
+
+function handleHustle(player, space) {
+    // Odd Jobs gets a mini game instead (#21)
+    if (space.name === 'Odd Jobs') {
+        const game = rnd(ODD_JOB_MINI_GAMES);
+        game.run(player, (won, earn) => {
+            const base = 80;
+            if (!won) player.money += base;
+            renderPlayerBar();
+            showCardOverlay('🎯','ODD JOB',won?'Bonus Earned!':'Base Pay Only',
+                won ? `Crushed it! Earned $${earn} bonus!` : `Tough one. Base pay: $${base}.`,
+                won?'good':'sarcastic');
+            setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+        });
+        return;
+    }
+
+    const data = HUSTLE_DATA[space.name];
+    if (!data) { endTurn(); return; }
+    const d1El = document.getElementById('die1');
+    const d2El = document.getElementById('die2');
+    const die = Math.ceil(Math.random()*6);
+    document.getElementById('gameMessage').textContent = `${player.name} is hustling — ${space.name}! Rolling...`;
+    animateDice(d1El, d2El, die, null, () => {
+        document.getElementById('diceResult').textContent =
+            DICE_FACES[die] + ' = ' + die + (die<=3?' 😬 Bad luck!':' 😎 Nice roll!');
+        const outcomes = die<=3 ? data.bad : data.good;
+        const picked = outcomes[die<=3 ? die-1 : die-4];
+        const earn = picked.earn;
+        if (earn>0)       { player.money += earn; adjustHappiness(player,0.5); }
+        else if (earn<0)  { charge(player,Math.abs(earn)); adjustHappiness(player,-0.5); }
+        renderPlayerBar();
+        const type = earn>0?'good':earn<0?'bad':'sarcastic';
+        showCardOverlay(space.icon,'HUSTLE — '+space.name+' (rolled '+die+')', earn>0?'+'+fmt(earn):earn<0?'-'+fmt(Math.abs(earn)):'Nothing', picked.msg, type);
+        setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5500);
+    });
+}
+
+// ── WIN / END ─────────────────────────────────────────────
+function checkWinThenEnd(player) { if (!checkWin(player)) endTurn(); }
 function endTurn() {
     if (gameState.phase==='over') return;
     const player = gameState.players[gameState.currentPlayerIndex];
@@ -1019,18 +1380,15 @@ function endTurn() {
     renderPlayerBar();
     updateCurrentPlayerDisplay();
 }
-
 function checkWin(player) {
     if (player.money >= gameState.winGoal) { showWin(player); return true; }
     return false;
 }
-
 function showWin(player) {
     gameState.phase='over';
     let ws=document.getElementById('winScreen');
     if (!ws) {
-        ws=document.createElement('div');
-        ws.id='winScreen'; ws.className='screen hidden';
+        ws=document.createElement('div'); ws.id='winScreen'; ws.className='screen hidden';
         ws.innerHTML=`<div class="win-content"><h1>🏆 WINNER! 🏆</h1><div id="winnerAvatar" style="font-size:5em"></div><div id="winnerName" style="font-size:2em;color:#4ecca3;margin:10px 0"></div><div class="win-stats" id="winStats"></div><button class="btn" onclick="location.reload()">PLAY AGAIN!</button></div>`;
         document.body.appendChild(ws);
     }
@@ -1038,18 +1396,16 @@ function showWin(player) {
     document.getElementById('winnerName').textContent=`${player.name} WON!`;
     document.getElementById('winStats').innerHTML=`
         <div class="win-stat"><div class="win-stat-label">Final Money</div><div class="win-stat-value">${fmt(player.money)}</div></div>
-        <div class="win-stat"><div class="win-stat-label">Job</div><div class="win-stat-value">${player.job}</div></div>
+        <div class="win-stat"><div class="win-stat-label">Mood</div><div class="win-stat-value">${player.happiness.toFixed(1)}/10</div></div>
         <div class="win-stat"><div class="win-stat-label">Home</div><div class="win-stat-value">${HOUSING[player.housingLevel].icon} ${HOUSING[player.housingLevel].name}</div></div>
         <div class="win-stat"><div class="win-stat-label">Car</div><div class="win-stat-value">${CARS[player.carLevel].icon} ${CARS[player.carLevel].name}</div></div>`;
     showScreen('winScreen');
 }
-
 function showGameOver(player) {
     let ws=document.getElementById('winScreen');
     if (!ws) {
-        ws=document.createElement('div');
-        ws.id='winScreen'; ws.className='screen hidden';
-        ws.innerHTML=`<div class="win-content" style="border-color:#e94560;box-shadow:0 0 50px rgba(233,69,96,0.5)"><h1 style="color:#e94560">🚔 GAME OVER 🚔</h1><div id="winnerAvatar" style="font-size:5em"></div><div id="winnerName" style="font-size:2em;color:#e94560;margin:10px 0"></div><p style="color:#a8a8b3;margin:10px 0">Sent back to prison. Better luck next time!</p><button class="btn" onclick="location.reload()">TRY AGAIN!</button></div>`;
+        ws=document.createElement('div'); ws.id='winScreen'; ws.className='screen hidden';
+        ws.innerHTML=`<div class="win-content" style="border-color:#e94560;box-shadow:0 0 50px rgba(233,69,96,0.5)"><h1 style="color:#e94560">🚔 GAME OVER 🚔</h1><div id="winnerAvatar" style="font-size:5em"></div><div id="winnerName" style="font-size:2em;color:#e94560;margin:10px 0"></div><p style="color:#a8a8b3">Rotting in prison. Better luck next time!</p><button class="btn" onclick="location.reload()">TRY AGAIN!</button></div>`;
         document.body.appendChild(ws);
     }
     document.getElementById('winnerAvatar').textContent=player.avatar;
@@ -1057,502 +1413,16 @@ function showGameOver(player) {
     showScreen('winScreen');
 }
 
-// ── Popup (kept for compatibility) ───────────────────────
-function showPopup(title, message, type) {
+// ── POPUP ─────────────────────────────────────────────────
+function showPopup(title,message,type) {
     document.getElementById('popupTitle').textContent=title;
     document.getElementById('popupMessage').textContent=message;
     const popup=document.getElementById('popup');
     const content=popup.querySelector('.popup-content');
-    content.className='popup-content';
-    if(type==='good') content.classList.add('popup-good');
-    if(type==='bad')  content.classList.add('popup-bad');
-    const existingBtns=content.querySelectorAll('button');
-    existingBtns.forEach(b=>b.remove());
-    const okBtn=document.createElement('button');
-    okBtn.className='btn'; okBtn.textContent='OK!!'; okBtn.onclick=closePopup;
-    content.appendChild(okBtn);
+    content.className='popup-content'+(type==='good'?' popup-good':type==='bad'?' popup-bad':'');
+    content.querySelectorAll('button').forEach(b=>b.remove());
+    const ok=document.createElement('button'); ok.className='btn'; ok.textContent='OK!!'; ok.onclick=closePopup;
+    content.appendChild(ok);
     popup.classList.remove('hidden');
 }
 function closePopup() { document.getElementById('popup').classList.add('hidden'); }
-function showMessage(msg) { document.getElementById('gameMessage').textContent=msg; }
-
-// ── Job Cards Deck ────────────────────────────────────────
-// ── All jobs sorted by tier ──────────────────────────────
-// Tier unlocked by turnsPlayed: early=0+, mid=8+, late=16+, top=24+
-const ALL_JOBS = [
-    { name: 'Dog Walker',     icon: '🐕', pay: 500,   tier: 0 },
-    { name: 'Fruit Picker',   icon: '🍎', pay: 800,   tier: 0 },
-    { name: 'Wendys',         icon: '🍔', pay: 2400,  tier: 0 },
-    { name: 'Walmart',        icon: '🛒', pay: 2800,  tier: 0 },
-    { name: 'DoorDash',       icon: '🚗', pay: 3000,  tier: 0 },
-    { name: 'Factory Worker', icon: '🏭', pay: 3200,  tier: 1 },
-    { name: 'Trash Collector',icon: '🗑️', pay: 3500,  tier: 1 },
-    { name: 'House Cleaner',  icon: '🧹', pay: 3800,  tier: 1 },
-    { name: 'Security',       icon: '🔒', pay: 4000,  tier: 1 },
-    { name: 'Farmer',         icon: '🌾', pay: 3500,  tier: 1 },
-    { name: 'Amazon Driver',  icon: '📦', pay: 5000,  tier: 2 },
-    { name: 'Police',         icon: '👮', pay: 5500,  tier: 2 },
-    { name: 'Prison Guard',   icon: '🚔', pay: 6000,  tier: 2 },
-    { name: 'Labor',          icon: '👷', pay: 4500,  tier: 2 },
-    { name: 'Catering',       icon: '🍽️', pay: 4000,  tier: 2 },
-    { name: 'Realtor',        icon: '🏠', pay: 8000,  tier: 3 },
-    { name: 'Microsoft',      icon: '💻', pay: 12000, tier: 3 },
-];
-
-function getTier(laps) {
-    if (laps >= 75) return 3;
-    if (laps >= 50) return 2;
-    if (laps >= 25) return 1;
-    return 0;
-}
-
-function getTierLabel(laps) {
-    if (laps >= 75) return 'Senior Level (Lap 75+)';
-    if (laps >= 50) return 'Mid Level (Lap 50+)';
-    if (laps >= 25) return 'Entry Level (Lap 25+)';
-    return 'Starting Out (Laps 1-24)';
-}
-
-function getAvailableJobs(player) {
-    const maxTier = getTier(player.laps || 0);
-    return ALL_JOBS.filter(j => j.tier <= maxTier);
-}
-
-// Job cards only draw from available tier
-const JOB_CARDS = [
-    { name: 'Got Hired!',  icon: '💼', effect: p => {
-        const pool = getAvailableJobs(p).filter(j => j.pay > p.jobPay);
-        if (pool.length === 0) return p.name + ' already has the best job available right now!';
-        const j = pool[Math.floor(Math.random()*pool.length)];
-        p.job = j.name; p.jobPay = j.pay;
-        return p.name + ' got hired as ' + j.icon + ' ' + j.name + '! Payday: $' + j.pay.toLocaleString();
-    }},
-    { name: 'Got Hired!',  icon: '💼', effect: p => {
-        const pool = getAvailableJobs(p).filter(j => j.pay > p.jobPay);
-        if (pool.length === 0) return p.name + ' already has the best job available right now!';
-        const j = pool[Math.floor(Math.random()*pool.length)];
-        p.job = j.name; p.jobPay = j.pay;
-        return p.name + ' got hired as ' + j.icon + ' ' + j.name + '! Payday: $' + j.pay.toLocaleString();
-    }},
-    { name: 'Got Fired!',  icon: '🔥', effect: p => {
-        p.job = 'Unemployed'; p.jobPay = 2000;
-        return p.name + ' got FIRED! Back to Unemployed. Payday: $2,000';
-    }},
-    { name: 'Got Fired!',  icon: '🔥', effect: p => {
-        p.job = 'Unemployed'; p.jobPay = 2000;
-        return p.name + ' got FIRED again! Payday: $2,000';
-    }},
-];
-
-// ── Job Office Space ──────────────────────────────────────
-function handleJobOffice(player) {
-    const available = getAvailableJobs(player);
-    const tierLabel = getTierLabel(player.laps || 0);
-
-    // Offer a random job from available pool (can be any tier they've unlocked)
-    // Bias toward jobs better than current
-    const better = available.filter(j => j.pay > player.jobPay);
-    const pool = better.length > 0 ? better : available;
-    const offer = pool[Math.floor(Math.random() * pool.length)];
-
-    // Show what's unlocked next if not max tier
-    const turns = player.turnsPlayed;
-    const laps = player.laps || 0;
-    let nextUnlock = '';
-    if (laps < 25)  nextUnlock = '\nEntry-level jobs unlock at Lap 25. (' + (25-laps) + ' laps away)';
-    else if (laps < 50) nextUnlock = '\nMid-level jobs unlock at Lap 50. (' + (50-laps) + ' laps away)';
-    else if (laps < 75) nextUnlock = '\nTop jobs unlock at Lap 75. (' + (75-laps) + ' laps away)';
-    else nextUnlock = '\nAll jobs unlocked — Senior Level!';
-
-    const popup = document.getElementById('popup');
-    const content = popup.querySelector('.popup-content');
-    document.getElementById('popupTitle').textContent = '💼 Job Office — ' + tierLabel;
-    document.getElementById('popupMessage').textContent =
-        player.name + ', job offer: ' + offer.icon + ' ' + offer.name +
-        ' | Payday: $' + offer.pay.toLocaleString() +
-        '\nCurrent: ' + player.job + ' ($' + player.jobPay.toLocaleString() + ')' +
-        nextUnlock;
-    content.className = 'popup-content popup-good';
-    popup.classList.remove('hidden');
-    content.querySelectorAll('button').forEach(b => b.remove());
-
-    const yesBtn = document.createElement('button');
-    yesBtn.className = 'btn'; yesBtn.style.marginRight = '10px'; yesBtn.textContent = 'TAKE IT!';
-    yesBtn.onclick = () => {
-        player.job = offer.name; player.jobPay = offer.pay;
-        renderPlayerBar(); closePopup();
-        showCardOverlay('💼', 'NEW JOB!', offer.icon + ' ' + offer.name,
-            player.name + ' is now working as ' + offer.name + '! New payday: $' + offer.pay.toLocaleString(), 'good');
-        setTimeout(() => { hideCardOverlay(); checkWinThenEnd(player); }, 5000);
-    };
-    const noBtn = document.createElement('button');
-    noBtn.className = 'btn'; noBtn.style.background = 'linear-gradient(135deg,#0f3460,#16213e)'; noBtn.textContent = 'PASS';
-    noBtn.onclick = () => { closePopup(); endTurn(); };
-    content.appendChild(yesBtn); content.appendChild(noBtn);
-}
-
-// ── Job Card Draw ─────────────────────────────────────────
-function handleJobCard(player) {
-    const card = drawCard(JOB_CARDS);
-    const result = card.effect(player);
-    renderPlayerBar();
-    const isGood = !result.includes('FIRED') && !result.includes('best job');
-    showCardOverlay(card.icon, 'JOB CARD', card.name, result, isGood ? 'good' : 'bad');
-    setTimeout(() => { hideCardOverlay(); checkWinThenEnd(player); }, 5000);
-}
-
-// ── Hustle Spaces — roll 1 die, 1-3 bad, 4-6 good ───────
-const HUSTLE_DATA = {
-    'Pop Up Tent': {
-        bad: [
-            { die: 1, earn: -80,  msg: 'Permit officer shut you down before you opened. -$80' },
-            { die: 2, earn: -50,  msg: 'Rain killed the crowd. Lost setup costs. -$50' },
-            { die: 3, earn: -30,  msg: 'Nobody came. Packed up early. -$30' },
-        ],
-        good: [
-            { die: 4, earn: 200,  msg: 'Decent foot traffic, solid sales! +$200' },
-            { die: 5, earn: 350,  msg: 'Sold out by noon! Great day. +$350' },
-            { die: 6, earn: 500,  msg: 'VIRAL moment — line around the block! +$500' },
-        ],
-    },
-    'Craft Show': {
-        bad: [
-            { die: 1, earn: -100, msg: 'Booth fee wasted, zero sales. -$100' },
-            { die: 2, earn: -60,  msg: 'Dropped and broke your best piece. -$60' },
-            { die: 3, earn: -30,  msg: 'Slow show, barely covered parking. -$30' },
-        ],
-        good: [
-            { die: 4, earn: 250,  msg: 'People loved your work! +$250' },
-            { die: 5, earn: 400,  msg: 'Custom orders coming in! +$400' },
-            { die: 6, earn: 600,  msg: 'Local news featured your booth! +$600' },
-        ],
-    },
-    'Storage Locker': {
-        bad: [
-            { die: 1, earn: -200, msg: 'Full of wet furniture and trash. Lost bid. -$200' },
-            { die: 2, earn: -100, msg: 'Nothing sellable. Cost more to haul away. -$100' },
-            { die: 3, earn: -50,  msg: 'Bidding war, overpaid, barely broke even. -$50' },
-        ],
-        good: [
-            { die: 4, earn: 400,  msg: 'Some decent electronics to flip! +$400' },
-            { die: 5, earn: 700,  msg: 'Found antiques worth big money! +$700' },
-            { die: 6, earn: 1200, msg: 'JACKPOT — hidden cash in a box! +$1,200' },
-        ],
-    },
-    'Food Truck': {
-        bad: [
-            { die: 1, earn: -200, msg: 'Health inspector shut you down. Fine. -$200' },
-            { die: 2, earn: -100, msg: 'Generator died, lost all your food. -$100' },
-            { die: 3, earn: -50,  msg: 'Parked in wrong spot, got towed. -$50' },
-        ],
-        good: [
-            { die: 4, earn: 300,  msg: 'Steady lunch crowd! +$300' },
-            { die: 5, earn: 500,  msg: 'Office park found you — cleaned out! +$500' },
-            { die: 6, earn: 800,  msg: 'Food festival — 3 hour wait line! +$800' },
-        ],
-    },
-    'Yard Sale': {
-        bad: [
-            { die: 1, earn: -40,  msg: 'Sold grandmas china for $2. Regret. -$40 sanity.' },
-            { die: 2, earn: -20,  msg: 'Rain came, everything got soaked. -$20' },
-            { die: 3, earn: 0,    msg: 'Only the neighbor came. Bought nothing.' },
-        ],
-        good: [
-            { die: 4, earn: 150,  msg: 'Cleared out the clutter! +$150' },
-            { die: 5, earn: 280,  msg: 'Collectibles sold fast! +$280' },
-            { die: 6, earn: 450,  msg: 'Antique hunter showed up, paid top dollar! +$450' },
-        ],
-    },
-    'Flea Market': {
-        bad: [
-            { die: 1, earn: -80,  msg: 'Table fee, zero sales, long day. -$80' },
-            { die: 2, earn: -50,  msg: 'Someone stole from your table. -$50' },
-            { die: 3, earn: -20,  msg: 'Slow Sunday crowd. Barely worth it. -$20' },
-        ],
-        good: [
-            { die: 4, earn: 200,  msg: 'Solid hustle day! +$200' },
-            { die: 5, earn: 380,  msg: 'Everything went! +$380' },
-            { die: 6, earn: 550,  msg: 'Resellers buying everything in bulk! +$550' },
-        ],
-    },
-    'Scrap Metal': {
-        bad: [
-            { die: 1, earn: -100, msg: 'Truck broke hauling it. Repair bill. -$100' },
-            { die: 2, earn: -60,  msg: 'Prices dropped, not worth the trip. -$60' },
-            { die: 3, earn: -30,  msg: 'Got to the yard and they were closed. -$30' },
-        ],
-        good: [
-            { die: 4, earn: 200,  msg: 'Good haul, decent payout! +$200' },
-            { die: 5, earn: 350,  msg: 'Found copper wire — jackpot metal! +$350' },
-            { die: 6, earn: 500,  msg: 'Construction site had a full dumpster. +$500' },
-        ],
-    },
-    'Lemonade Stand': {
-        bad: [
-            { die: 1, earn: -30,  msg: 'City shut you down, no permit. -$30' },
-            { die: 2, earn: -20,  msg: 'Dog knocked over the whole pitcher. -$20' },
-            { die: 3, earn: 0,    msg: 'Cold day. Nobody wanted lemonade.' },
-        ],
-        good: [
-            { die: 4, earn: 80,   msg: 'Hot day, good spot! +$80' },
-            { die: 5, earn: 150,  msg: 'Line around the block! +$150' },
-            { die: 6, earn: 250,  msg: 'Influencer posted your stand. Sold out! +$250' },
-        ],
-    },
-    'Busking': {
-        bad: [
-            { die: 1, earn: -50,  msg: 'Broke a string, no backup. Embarrassing. -$50' },
-            { die: 2, earn: -20,  msg: 'Cop moved you along after 10 minutes. -$20' },
-            { die: 3, earn: 0,    msg: 'Crickets. Nobody even looked up.' },
-        ],
-        good: [
-            { die: 4, earn: 100,  msg: 'Decent tips rolling in! +$100' },
-            { die: 5, earn: 200,  msg: 'Crowd gathered, hat overflowing! +$200' },
-            { die: 6, earn: 350,  msg: 'Talent scout handed you a card. +$350' },
-        ],
-    },
-    'Lawn Mowing': {
-        bad: [
-            { die: 1, earn: -100, msg: 'Mower engine seized. Repair bill. -$100' },
-            { die: 2, earn: -60,  msg: 'Hit a sprinkler head. Customer furious. -$60' },
-            { die: 3, earn: -20,  msg: 'One job canceled last minute. -$20' },
-        ],
-        good: [
-            { die: 4, earn: 150,  msg: 'Got a few yards done! +$150' },
-            { die: 5, earn: 280,  msg: 'Whole street hired you! +$280' },
-            { die: 6, earn: 400,  msg: 'HOA contracted you for the season! +$400' },
-        ],
-    },
-
-    'Junk Hauling': {
-        bad: [
-            { die: 1, earn: -100, msg: 'Truck overloaded, blew a tire. -$100' },
-            { die: 2, earn: -60,  msg: 'Dumped in wrong spot, got fined. -$60' },
-            { die: 3, earn: -30,  msg: 'Job cancelled last minute, wasted gas. -$30' },
-        ],
-        good: [
-            { die: 4, earn: 150,  msg: 'Cleared a garage, solid pay! +$150' },
-            { die: 5, earn: 280,  msg: 'Found sellable stuff in the junk! +$280' },
-            { die: 6, earn: 400,  msg: 'Estate cleanout, big payday! +$400' },
-        ],
-    },
-    'Fishing Trip': {
-        bad: [
-            { die: 1, earn: -50,  msg: 'Lost all your gear in the water. -$50' },
-            { die: 2, earn: -30,  msg: 'Zero bites all day. Wasted bait. -$30' },
-            { die: 3, earn: -20,  msg: 'Fishing license expired. Fine. -$20' },
-        ],
-        good: [
-            { die: 4, earn: 100,  msg: 'Decent catch at the market! +$100' },
-            { die: 5, earn: 200,  msg: 'Sold fresh fish by the roadside! +$200' },
-            { die: 6, earn: 350,  msg: 'Trophy fish at auction! +$350' },
-        ],
-    },
-    'Pizza Delivery': {
-        bad: [
-            { die: 1, earn: -80,  msg: 'Got in a fender bender delivering. -$80' },
-            { die: 2, earn: -40,  msg: 'Wrong address, cold pizza, no tip. -$40' },
-            { die: 3, earn: -20,  msg: 'Terrible shift, stiffed on tips. -$20' },
-        ],
-        good: [
-            { die: 4, earn: 120,  msg: 'Good tip night! +$120' },
-            { die: 5, earn: 220,  msg: 'Rush hour rush, tips flying! +$220' },
-            { die: 6, earn: 350,  msg: 'Someone tipped $200 on one order! +$350' },
-        ],
-    },
-    'Photography': {
-        bad: [
-            { die: 1, earn: -100, msg: 'Dropped your camera. Repair bill. -$100' },
-            { die: 2, earn: -50,  msg: 'Client hated the photos, no pay. -$50' },
-            { die: 3, earn: -20,  msg: 'Memory card corrupted, lost everything. -$20' },
-        ],
-        good: [
-            { die: 4, earn: 200,  msg: 'Headshot session booked! +$200' },
-            { die: 5, earn: 350,  msg: 'Event photography gig! +$350' },
-            { die: 6, earn: 600,  msg: 'Wedding photographer no-showed — you filled in! +$600' },
-        ],
-    },
-    'Window Washing': {
-        bad: [
-            { die: 1, earn: -80,  msg: 'Fell off the ladder. Medical bill. -$80' },
-            { die: 2, earn: -40,  msg: 'Broke a window. Had to pay for it. -$40' },
-            { die: 3, earn: -20,  msg: 'Client cancelled after you drove over. -$20' },
-        ],
-        good: [
-            { die: 4, earn: 150,  msg: 'Knocked out a whole building! +$150' },
-            { die: 5, earn: 260,  msg: 'Commercial contract for the week! +$260' },
-            { die: 6, earn: 400,  msg: 'Hotel hired you on the spot! +$400' },
-        ],
-    },
-    'Dog Walking': {
-        bad: [
-            { die: 1, earn: -100, msg: 'Dog bit someone. You covered the bill. -$100' },
-            { die: 2, earn: -50,  msg: 'Dog got loose, spent hours finding it. -$50' },
-            { die: 3, earn: -20,  msg: 'Owner canceled, wasted your morning. -$20' },
-        ],
-        good: [
-            { die: 4, earn: 80,   msg: 'Easy walk, good tip! +$80' },
-            { die: 5, earn: 160,  msg: 'Walked five dogs at once! +$160' },
-            { die: 6, earn: 280,  msg: 'Rich neighbor wants daily walks! +$280' },
-        ],
-    },
-    'Card Games': {
-        bad: [
-            { die: 1, earn: -200, msg: 'Got cleaned out at the table. -$200' },
-            { die: 2, earn: -100, msg: 'Bad hand after bad hand. -$100' },
-            { die: 3, earn: -50,  msg: 'Lost focus and paid for it. -$50' },
-        ],
-        good: [
-            { die: 4, earn: 150,  msg: 'Read the table right! +$150' },
-            { die: 5, earn: 300,  msg: 'Big pot, better bluff! +$300' },
-            { die: 6, earn: 500,  msg: 'Royal flush baby! +$500' },
-        ],
-    },
-    'Odd Jobs': {
-        bad: [
-            { die: 1, earn: -60,  msg: 'Agreed to a job, cost more than you made. -$60' },
-            { die: 2, earn: -40,  msg: 'Client disappeared without paying. -$40' },
-            { die: 3, earn: -20,  msg: 'Tools broke mid-job. -$20' },
-        ],
-        good: [
-            { die: 4, earn: 130,  msg: 'Fixed a fence, cash in hand! +$130' },
-            { die: 5, earn: 240,  msg: 'Three jobs in one day! +$240' },
-            { die: 6, earn: 400,  msg: 'Helped someone move — tipped huge! +$400' },
-        ],
-    },
-    'Laundry Service': {
-        bad: [
-            { die: 1, earn: -80,  msg: "Shrunk someone's clothes. Had to replace them. -$80" },
-            { die: 2, earn: -40,  msg: 'Washing machine flooded. Repair cost. -$40' },
-            { die: 3, earn: -20,  msg: 'Mixed the whites and colors. Client furious. -$20' },
-        ],
-        good: [
-            { die: 4, earn: 100,  msg: 'Neighborhood laundry orders coming in! +$100' },
-            { die: 5, earn: 200,  msg: 'Picked up a regular client! +$200' },
-            { die: 6, earn: 320,  msg: 'Airbnb host hired you weekly! +$320' },
-        ],
-    },
-    'Plant Selling': {
-        bad: [
-            { die: 1, earn: -50,  msg: 'Frost killed your inventory overnight. -$50' },
-            { die: 2, earn: -30,  msg: 'Nobody wanted succulents today. -$30' },
-            { die: 3, earn: -20,  msg: 'Dropped and smashed your best pots. -$20' },
-        ],
-        good: [
-            { die: 4, earn: 100,  msg: 'Farmers market stand sold out! +$100' },
-            { die: 5, earn: 200,  msg: 'Rare plant collectors found you! +$200' },
-            { die: 6, earn: 350,  msg: 'Florist bought your whole stock! +$350' },
-        ],
-    },
-    'Gaming Tourney': {
-        bad: [
-            { die: 1, earn: -100, msg: 'Entry fee, got knocked out round 1. -$100' },
-            { die: 2, earn: -50,  msg: 'Lag spike cost you the match. -$50' },
-            { die: 3, earn: -30,  msg: 'Rage quit, lost your buy-in. -$30' },
-        ],
-        good: [
-            { die: 4, earn: 150,  msg: 'Made it to the semis! +$150' },
-            { die: 5, earn: 300,  msg: 'Runner up prize! +$300' },
-            { die: 6, earn: 600,  msg: 'CHAMPION — took the whole pot! +$600' },
-        ],
-    },
-    'Bake Sale': {
-        bad: [
-            { die: 1, earn: -60,  msg: 'Burned the whole batch. Wasted ingredients. -$60' },
-            { die: 2, earn: -30,  msg: 'Rain killed the foot traffic. -$30' },
-            { die: 3, earn: -20,  msg: 'Forgot the sugar. Nobody bought twice. -$20' },
-        ],
-        good: [
-            { die: 4, earn: 100,  msg: 'Sold out by lunch! +$100' },
-            { die: 5, earn: 200,  msg: 'Office ordered 5 dozen cookies! +$200' },
-            { die: 6, earn: 350,  msg: 'Catering order from the bake sale! +$350' },
-        ],
-    },
-    'Bike Courier': {
-        bad: [
-            { die: 1, earn: -80,  msg: 'Bike got stolen mid-shift. -$80' },
-            { die: 2, earn: -50,  msg: 'Flat tire, missed all your deliveries. -$50' },
-            { die: 3, earn: -20,  msg: 'Delivered to wrong address twice. No tip. -$20' },
-        ],
-        good: [
-            { die: 4, earn: 120,  msg: 'Fast routes, good tips! +$120' },
-            { die: 5, earn: 230,  msg: 'Surge pricing hour — cleaned up! +$230' },
-            { die: 6, earn: 380,  msg: 'VIP same-day delivery contract! +$380' },
-        ],
-    },
-    'Power Washing': {
-        bad: [
-            { die: 1, earn: -80,  msg: 'Pressure too high, blasted the paint off. -$80' },
-            { die: 2, earn: -50,  msg: 'Equipment rental cost more than you made. -$50' },
-            { die: 3, earn: -20,  msg: "Client wasn't happy with results. No pay. -$20" },
-        ],
-        good: [
-            { die: 4, earn: 180,  msg: 'Driveway and patio, solid day! +$180' },
-            { die: 5, earn: 320,  msg: 'HOA hired you for the whole street! +$320' },
-            { die: 6, earn: 500,  msg: 'Commercial contract landed! +$500' },
-        ],
-    },
-    'Fish Tank Setup': {
-        bad: [
-            { die: 1, earn: -100, msg: 'Tank cracked during install. You covered it. -$100' },
-            { die: 2, earn: -60,  msg: 'Fish died within 24 hours. Blamed you. -$60' },
-            { die: 3, earn: -30,  msg: 'Client changed their mind mid-setup. -$30' },
-        ],
-        good: [
-            { die: 4, earn: 200,  msg: 'Beautiful setup, happy client! +$200' },
-            { die: 5, earn: 350,  msg: 'Office lobby aquarium installed! +$350' },
-            { die: 6, earn: 550,  msg: 'Restaurant hired you for a custom tank wall! +$550' },
-        ],
-    },
-    'Street Dice': {
-        bad: [
-            { die: 1, earn: -200, msg: 'Cops showed up. Lost everything. -$200' },
-            { die: 2, earn: -100, msg: 'Hot streak ended cold. -$100' },
-            { die: 3, earn: -50,  msg: 'Bad roll, lost your stake. -$50' },
-        ],
-        good: [
-            { die: 4, earn: 150,  msg: 'Lucky streak, walked away up! +$150' },
-            { die: 5, earn: 300,  msg: 'Cleaned out two opponents! +$300' },
-            { die: 6, earn: 500,  msg: 'On fire — nobody could touch you! +$500' },
-        ],
-    },
-        'Car Wash': {
-        bad: [
-            { die: 1, earn: -80,  msg: 'Scratched a Mercedes. Owner not happy. -$80' },
-            { die: 2, earn: -40,  msg: 'Hose burst, water everywhere. -$40' },
-            { die: 3, earn: -20,  msg: 'Only 2 cars all day. Lost money on soap. -$20' },
-        ],
-        good: [
-            { die: 4, earn: 180,  msg: 'Solid Saturday hustle! +$180' },
-            { die: 5, earn: 300,  msg: 'Line wrapped around the block! +$300' },
-            { die: 6, earn: 450,  msg: 'Car show came through — 40 cars! +$450' },
-        ],
-    },
-};
-
-function handleHustle(player, space) {
-    const data = HUSTLE_DATA[space.name];
-    if (!data) { endTurn(); return; }
-
-    const d1El = document.getElementById('die1');
-    const d2El = document.getElementById('die2');
-    const die = Math.ceil(Math.random() * 6);
-
-    animateDice(d1El, d2El, die, null, () => {
-        document.getElementById('diceResult').textContent =
-            DICE_FACES[die] + ' = ' + die + (die <= 3 ? ' 😬 Bad luck!' : ' 😎 Nice roll!');
-
-        const outcomes = die <= 3 ? data.bad : data.good;
-        const picked = outcomes[die <= 3 ? die - 1 : die - 4];
-        const earn = picked.earn;
-
-        if (earn > 0)       player.money += earn;
-        else if (earn < 0)  charge(player, Math.abs(earn));
-
-        renderPlayerBar();
-        const type = earn > 0 ? 'good' : earn < 0 ? 'bad' : 'sarcastic';
-        const label = earn > 0 ? '+' + fmt(earn) : earn < 0 ? '-' + fmt(Math.abs(earn)) : 'Nothing';
-        showCardOverlay(space.icon, 'HUSTLE — ' + space.name + ' (rolled ' + die + ')', label, picked.msg, type);
-        setTimeout(() => { hideCardOverlay(); checkWinThenEnd(player); }, 5000);
-    });
-}
