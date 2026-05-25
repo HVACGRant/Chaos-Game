@@ -190,48 +190,49 @@ const SARCASTIC_CARDS = [
 ];
 
 // ── Board Layout ─────────────────────────────────────────
-// 40 spaces: 4 corners + 20 blank + action spaces mixed in randomly
+// 40 spaces: 4 corners + 20 blank + action spaces
+// Includes: house square, house cards, car dealer, car cards
 const BOARD_SPACES = [
-    { id: 0,  type: 'corner',  icon: '🏁', name: 'START',          desc: 'Begin your new life!' },
-    { id: 1,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 2,  type: 'card',    icon: '🃏', name: 'Good Card',       desc: 'Draw a Good Card!' },
-    { id: 3,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 4,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 5,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 6,  type: 'card',    icon: '😈', name: 'Bad Card',        desc: 'Draw a Bad Card!' },
-    { id: 7,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 8,  type: 'good',    icon: '💵', name: 'Found $20',      desc: 'Collect $20!' },
-    { id: 9,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 10, type: 'corner',  icon: '⛓️', name: 'JAIL',            desc: 'Just Visiting... or IN!' },
-    { id: 11, type: 'card',    icon: '🏠', name: 'Sarcastic Card',  desc: 'Draw a Sarcastic Card!' },
-    { id: 12, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 13, type: 'bad',     icon: '⛽', name: 'Out of Gas',      desc: 'Tow: $150!' },
-    { id: 14, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 15, type: 'payday',  icon: '💰', name: 'PAYDAY',          desc: 'Collect your paycheck!' },
-    { id: 16, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 17, type: 'card',    icon: '🃏', name: 'Good Card',       desc: 'Draw a Good Card!' },
-    { id: 18, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 19, type: 'bad',     icon: '🏥', name: 'Hospital',        desc: 'Pay $500!' },
-    { id: 20, type: 'corner',  icon: '🎁', name: 'FREE DAY',        desc: 'Nothing happens!' },
-    { id: 21, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 22, type: 'card',    icon: '😈', name: 'Bad Card',        desc: 'Draw a Bad Card!' },
-    { id: 23, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 24, type: 'bad',     icon: '📋', name: 'TAXES',           desc: 'Pay 10% of total assets!' },
-    { id: 25, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 26, type: 'card',    icon: '🏠', name: 'Sarcastic Card',  desc: 'Draw a Sarcastic Card!' },
-    { id: 27, type: 'good',    icon: '✈️',  name: 'Vacation Pay',   desc: 'Collect $1,200!' },
-    { id: 28, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 29, type: 'card',    icon: '🃏', name: 'Good Card',       desc: 'Draw a Good Card!' },
-    { id: 30, type: 'corner',  icon: '🚔', name: 'GO TO JAIL',      desc: 'Go directly to Jail!' },
-    { id: 31, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 32, type: 'card',    icon: '😈', name: 'Bad Card',        desc: 'Draw a Bad Card!' },
-    { id: 33, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 34, type: 'good',    icon: '🎰', name: 'Casino Win',      desc: 'Win $1,400!' },
-    { id: 35, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 36, type: 'card',    icon: '🏠', name: 'Sarcastic Card',  desc: 'Draw a Sarcastic Card!' },
-    { id: 37, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 38, type: 'blank',  icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 39, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 0,  type: 'corner',   icon: '🏁', name: 'START',        desc: 'Begin your new life!' },
+    { id: 1,  type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
+    { id: 2,  type: 'card',     icon: '🃏', name: 'Good Card',    desc: 'Draw a Good Card!' },
+    { id: 3,  type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
+    { id: 4,  type: 'house',    icon: '🏠', name: 'House',        desc: 'Buy or upgrade your housing!' },
+    { id: 5,  type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
+    { id: 6,  type: 'card',     icon: '😈', name: 'Bad Card',     desc: 'Draw a Bad Card!' },
+    { id: 7,  type: 'hcard',    icon: '🏘️', name: 'House Card',   desc: 'Draw a Housing Card!' },
+    { id: 8,  type: 'good',     icon: '💵', name: 'Found $20',   desc: 'Collect $20!' },
+    { id: 9,  type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
+    { id: 10, type: 'corner',   icon: '⛓️', name: 'JAIL',         desc: 'Just Visiting... or IN!' },
+    { id: 11, type: 'card',     icon: '🏠', name: 'Sarcastic Card', desc: 'Draw a Sarcastic Card!' },
+    { id: 12, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
+    { id: 13, type: 'car',      icon: '🚗', name: 'Car Dealer',   desc: 'Buy or upgrade your car!' },
+    { id: 14, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
+    { id: 15, type: 'payday',   icon: '💰', name: 'PAYDAY',       desc: 'Collect your paycheck!' },
+    { id: 16, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
+    { id: 17, type: 'ccard',    icon: '🔧', name: 'Car Card',     desc: 'Draw a Car Card!' },
+    { id: 18, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
+    { id: 19, type: 'bad',      icon: '🏥', name: 'Hospital',     desc: 'Pay $500!' },
+    { id: 20, type: 'corner',   icon: '🎁', name: 'FREE DAY',     desc: 'Nothing happens!' },
+    { id: 21, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
+    { id: 22, type: 'card',     icon: '😈', name: 'Bad Card',     desc: 'Draw a Bad Card!' },
+    { id: 23, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
+    { id: 24, type: 'bad',      icon: '📋', name: 'TAXES',        desc: 'Pay 10% of total assets!' },
+    { id: 25, type: 'house',    icon: '🏠', name: 'House',        desc: 'Buy or upgrade your housing!' },
+    { id: 26, type: 'hcard',    icon: '🏘️', name: 'House Card',   desc: 'Draw a Housing Card!' },
+    { id: 27, type: 'good',     icon: '✈️',  name: 'Vacation Pay', desc: 'Collect $1,200!' },
+    { id: 28, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
+    { id: 29, type: 'card',     icon: '🃏', name: 'Good Card',    desc: 'Draw a Good Card!' },
+    { id: 30, type: 'corner',   icon: '🚔', name: 'GO TO JAIL',   desc: 'Go directly to Jail!' },
+    { id: 31, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
+    { id: 32, type: 'car',      icon: '🚗', name: 'Car Dealer',   desc: 'Buy or upgrade your car!' },
+    { id: 33, type: 'ccard',    icon: '🔧', name: 'Car Card',     desc: 'Draw a Car Card!' },
+    { id: 34, type: 'good',     icon: '🎰', name: 'Casino Win',   desc: 'Win $1,400!' },
+    { id: 35, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
+    { id: 36, type: 'card',     icon: '🏠', name: 'Sarcastic Card', desc: 'Draw a Sarcastic Card!' },
+    { id: 37, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
+    { id: 38, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
+    { id: 39, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
 ];
 
 // Clockwise: START=bottom-right corner, goes left along bottom,
@@ -616,10 +617,243 @@ function landOnSpace(player, space) {
         case 'card':    handleCardSpace(player, space); break;
         case 'good':    handleGoodSpace(player, space); break;
         case 'bad':     handleBadSpace(player, space); break;
+        case 'house':   handleHouseSpace(player); break;
+        case 'car':     handleCarDealerSpace(player); break;
+        case 'hcard':   handleHousingCard(player); break;
+        case 'ccard':   handleCarCard(player); break;
         default:        endTurn(); break;
     }
     } catch(e) { console.error("landOnSpace error:", e); endTurn(); }
 }
+
+
+// ── Housing Cards Deck ────────────────────────────────────
+const HOUSING_CARDS = [
+    { name: 'Free Upgrade!',         effect: p => { const r=upgradeHousing(p,1); return [r.includes('upgraded')?'UPGRADE!':'No change', r]; } },
+    { name: 'Landlord Raised Rent',  effect: p => { charge(p,500); return ['-$500', p.name+'s landlord raised the rent! -$500']; } },
+    { name: 'Pipes Burst',           effect: p => { charge(p,800); return ['-$800', p.name+" pipes burst! -$800"]; } },
+    { name: 'Raffle Win!',           effect: p => { const r=upgradeHousing(p,2); return [r.includes('upgraded')?'BIG UPGRADE!':'Maxed', r]; } },
+    { name: 'Move Back w/ Parents',  effect: p => { p.housingLevel=Math.max(0,p.housingLevel-2); return ['Downgraded', p.name+' moved back with the parents!']; } },
+    { name: 'Roof Caved In',         effect: p => { charge(p,1200); return ['-$1,200', p.name+" roof caved in! -$1,200"]; } },
+    { name: 'Free Double Upgrade!',  effect: p => { const r=upgradeHousing(p,2); return [r.includes('upgraded')?'DOUBLE UPGRADE!':'Maxed', r]; } },
+    { name: 'House Party Damage',    effect: p => { charge(p,400); return ['-$400', p.name+' had a wild house party. Damage: $400']; } },
+];
+
+// ── Car Cards Deck ────────────────────────────────────────
+const CAR_CARDS = [
+    { name: 'Free Upgrade!',     effect: p => { const r=upgradeCar(p,1); return [r.includes('upgraded')?'UPGRADE!':'No change', r]; } },
+    { name: 'Flat Tire',         effect: p => { charge(p,150); return ['-$150', p.name+' got a flat tire! -$150']; } },
+    { name: 'Engine Blew Up',    effect: p => { charge(p,1500); return ['-$1,500', p.name+" engine blew up! -$1,500"]; } },
+    { name: 'Car Raffle Win!',   effect: p => { const r=upgradeCar(p,2); return [r.includes('upgraded')?'BIG UPGRADE!':'Maxed', r]; } },
+    { name: 'Car Got Stolen',    effect: p => { p.carLevel=Math.max(0,p.carLevel-1); return ['Downgraded', p.name+" car got stolen!"]; } },
+    { name: 'Free Oil Change',   effect: p => { p.money+=80; return ['+$80', p.name+' got a free oil change coupon! +$80']; } },
+    { name: 'Double Upgrade!',   effect: p => { const r=upgradeCar(p,2); return [r.includes('upgraded')?'DOUBLE UPGRADE!':'Maxed', r]; } },
+    { name: 'Fender Bender',     effect: p => { charge(p,400); return ['-$400', p.name+' had a fender bender! -$400']; } },
+];
+
+// ── House Space: buy/upgrade housing ─────────────────────
+function handleHouseSpace(player) {
+    const cur = HOUSING[player.housingLevel];
+    const next = HOUSING[Math.min(HOUSING.length-1, player.housingLevel+1)];
+    const alreadyMax = player.housingLevel >= HOUSING.length-1;
+    if (alreadyMax) {
+        showCardOverlay('🏰','HOUSE',"You Are Maxed Out!", player.name+' already lives in a '+cur.name+'!','good');
+        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+        return;
+    }
+    const cost = Math.max(0, next.price - cur.price);
+    const popup = document.getElementById('popup');
+    const title = document.getElementById('popupTitle');
+    const message = document.getElementById('popupMessage');
+    const content = popup.querySelector('.popup-content');
+    title.textContent = '🏠 House';
+    message.textContent = player.name+', upgrade from '+cur.icon+' '+cur.name+' to '+next.icon+' '+next.name+'?'+(cost>0?' Cost: '+fmt(cost):' FREE!');
+    content.className = 'popup-content popup-good';
+    popup.classList.remove('hidden');
+    content.querySelectorAll('button').forEach(b=>b.remove());
+    const yesBtn = document.createElement('button');
+    yesBtn.className='btn'; yesBtn.style.marginRight='10px'; yesBtn.textContent='UPGRADE!';
+    yesBtn.onclick = () => {
+        if (player.money >= cost) {
+            player.money -= cost;
+            player.housingLevel++;
+            renderPlayerBar();
+            closePopup();
+            showCardOverlay('🏠','UPGRADED!',next.icon+' '+next.name,player.name+' upgraded their home!','good');
+            setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+        } else {
+            closePopup();
+            showCardOverlay('💸','CANT AFFORD IT','Not Enough Money',player.name+' needs '+fmt(cost)+' but only has '+fmt(player.money),'bad');
+            setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+        }
+    };
+    const noBtn = document.createElement('button');
+    noBtn.className='btn'; noBtn.style.background='linear-gradient(135deg,#0f3460,#16213e)'; noBtn.textContent='PASS';
+    noBtn.onclick = () => { closePopup(); endTurn(); };
+    content.appendChild(yesBtn);
+    content.appendChild(noBtn);
+}
+
+// ── Car Dealer Space: buy/upgrade car ────────────────────
+function handleCarDealerSpace(player) {
+    const cur = CARS[player.carLevel];
+    const next = CARS[Math.min(CARS.length-1, player.carLevel+1)];
+    const alreadyMax = player.carLevel >= CARS.length-1;
+    if (alreadyMax) {
+        showCardOverlay('🚀','CAR DEALER',"Already Maxed!", player.name+' already drives a '+cur.name+'!','good');
+        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+        return;
+    }
+    const cost = Math.max(0, next.price - cur.price);
+    const popup = document.getElementById('popup');
+    const title = document.getElementById('popupTitle');
+    const message = document.getElementById('popupMessage');
+    const content = popup.querySelector('.popup-content');
+    title.textContent = '🚗 Car Dealer';
+    message.textContent = player.name+', upgrade from '+cur.icon+' '+cur.name+' to '+next.icon+' '+next.name+'?'+(cost>0?' Cost: '+fmt(cost):' FREE!');
+    content.className = 'popup-content popup-good';
+    popup.classList.remove('hidden');
+    content.querySelectorAll('button').forEach(b=>b.remove());
+    const yesBtn = document.createElement('button');
+    yesBtn.className='btn'; yesBtn.style.marginRight='10px'; yesBtn.textContent='BUY IT!';
+    yesBtn.onclick = () => {
+        if (player.money >= cost) {
+            player.money -= cost;
+            player.carLevel++;
+            renderPlayerBar();
+            closePopup();
+            showCardOverlay('🚗','NEW RIDE!',next.icon+' '+next.name,player.name+' got a new car!','good');
+            setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+        } else {
+            closePopup();
+            showCardOverlay('💸','CANT AFFORD IT','Not Enough Money',player.name+' needs '+fmt(cost)+' but only has '+fmt(player.money),'bad');
+            setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+        }
+    };
+    const noBtn = document.createElement('button');
+    noBtn.className='btn'; noBtn.style.background='linear-gradient(135deg,#0f3460,#16213e)'; noBtn.textContent='PASS';
+    noBtn.onclick = () => { closePopup(); endTurn(); };
+    content.appendChild(yesBtn);
+    content.appendChild(noBtn);
+}
+
+// ── Housing Card Draw ─────────────────────────────────────
+function handleHousingCard(player) {
+    const card = drawCard(HOUSING_CARDS);
+    const result = card.effect(player);
+    renderPlayerBar();
+    const isGood = result[1].includes('upgrade') || result[1].includes('Upgrade') || result[1].includes('Raffle') || result[1].includes('Free');
+    showCardOverlay('🏘️','HOUSE CARD', card.name, result[1], isGood?'good':'bad');
+    setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+}
+
+// ── Car Card Draw ─────────────────────────────────────────
+function handleCarCard(player) {
+    const card = drawCard(CAR_CARDS);
+    const result = card.effect(player);
+    renderPlayerBar();
+    const isGood = result[1].includes('upgrade') || result[1].includes('Upgrade') || result[1].includes('Raffle') || result[1].includes('Free') || result[1].includes('+');
+    showCardOverlay('🔧','CAR CARD', card.name, result[1], isGood?'good':'bad');
+    setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+}
+
+
+// ── House Space ───────────────────────────────────────────
+function handleHouseSpace(player) {
+    const cur = HOUSING[player.housingLevel];
+    const nextLvl = Math.min(HOUSING.length-1, player.housingLevel+1);
+    const next = HOUSING[nextLvl];
+    if (player.housingLevel >= HOUSING.length-1) {
+        showCardOverlay('🏰','HOUSE',"Already Maxed!", player.name+' already lives in a '+cur.name+'!','good');
+        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+        return;
+    }
+    const cost = Math.max(0, next.price - cur.price);
+    const popup = document.getElementById('popup');
+    const content = popup.querySelector('.popup-content');
+    document.getElementById('popupTitle').textContent = '🏠 House';
+    document.getElementById('popupMessage').textContent = player.name+', upgrade from '+cur.icon+' '+cur.name+' to '+next.icon+' '+next.name+'? Cost: '+(cost>0?fmt(cost):'FREE!');
+    content.className = 'popup-content popup-good';
+    popup.classList.remove('hidden');
+    content.querySelectorAll('button').forEach(b=>b.remove());
+    const yesBtn = document.createElement('button');
+    yesBtn.className='btn'; yesBtn.style.marginRight='10px'; yesBtn.textContent='UPGRADE!';
+    yesBtn.onclick = () => {
+        if (player.money >= cost) {
+            player.money -= cost; player.housingLevel = nextLvl;
+            renderPlayerBar(); closePopup();
+            showCardOverlay('🏠','UPGRADED!',next.icon+' '+next.name, player.name+' upgraded their home!','good');
+            setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+        } else {
+            closePopup();
+            showCardOverlay('💸','CANT AFFORD IT','Not Enough Money', player.name+' needs '+fmt(cost)+' but only has '+fmt(player.money),'bad');
+            setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+        }
+    };
+    const noBtn = document.createElement('button');
+    noBtn.className='btn'; noBtn.style.background='linear-gradient(135deg,#0f3460,#16213e)'; noBtn.textContent='PASS';
+    noBtn.onclick = () => { closePopup(); endTurn(); };
+    content.appendChild(yesBtn); content.appendChild(noBtn);
+}
+
+// ── Car Dealer Space ──────────────────────────────────────
+function handleCarDealerSpace(player) {
+    const cur = CARS[player.carLevel];
+    const nextLvl = Math.min(CARS.length-1, player.carLevel+1);
+    const next = CARS[nextLvl];
+    if (player.carLevel >= CARS.length-1) {
+        showCardOverlay('🚀','CAR DEALER',"Already Maxed!", player.name+' already drives a '+cur.name+'!','good');
+        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+        return;
+    }
+    const cost = Math.max(0, next.price - cur.price);
+    const popup = document.getElementById('popup');
+    const content = popup.querySelector('.popup-content');
+    document.getElementById('popupTitle').textContent = '🚗 Car Dealer';
+    document.getElementById('popupMessage').textContent = player.name+', upgrade from '+cur.icon+' '+cur.name+' to '+next.icon+' '+next.name+'? Cost: '+(cost>0?fmt(cost):'FREE!');
+    content.className = 'popup-content popup-good';
+    popup.classList.remove('hidden');
+    content.querySelectorAll('button').forEach(b=>b.remove());
+    const yesBtn = document.createElement('button');
+    yesBtn.className='btn'; yesBtn.style.marginRight='10px'; yesBtn.textContent='BUY IT!';
+    yesBtn.onclick = () => {
+        if (player.money >= cost) {
+            player.money -= cost; player.carLevel = nextLvl;
+            renderPlayerBar(); closePopup();
+            showCardOverlay('🚗','NEW RIDE!',next.icon+' '+next.name, player.name+' got a new car!','good');
+            setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+        } else {
+            closePopup();
+            showCardOverlay('💸','CANT AFFORD IT','Not Enough Money', player.name+' needs '+fmt(cost)+' but only has '+fmt(player.money),'bad');
+            setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+        }
+    };
+    const noBtn = document.createElement('button');
+    noBtn.className='btn'; noBtn.style.background='linear-gradient(135deg,#0f3460,#16213e)'; noBtn.textContent='PASS';
+    noBtn.onclick = () => { closePopup(); endTurn(); };
+    content.appendChild(yesBtn); content.appendChild(noBtn);
+}
+
+// ── Housing Card Draw ─────────────────────────────────────
+function handleHousingCard(player) {
+    const card = drawCard(HOUSING_CARDS);
+    const result = card.effect(player);
+    renderPlayerBar();
+    const isGood = result[1].includes('upgraded') || result[1].includes('Raffle') || result[1].includes('Free') || result[1].includes('+');
+    showCardOverlay('🏘️','HOUSE CARD', card.name, result[1], isGood?'good':'bad');
+    setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+}
+
+// ── Car Card Draw ─────────────────────────────────────────
+function handleCarCard(player) {
+    const card = drawCard(CAR_CARDS);
+    const result = card.effect(player);
+    renderPlayerBar();
+    const isGood = result[1].includes('upgraded') || result[1].includes('Raffle') || result[1].includes('Free') || result[1].includes('+');
+    showCardOverlay('🔧','CAR CARD', card.name, result[1], isGood?'good':'bad');
+    setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+}
+
 
 function handleBlank(player, space) {
     document.getElementById('gameMessage').textContent = player.name + ' landed on an empty space. Nothing happens!';
