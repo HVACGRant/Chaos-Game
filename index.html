@@ -31,7 +31,6 @@
             <p class="logo-sub">The Game of Life</p>
         </div>
         <h2 class="setup-heading">Game Setup</h2>
-
         <div class="setup-section">
             <h3>How Many Players?</h3>
             <div class="player-buttons">
@@ -46,7 +45,6 @@
                 <button class="player-btn" onclick="setPlayers(10)">10</button>
             </div>
         </div>
-
         <div class="setup-section">
             <h3>Win Goal?</h3>
             <div class="goal-buttons">
@@ -57,10 +55,7 @@
                 <button class="goal-btn" onclick="setGoal(5000000)">$5,000,000</button>
             </div>
         </div>
-
-        <button id="setupDoneBtn" class="btn hidden" onclick="setupPlayers()">
-            NEXT - Setup Players
-        </button>
+        <button id="setupDoneBtn" class="btn hidden" onclick="setupPlayers()">NEXT - Setup Players</button>
     </div>
 
     <!-- PLAYER SETUP SCREEN -->
@@ -69,7 +64,6 @@
             <h1 class="logo">⚡ CHAOS ⚡</h1>
         </div>
         <h2 id="playerSetupTitle" class="setup-heading">Player 1 Setup</h2>
-
         <div class="setup-section">
             <h3>Choose Your Avatar!!</h3>
             <div class="avatar-grid">
@@ -85,34 +79,66 @@
                 <button class="avatar-btn" onclick="selectAvatar('👮')">👮</button>
             </div>
         </div>
-
         <div class="setup-section">
             <h3>Enter Your Name!!</h3>
             <input type="text" id="playerName" class="name-input" placeholder="Enter your name"/>
         </div>
-
-        <button id="nextPlayerBtn" class="btn" onclick="nextPlayer()">
-            NEXT PLAYER
-        </button>
+        <button id="nextPlayerBtn" class="btn" onclick="nextPlayer()">NEXT PLAYER</button>
     </div>
 
     <!-- GAME SCREEN -->
     <div id="gameScreen" class="screen hidden game-layout">
-        <!-- LEFT: Board -->
-        <div class="board-column">
-            <div class="game-header">
-                <span class="logo game-logo">⚡ CHAOS ⚡</span>
-                <span id="winGoalDisplay" class="win-goal-display"></span>
+
+        <!-- LEFT COLUMN: Logo + All Players List -->
+        <div class="left-col">
+            <div class="game-logo-block">
+                <div class="logo game-logo">⚡ CHAOS ⚡</div>
+                <div class="logo-sub">The Game of Life</div>
+                <div class="win-goal-display" id="winGoalDisplay"></div>
             </div>
+            <div class="all-players-label">PLAYERS</div>
+            <div id="playerInfoBar" class="player-info-bar"></div>
+        </div>
+
+        <!-- CENTER COLUMN: Board -->
+        <div class="center-col">
             <div id="gameBoard" class="game-board"></div>
         </div>
 
-        <!-- RIGHT: Controls + Players -->
-        <div class="side-column">
-            <div id="playerInfoBar" class="player-info-bar"></div>
+        <!-- RIGHT COLUMN: Active Player + Assets + Dice -->
+        <div class="right-col">
+            <div id="activePlayerPanel" class="active-player-panel">
+                <div class="ap-label">CURRENT TURN</div>
+                <div id="apAvatar" class="ap-avatar"></div>
+                <div id="apName" class="ap-name"></div>
+                <div id="apMoney" class="ap-money"></div>
+                <div id="apJob" class="ap-job"></div>
+                <div id="apHappiness" class="ap-detail"></div>
+                <div id="apJail" class="ap-jail hidden"></div>
+
+                <!-- HOUSING UPGRADE TRACK -->
+                <div class="asset-section">
+                    <div class="asset-label">🏠 HOUSING</div>
+                    <div id="apHousingDisplay" class="asset-display">
+                        <div id="apHousingIcon" class="asset-icon"></div>
+                        <div id="apHousingName" class="asset-name"></div>
+                        <div class="upgrade-track" id="housingTrack"></div>
+                    </div>
+                </div>
+
+                <!-- CAR UPGRADE TRACK -->
+                <div class="asset-section">
+                    <div class="asset-label">🚗 CAR</div>
+                    <div id="apCarDisplay" class="asset-display">
+                        <div id="apCarIcon" class="asset-icon"></div>
+                        <div id="apCarName" class="asset-name"></div>
+                        <div class="upgrade-track" id="carTrack"></div>
+                    </div>
+                </div>
+            </div>
+
             <div class="game-controls">
-                <div id="currentPlayerInfo" class="current-player-info"></div>
-                <div id="diceArea" class="dice-area">
+                <div class="dice-area">
                     <div id="die1" class="die">🎲</div>
                     <div id="die2" class="die">🎲</div>
                 </div>
@@ -133,7 +159,7 @@
         </div>
     </div>
 
-    <!-- POPUP/MODAL -->
+    <!-- POPUP -->
     <div id="popup" class="popup hidden">
         <div class="popup-content">
             <h2 id="popupTitle"></h2>
