@@ -440,10 +440,12 @@ body {
     border-radius: 20px;
     padding: 28px 24px;
     max-width: 360px; width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
     text-align: center;
     box-shadow: 0 0 60px rgba(0,0,0,0.8);
     animation: cardSlideIn 0.35s cubic-bezier(0.175,0.885,0.32,1.275);
-    position: relative; overflow: hidden;
+    position: relative;
     border: 3px solid var(--navy);
 }
 @keyframes cardSlideIn { from{transform:scale(0.5) translateY(40px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
@@ -489,6 +491,26 @@ body {
 
 .card-fade-out { animation:cardFadeOut 0.4s ease forwards; }
 @keyframes cardFadeOut { to{opacity:0;transform:scale(0.9)} }
+
+/* Last-drawn card banner — always visible after card is dismissed */
+.last-card-banner {
+    font-size: 0.72em;
+    font-weight: 700;
+    text-align: center;
+    padding: 5px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(0,0,0,0.5);
+    color: var(--grey);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.last-card-banner.lcb-good     { color: var(--green); border-color: var(--green); }
+.last-card-banner.lcb-bad      { color: var(--red);   border-color: var(--red); }
+.last-card-banner.lcb-sarcastic{ color: var(--gold);  border-color: var(--gold); }
 
 /* ── POPUP ── */
 .popup {
@@ -588,3 +610,123 @@ body {
     .right-col { width: 160px; }
     .game-board { width: min(88vmin, 500px); height: min(88vmin, 500px); }
 }
+
+/* ── AVATAR BUILDER ─────────────────────────────────────── */
+.avatar-builder {
+    width: 100%;
+    max-width: 580px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--navy);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Preview */
+.ab-preview-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+.ab-preview {
+    font-size: 4.5em;
+    background: rgba(15,52,96,0.6);
+    border: 3px solid var(--green);
+    border-radius: 16px;
+    width: 110px;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: -4px;
+    transition: all 0.2s;
+    box-shadow: 0 0 20px rgba(78,204,163,0.3);
+}
+.ab-preview-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.7em;
+    letter-spacing: 4px;
+    color: var(--green);
+}
+.ab-reset-btn {
+    background: transparent;
+    border: 1px solid var(--grey);
+    color: var(--grey);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.75em;
+    font-family: 'Oswald', sans-serif;
+    cursor: pointer;
+    margin-top: 2px;
+    touch-action: manipulation;
+}
+.ab-reset-btn:hover { border-color: var(--red); color: var(--red); }
+
+/* Tabs */
+.ab-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+}
+.ab-tab {
+    background: var(--navy);
+    border: 2px solid var(--navy);
+    color: var(--grey);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.82em;
+    font-weight: 600;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: all 0.15s;
+}
+.ab-tab:hover { border-color: var(--green); color: #fff; }
+.ab-tab.active {
+    background: var(--green);
+    border-color: var(--green);
+    color: var(--dark);
+}
+
+/* Panels */
+.ab-panel { display: none; flex-direction: column; gap: 6px; }
+.ab-panel.active { display: flex; }
+
+.ab-row-label {
+    font-size: 0.7em;
+    letter-spacing: 2px;
+    color: var(--gold);
+    font-weight: 700;
+    padding: 2px 0;
+}
+.ab-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-height: 160px;
+    overflow-y: auto;
+}
+.ab-pick {
+    background: rgba(15,52,96,0.7);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 1.5em;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Oswald', sans-serif;
+    color: #ddd;
+    line-height: 1;
+}
+.ab-pick:hover { border-color: var(--green); background: rgba(78,204,163,0.15); transform: scale(1.08); }
+.ab-pick.selected { border-color: var(--gold); background: rgba(245,166,35,0.2); }
+/* text labels inside pick buttons */
+.ab-pick span, .ab-pick:not(:only-child) { font-size: 0.55em; letter-spacing: 1px; }
