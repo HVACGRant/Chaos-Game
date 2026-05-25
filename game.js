@@ -194,50 +194,50 @@ const SARCASTIC_CARDS = [
 const BOARD_SPACES = [
     // Bottom row (START → JAIL), spaces 0-10 — 4 blanks: 1,3,6,8
     { id: 0,  type: 'corner',  icon: '🏁', name: 'START',          desc: 'Begin your new life!' },
-    { id: 1,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 1,  type: 'hustle',  icon: '🛻', name: 'Junk Hauling',   desc: 'Haul junk for quick cash!' },
     { id: 2,  type: 'hustle',  icon: '⛺', name: 'Pop Up Tent',    desc: 'Set up a pop-up shop for quick cash!' },
-    { id: 3,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 3,  type: 'hustle',  icon: '🐟', name: 'Fishing Trip',   desc: 'Sell your catch at the market!' },
     { id: 4,  type: 'house',   icon: '🏠', name: 'House',          desc: 'Buy or upgrade housing!' },
     { id: 5,  type: 'hustle',  icon: '🎨', name: 'Craft Show',     desc: 'Sell your crafts for cash!' },
-    { id: 6,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 6,  type: 'hustle',  icon: '🍕', name: 'Pizza Delivery',  desc: 'Deliver pizzas for tip money!' },
     { id: 7,  type: 'hustle',  icon: '📦', name: 'Storage Locker', desc: 'Buy a storage locker auction!' },
-    { id: 8,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 8,  type: 'hustle',  icon: '📸', name: 'Photography',    desc: 'Shoot photos for quick cash!' },
     { id: 9,  type: 'jcard',   icon: '📋', name: 'Job Card',       desc: 'Draw a Job Card!' },
     { id: 10, type: 'corner',  icon: '⛓️', name: 'JAIL',           desc: 'Just Visiting... or IN!' },
 
     // Right side (JAIL → FREE DAY), spaces 11-19 — 4 blanks: 12,14,17,18
     { id: 11, type: 'hustle',  icon: '🌮', name: 'Food Truck',     desc: 'Run a food truck for the day!' },
-    { id: 12, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 12, type: 'hustle',  icon: '🪟', name: 'Window Washing', desc: 'Wash windows for quick cash!' },
     { id: 13, type: 'car',     icon: '🚗', name: 'Car Dealer',     desc: 'Buy or upgrade your car!' },
-    { id: 14, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 14, type: 'hustle',  icon: '🐕', name: 'Dog Walking',    desc: 'Walk dogs for tip money!' },
     { id: 15, type: 'payday',  icon: '💰', name: 'PAYDAY',         desc: 'Collect your paycheck!' },
     { id: 16, type: 'hustle',  icon: '🏷️', name: 'Yard Sale',      desc: 'Hold a yard sale for quick cash!' },
-    { id: 17, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 18, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 17, type: 'hustle',  icon: '🃏', name: 'Card Games',     desc: 'Play cards for money!' },
+    { id: 18, type: 'hustle',  icon: '🎯', name: 'Odd Jobs',       desc: 'Whatever pays today!' },
     { id: 19, type: 'bad',     icon: '🏥', name: 'Hospital',       desc: 'Pay $500!' },
 
     // Top row (FREE DAY → GO TO JAIL), spaces 20-30 — 4 blanks: 21,23,28,29
     { id: 20, type: 'corner',  icon: '🎁', name: 'FREE DAY',       desc: '+1 Happiness!' },
-    { id: 21, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 21, type: 'hustle',  icon: '🧺', name: 'Laundry Service', desc: 'Run a laundry hustle!' },
     { id: 22, type: 'hustle',  icon: '🎪', name: 'Flea Market',    desc: 'Sell stuff at the flea market!' },
-    { id: 23, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 23, type: 'hustle',  icon: '🪴', name: 'Plant Selling',  desc: 'Sell plants from your yard!' },
     { id: 24, type: 'bad',     icon: '📋', name: 'TAXES',          desc: 'Pay 10% of total assets!' },
     { id: 25, type: 'house',   icon: '🏠', name: 'House',          desc: 'Buy or upgrade housing!' },
     { id: 26, type: 'hustle',  icon: '🚜', name: 'Scrap Metal',    desc: 'Sell scrap metal for quick cash!' },
     { id: 27, type: 'good',    icon: '✈️',  name: 'Vacation Pay',   desc: 'Collect $1,200!' },
-    { id: 28, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 29, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 28, type: 'hustle',  icon: '🎮', name: 'Gaming Tourney', desc: 'Enter a gaming tournament!' },
+    { id: 29, type: 'hustle',  icon: '🧁', name: 'Bake Sale',      desc: 'Sell baked goods!' },
     { id: 30, type: 'corner',  icon: '🚔', name: 'GO TO JAIL',     desc: 'Go directly to Jail!' },
 
     // Left side (GO TO JAIL → START), spaces 31-39 — 4 blanks: 31,34,37,38
-    { id: 31, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 31, type: 'hustle',  icon: '🚲', name: 'Bike Courier',   desc: 'Deliver packages by bike!' },
     { id: 32, type: 'hustle',  icon: '🍋', name: 'Lemonade Stand', desc: 'Run a lemonade stand!' },
     { id: 33, type: 'hustle',  icon: '🎸', name: 'Busking',        desc: 'Play music on the street!' },
-    { id: 34, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 34, type: 'hustle',  icon: '🪣', name: 'Power Washing',  desc: 'Power wash driveways!' },
     { id: 35, type: 'hustle',  icon: '🌿', name: 'Lawn Mowing',    desc: 'Mow lawns for quick cash!' },
     { id: 36, type: 'hustle',  icon: '🧹', name: 'Car Wash',       desc: 'Run a car wash!' },
-    { id: 37, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 38, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 37, type: 'hustle',  icon: '🐠', name: 'Fish Tank Setup', desc: 'Set up fish tanks for people!' },
+    { id: 38, type: 'hustle',  icon: '🎲', name: 'Street Dice',    desc: 'Roll dice for money on the corner!' },
     { id: 39, type: 'job',     icon: '💼', name: 'Job Office',     desc: 'Get or change your job!' },
 ];
 
@@ -876,76 +876,11 @@ function handleCarCard(player) {
 }
 
 
-// ── House Space ───────────────────────────────────────────
-
 // ── Car Dealer Space ──────────────────────────────────────
-function handleCarDealerSpace(player) {
-    const cur = CARS[player.carLevel];
-    const nextLvl = Math.min(CARS.length-1, player.carLevel+1);
-    const next = CARS[nextLvl];
-    if (player.carLevel >= CARS.length-1) {
-        showCardOverlay('🚀','CAR DEALER',"Already Maxed!", player.name+' already drives a '+cur.name+'!','good');
-        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
-        return;
-    }
-    // Check lap requirement
-    const lapsNeededCar = carLapRequired(nextLvl);
-    const playerLapsCar = player.laps || 0;
-    if (playerLapsCar < lapsNeededCar) {
-        showCardOverlay('🔒','LOCKED','Lap ' + lapsNeededCar + ' Required',
-            player.name + ' needs to complete Lap ' + lapsNeededCar + ' to unlock ' + CARS[nextLvl].name +
-            '. Currently on Lap ' + playerLapsCar + '.', 'bad');
-        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
-        return;
-    }
-
-    const cost = Math.max(0, next.price - cur.price);
-    const popup = document.getElementById('popup');
-    const content = popup.querySelector('.popup-content');
-    document.getElementById('popupTitle').textContent = '🚗 Car Dealer';
-    document.getElementById('popupMessage').textContent = player.name+', upgrade from '+cur.icon+' '+cur.name+' to '+next.icon+' '+next.name+'? Cost: '+(cost>0?fmt(cost):'FREE!');
-    content.className = 'popup-content popup-good';
-    popup.classList.remove('hidden');
-    content.querySelectorAll('button').forEach(b=>b.remove());
-    const yesBtn = document.createElement('button');
-    yesBtn.className='btn'; yesBtn.style.marginRight='10px'; yesBtn.textContent='BUY IT!';
-    yesBtn.onclick = () => {
-        if (player.money >= cost) {
-            player.money -= cost; player.carLevel = nextLvl;
-            renderPlayerBar(); closePopup();
-            showCardOverlay('🚗','NEW RIDE!',next.icon+' '+next.name, player.name+' got a new car!','good');
-            setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
-        } else {
-            closePopup();
-            showCardOverlay('💸','CANT AFFORD IT','Not Enough Money', player.name+' needs '+fmt(cost)+' but only has '+fmt(player.money),'bad');
-            setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
-        }
-    };
-    const noBtn = document.createElement('button');
-    noBtn.className='btn'; noBtn.style.background='linear-gradient(135deg,#0f3460,#16213e)'; noBtn.textContent='PASS';
-    noBtn.onclick = () => { closePopup(); endTurn(); };
-    content.appendChild(yesBtn); content.appendChild(noBtn);
-}
 
 // ── Housing Card Draw ─────────────────────────────────────
-function handleHousingCard(player) {
-    const card = drawCard(HOUSING_CARDS);
-    const result = card.effect(player);
-    renderPlayerBar();
-    const isGood = result[1].includes('upgraded') || result[1].includes('Raffle') || result[1].includes('Free') || result[1].includes('+');
-    showCardOverlay('🏘️','HOUSE CARD', card.name, result[1], isGood?'good':'bad');
-    setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
-}
 
 // ── Car Card Draw ─────────────────────────────────────────
-function handleCarCard(player) {
-    const card = drawCard(CAR_CARDS);
-    const result = card.effect(player);
-    renderPlayerBar();
-    const isGood = result[1].includes('upgraded') || result[1].includes('Raffle') || result[1].includes('Free') || result[1].includes('+');
-    showCardOverlay('🔧','CAR CARD', card.name, result[1], isGood?'good':'bad');
-    setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
-}
 
 
 function handleBlank(player, space) {
@@ -1388,7 +1323,200 @@ const HUSTLE_DATA = {
             { die: 6, earn: 400,  msg: 'HOA contracted you for the season! +$400' },
         ],
     },
-    'Car Wash': {
+
+    'Junk Hauling': {
+        bad: [
+            { die: 1, earn: -100, msg: 'Truck overloaded, blew a tire. -$100' },
+            { die: 2, earn: -60,  msg: 'Dumped in wrong spot, got fined. -$60' },
+            { die: 3, earn: -30,  msg: 'Job cancelled last minute, wasted gas. -$30' },
+        ],
+        good: [
+            { die: 4, earn: 150,  msg: 'Cleared a garage, solid pay! +$150' },
+            { die: 5, earn: 280,  msg: 'Found sellable stuff in the junk! +$280' },
+            { die: 6, earn: 400,  msg: 'Estate cleanout, big payday! +$400' },
+        ],
+    },
+    'Fishing Trip': {
+        bad: [
+            { die: 1, earn: -50,  msg: 'Lost all your gear in the water. -$50' },
+            { die: 2, earn: -30,  msg: 'Zero bites all day. Wasted bait. -$30' },
+            { die: 3, earn: -20,  msg: 'Fishing license expired. Fine. -$20' },
+        ],
+        good: [
+            { die: 4, earn: 100,  msg: 'Decent catch at the market! +$100' },
+            { die: 5, earn: 200,  msg: 'Sold fresh fish by the roadside! +$200' },
+            { die: 6, earn: 350,  msg: 'Trophy fish at auction! +$350' },
+        ],
+    },
+    'Pizza Delivery': {
+        bad: [
+            { die: 1, earn: -80,  msg: 'Got in a fender bender delivering. -$80' },
+            { die: 2, earn: -40,  msg: 'Wrong address, cold pizza, no tip. -$40' },
+            { die: 3, earn: -20,  msg: 'Terrible shift, stiffed on tips. -$20' },
+        ],
+        good: [
+            { die: 4, earn: 120,  msg: 'Good tip night! +$120' },
+            { die: 5, earn: 220,  msg: 'Rush hour rush, tips flying! +$220' },
+            { die: 6, earn: 350,  msg: 'Someone tipped $200 on one order! +$350' },
+        ],
+    },
+    'Photography': {
+        bad: [
+            { die: 1, earn: -100, msg: 'Dropped your camera. Repair bill. -$100' },
+            { die: 2, earn: -50,  msg: 'Client hated the photos, no pay. -$50' },
+            { die: 3, earn: -20,  msg: 'Memory card corrupted, lost everything. -$20' },
+        ],
+        good: [
+            { die: 4, earn: 200,  msg: 'Headshot session booked! +$200' },
+            { die: 5, earn: 350,  msg: 'Event photography gig! +$350' },
+            { die: 6, earn: 600,  msg: 'Wedding photographer no-showed — you filled in! +$600' },
+        ],
+    },
+    'Window Washing': {
+        bad: [
+            { die: 1, earn: -80,  msg: 'Fell off the ladder. Medical bill. -$80' },
+            { die: 2, earn: -40,  msg: 'Broke a window. Had to pay for it. -$40' },
+            { die: 3, earn: -20,  msg: 'Client cancelled after you drove over. -$20' },
+        ],
+        good: [
+            { die: 4, earn: 150,  msg: 'Knocked out a whole building! +$150' },
+            { die: 5, earn: 260,  msg: 'Commercial contract for the week! +$260' },
+            { die: 6, earn: 400,  msg: 'Hotel hired you on the spot! +$400' },
+        ],
+    },
+    'Dog Walking': {
+        bad: [
+            { die: 1, earn: -100, msg: 'Dog bit someone. You covered the bill. -$100' },
+            { die: 2, earn: -50,  msg: 'Dog got loose, spent hours finding it. -$50' },
+            { die: 3, earn: -20,  msg: 'Owner canceled, wasted your morning. -$20' },
+        ],
+        good: [
+            { die: 4, earn: 80,   msg: 'Easy walk, good tip! +$80' },
+            { die: 5, earn: 160,  msg: 'Walked five dogs at once! +$160' },
+            { die: 6, earn: 280,  msg: 'Rich neighbor wants daily walks! +$280' },
+        ],
+    },
+    'Card Games': {
+        bad: [
+            { die: 1, earn: -200, msg: 'Got cleaned out at the table. -$200' },
+            { die: 2, earn: -100, msg: 'Bad hand after bad hand. -$100' },
+            { die: 3, earn: -50,  msg: 'Lost focus and paid for it. -$50' },
+        ],
+        good: [
+            { die: 4, earn: 150,  msg: 'Read the table right! +$150' },
+            { die: 5, earn: 300,  msg: 'Big pot, better bluff! +$300' },
+            { die: 6, earn: 500,  msg: 'Royal flush baby! +$500' },
+        ],
+    },
+    'Odd Jobs': {
+        bad: [
+            { die: 1, earn: -60,  msg: 'Agreed to a job, cost more than you made. -$60' },
+            { die: 2, earn: -40,  msg: 'Client disappeared without paying. -$40' },
+            { die: 3, earn: -20,  msg: 'Tools broke mid-job. -$20' },
+        ],
+        good: [
+            { die: 4, earn: 130,  msg: 'Fixed a fence, cash in hand! +$130' },
+            { die: 5, earn: 240,  msg: 'Three jobs in one day! +$240' },
+            { die: 6, earn: 400,  msg: 'Helped someone move — tipped huge! +$400' },
+        ],
+    },
+    'Laundry Service': {
+        bad: [
+            { die: 1, earn: -80,  msg: "Shrunk someone's clothes. Had to replace them. -$80" },
+            { die: 2, earn: -40,  msg: 'Washing machine flooded. Repair cost. -$40' },
+            { die: 3, earn: -20,  msg: 'Mixed the whites and colors. Client furious. -$20' },
+        ],
+        good: [
+            { die: 4, earn: 100,  msg: 'Neighborhood laundry orders coming in! +$100' },
+            { die: 5, earn: 200,  msg: 'Picked up a regular client! +$200' },
+            { die: 6, earn: 320,  msg: 'Airbnb host hired you weekly! +$320' },
+        ],
+    },
+    'Plant Selling': {
+        bad: [
+            { die: 1, earn: -50,  msg: 'Frost killed your inventory overnight. -$50' },
+            { die: 2, earn: -30,  msg: 'Nobody wanted succulents today. -$30' },
+            { die: 3, earn: -20,  msg: 'Dropped and smashed your best pots. -$20' },
+        ],
+        good: [
+            { die: 4, earn: 100,  msg: 'Farmers market stand sold out! +$100' },
+            { die: 5, earn: 200,  msg: 'Rare plant collectors found you! +$200' },
+            { die: 6, earn: 350,  msg: 'Florist bought your whole stock! +$350' },
+        ],
+    },
+    'Gaming Tourney': {
+        bad: [
+            { die: 1, earn: -100, msg: 'Entry fee, got knocked out round 1. -$100' },
+            { die: 2, earn: -50,  msg: 'Lag spike cost you the match. -$50' },
+            { die: 3, earn: -30,  msg: 'Rage quit, lost your buy-in. -$30' },
+        ],
+        good: [
+            { die: 4, earn: 150,  msg: 'Made it to the semis! +$150' },
+            { die: 5, earn: 300,  msg: 'Runner up prize! +$300' },
+            { die: 6, earn: 600,  msg: 'CHAMPION — took the whole pot! +$600' },
+        ],
+    },
+    'Bake Sale': {
+        bad: [
+            { die: 1, earn: -60,  msg: 'Burned the whole batch. Wasted ingredients. -$60' },
+            { die: 2, earn: -30,  msg: 'Rain killed the foot traffic. -$30' },
+            { die: 3, earn: -20,  msg: 'Forgot the sugar. Nobody bought twice. -$20' },
+        ],
+        good: [
+            { die: 4, earn: 100,  msg: 'Sold out by lunch! +$100' },
+            { die: 5, earn: 200,  msg: 'Office ordered 5 dozen cookies! +$200' },
+            { die: 6, earn: 350,  msg: 'Catering order from the bake sale! +$350' },
+        ],
+    },
+    'Bike Courier': {
+        bad: [
+            { die: 1, earn: -80,  msg: 'Bike got stolen mid-shift. -$80' },
+            { die: 2, earn: -50,  msg: 'Flat tire, missed all your deliveries. -$50' },
+            { die: 3, earn: -20,  msg: 'Delivered to wrong address twice. No tip. -$20' },
+        ],
+        good: [
+            { die: 4, earn: 120,  msg: 'Fast routes, good tips! +$120' },
+            { die: 5, earn: 230,  msg: 'Surge pricing hour — cleaned up! +$230' },
+            { die: 6, earn: 380,  msg: 'VIP same-day delivery contract! +$380' },
+        ],
+    },
+    'Power Washing': {
+        bad: [
+            { die: 1, earn: -80,  msg: 'Pressure too high, blasted the paint off. -$80' },
+            { die: 2, earn: -50,  msg: 'Equipment rental cost more than you made. -$50' },
+            { die: 3, earn: -20,  msg: "Client wasn't happy with results. No pay. -$20" },
+        ],
+        good: [
+            { die: 4, earn: 180,  msg: 'Driveway and patio, solid day! +$180' },
+            { die: 5, earn: 320,  msg: 'HOA hired you for the whole street! +$320' },
+            { die: 6, earn: 500,  msg: 'Commercial contract landed! +$500' },
+        ],
+    },
+    'Fish Tank Setup': {
+        bad: [
+            { die: 1, earn: -100, msg: 'Tank cracked during install. You covered it. -$100' },
+            { die: 2, earn: -60,  msg: 'Fish died within 24 hours. Blamed you. -$60' },
+            { die: 3, earn: -30,  msg: 'Client changed their mind mid-setup. -$30' },
+        ],
+        good: [
+            { die: 4, earn: 200,  msg: 'Beautiful setup, happy client! +$200' },
+            { die: 5, earn: 350,  msg: 'Office lobby aquarium installed! +$350' },
+            { die: 6, earn: 550,  msg: 'Restaurant hired you for a custom tank wall! +$550' },
+        ],
+    },
+    'Street Dice': {
+        bad: [
+            { die: 1, earn: -200, msg: 'Cops showed up. Lost everything. -$200' },
+            { die: 2, earn: -100, msg: 'Hot streak ended cold. -$100' },
+            { die: 3, earn: -50,  msg: 'Bad roll, lost your stake. -$50' },
+        ],
+        good: [
+            { die: 4, earn: 150,  msg: 'Lucky streak, walked away up! +$150' },
+            { die: 5, earn: 300,  msg: 'Cleaned out two opponents! +$300' },
+            { die: 6, earn: 500,  msg: 'On fire — nobody could touch you! +$500' },
+        ],
+    },
+        'Car Wash': {
         bad: [
             { die: 1, earn: -80,  msg: 'Scratched a Mercedes. Owner not happy. -$80' },
             { die: 2, earn: -40,  msg: 'Hose burst, water everywhere. -$40' },
