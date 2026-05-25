@@ -1118,6 +1118,7 @@ function showUpgradePopup(title, message, yesText, onYes, onNo) {
 // visible) until the next showCardOverlay call replaces it.
 let _cardDismissCallback = null;
 let _cardDismissEnabled = false;
+let _cardDismissId = 0; // unique id so stale timeouts can't enable a newer card's dismiss
 
 function showCardOverlay(icon, typeLabel, title, body, type, onDismiss) {
     const overlay = document.getElementById('cardOverlay');
@@ -1130,28 +1131,41 @@ function showCardOverlay(icon, typeLabel, title, body, type, onDismiss) {
     if (type==='good') display.classList.add('card-good');
     else if (type==='bad') display.classList.add('card-bad');
     else if (type==='sarcastic') display.classList.add('card-sarcastic');
+
+    // Show hint only when there's something to dismiss
+    const hint = document.getElementById('cardDismissHint');
+    if (hint) hint.style.opacity = onDismiss ? '1' : '0';
+
     overlay.classList.remove('hidden');
+
+    // Reset state for this new card
     _cardDismissCallback = onDismiss || null;
-    // Brief lock so an accidental tap during the slide-in doesn't dismiss
     _cardDismissEnabled = false;
-    setTimeout(() => { _cardDismissEnabled = true; }, 800);
+    _cardDismissId++;
+    const myId = _cardDismissId;
+
+    // Lock for 900ms so slide-in animation doesn't get accidentally tapped
+    setTimeout(() => {
+        if (_cardDismissId === myId) _cardDismissEnabled = true;
+    }, 900);
 }
 
 function dismissCard() {
     if (!_cardDismissEnabled) return;
-    if (!_cardDismissCallback) return; // no action pending — card just showing last draw
+    if (!_cardDismissCallback) return;
+    // Grab and clear before calling — prevents double-fire
     _cardDismissEnabled = false;
     const cb = _cardDismissCallback;
     _cardDismissCallback = null;
-    // Don't hide the overlay — leave card face-up for everyone to read
-    // It will be replaced when the next card is shown
+    // Card stays visible (face-up) — only replaced when next card shows
     cb();
 }
 
-// Called only when we truly need to clear the card (new game, jail break roll-off etc.)
+// Hard-hide the overlay (used only for non-card transitions like game start)
 function hideCardOverlay() {
     _cardDismissCallback = null;
     _cardDismissEnabled = false;
+    _cardDismissId++;
     const overlay = document.getElementById('cardOverlay');
     const display = document.getElementById('cardDisplay');
     display.classList.add('card-fade-out');
