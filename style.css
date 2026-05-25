@@ -245,16 +245,18 @@ body {
 .space-players {
     display: flex;
     flex-wrap: wrap;
-    gap: 1px;
+    gap: 0;
     justify-content: center;
     position: absolute;
-    bottom: 1px;
+    bottom: 0;
     left: 0; right: 0;
+    overflow: visible;
 }
 .space-piece {
-    font-size: clamp(0.8em, 2vmin, 1.3em);
+    font-size: clamp(1.4em, 3.8vmin, 2.4em);
     line-height: 1;
     cursor: default;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.8));
 }
 
 /* Space type colours */
