@@ -465,8 +465,7 @@ function drawFromDeck(type) {
     else { card = drawCard(SARCASTIC_CARDS); result = card.effect(p); }
     renderPlayerBar();
     const typeLabel = type==='good'?'GOOD CARD':type==='bad'?'BAD CARD':'CHAOS CARD';
-    showCardOverlay(card.icon, typeLabel, card.name, result[1], result[2]||type);
-    setTimeout(() => { hideCardOverlay(); checkWinThenEnd(p); }, 6000);
+    showCardOverlay(card.icon, typeLabel, card.name, result[1], result[2]||type, () => { checkWinThenEnd(p); });
 }
 
 function updatePlayerPieces() {
@@ -627,9 +626,7 @@ function rollDice() {
                 // #15 — dead battery, walk: roll 1 die
                 document.getElementById('diceResult').textContent = `${DICE_FACES[die1]} = ${die1} 🔋 Dead battery!`;
                 document.getElementById('gameMessage').textContent = '🚶 Dead battery — now walking. Rolling 1 die for movement...';
-                showCardOverlay('🚗','HOOPTY','Dead Battery!',`${player.name} rolled a ${die1}. Hoopty won't start — walking this turn!`,'bad');
-                setTimeout(() => {
-                    hideCardOverlay();
+                showCardOverlay('🚗','HOOPTY','Dead Battery!',`${player.name} rolled a ${die1}. Hoopty won't start — walking this turn!`,'bad', () => {
                     const moveDie = Math.ceil(Math.random()*6);
                     animateDice(d1El, d2El, moveDie, null, () => {
                         document.getElementById('diceResult').textContent = `🚶 Walking — moved ${moveDie} spaces.`;
@@ -639,9 +636,7 @@ function rollDice() {
             } else {
                 document.getElementById('diceResult').textContent = `${DICE_FACES[die1]} = ${die1} 🚗 It started!`;
                 document.getElementById('gameMessage').textContent = 'Hoopty started! Now rolling 2 dice for movement...';
-                showCardOverlay('🚗','HOOPTY','It Started!',`${player.name} rolled a ${die1}! Hoopty starts — rolling 2 dice to move.`,'good');
-                setTimeout(() => {
-                    hideCardOverlay();
+                showCardOverlay('🚗','HOOPTY','It Started!',`${player.name} rolled a ${die1}! Hoopty starts — rolling 2 dice to move.`,'good', () => {
                     const m1=Math.ceil(Math.random()*6), m2=Math.ceil(Math.random()*6);
                     animateDice(d1El, d2El, m1, m2, () => {
                         document.getElementById('diceResult').textContent = `${DICE_FACES[m1]} ${DICE_FACES[m2]} = ${m1+m2}`;
@@ -727,8 +722,7 @@ function handleJailTurn(player, doubles, total) {
             player.carImpounded = false;
         }
         renderPlayerBar();
-        showCardOverlay('🎲','JAIL BREAK','Doubles! You\'re Free!',`${player.name} rolled doubles and escaped jail from: ${player.jailReason}!`,'good');
-        setTimeout(() => { hideCardOverlay(); afterRoll(player, total); }, 4000);
+        showCardOverlay('🎲','JAIL BREAK','Doubles! You\'re Free!',`${player.name} rolled doubles and escaped jail from: ${player.jailReason}!`,'good', () => { afterRoll(player, total); });
         return;
     }
 
@@ -750,18 +744,15 @@ function handleJailTurn(player, doubles, total) {
             adjustHappiness(player, -0.5);
             renderPlayerBar();
             showCardOverlay('⛓️','RELEASED',`Paid ${fmt(total_cost)}`,
-                `${player.name} paid bail ${fmt(player.jailFine)}${impoundFee>0?' + impound '+fmt(impoundFee):''} and is released from: ${player.jailReason}`,'bad');
-            setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
+                `${player.name} paid bail ${fmt(player.jailFine)}${impoundFee>0?' + impound '+fmt(impoundFee):''} and is released from: ${player.jailReason}`,'bad', () => { endTurn(); });
         } else {
             gameState.phase = 'over';
-            showCardOverlay('🚔','GAME OVER','Can\'t Afford Bail',`${player.name} can't afford bail of ${fmt(total_cost)}. Rotting in prison forever!`,'bad');
-            setTimeout(() => { hideCardOverlay(); showGameOver(player); }, 5000);
+            showCardOverlay('🚔','GAME OVER','Can\'t Afford Bail',`${player.name} can't afford bail of ${fmt(total_cost)}. Rotting in prison forever!`,'bad', () => { showGameOver(player); });
         }
     } else {
         renderPlayerBar();
         showCardOverlay('⛓️','STILL IN JAIL',`Turn ${player.jailTurns}/${player.jailMaxTurns}`,
-            `${player.name} stays in jail (${player.jailReason}). Roll doubles to escape! Bail: ${fmt(player.jailFine)}`,'bad');
-        setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
+            `${player.name} stays in jail (${player.jailReason}). Roll doubles to escape! Bail: ${fmt(player.jailFine)}`,'bad', () => { endTurn(); });
     }
 }
 
@@ -777,11 +768,9 @@ function payBailEarly() {
         player.inJail = false;
         player.jailTurns = 0;
         renderPlayerBar();
-        showCardOverlay('⛓️','RELEASED','Bail Paid!',`${player.name} paid ${fmt(total_cost)} bail and is free!`,'good');
-        setTimeout(() => { hideCardOverlay(); endTurn(); }, 4000);
+        showCardOverlay('⛓️','RELEASED','Bail Paid!',`${player.name} paid ${fmt(total_cost)} bail and is free!`,'good', () => { endTurn(); });
     } else {
         showCardOverlay('💸','CANT PAY','Not Enough',`${player.name} needs ${fmt(total_cost)} for bail but only has ${fmt(player.money)}.`,'bad');
-        setTimeout(hideCardOverlay, 3000);
     }
 }
 
@@ -908,24 +897,20 @@ function landOnSpace(player, space) {
 // ── CORNERS ───────────────────────────────────────────────
 function handleCorner(player, space) {
     if (space.id === 0) {
-        showCardOverlay('🏁','START','Back at the Beginning!',`${player.name} landed on START!`,'good');
-        setTimeout(() => { hideCardOverlay(); endTurn(); }, 4000);
+        showCardOverlay('🏁','START','Back at the Beginning!',`${player.name} landed on START!`,'good', () => { endTurn(); });
     } else if (space.id === 10) {
-        showCardOverlay('⛓️','JAIL','Just Visiting',`${player.name} is just visiting. Stay cool!`,'');
-        setTimeout(() => { hideCardOverlay(); endTurn(); }, 4000);
+        showCardOverlay('⛓️','JAIL','Just Visiting',`${player.name} is just visiting. Stay cool!`,'', () => { endTurn(); });
     } else if (space.id === 20) {
         adjustHappiness(player, 0.5);
         renderPlayerBar();
-        showCardOverlay('🎁','FREE DAY','Nothing Happens! +0.5 Mood',`${player.name} gets a free day off! Enjoy. +0.5 Happiness!`,'good');
-        setTimeout(() => { hideCardOverlay(); endTurn(); }, 4000);
+        showCardOverlay('🎁','FREE DAY','Nothing Happens! +0.5 Mood',`${player.name} gets a free day off! Enjoy. +0.5 Happiness!`,'good', () => { endTurn(); });
     } else if (space.id === 30) {
         sendToJail(player);
         renderPlayerBar();
         updatePlayerPieces();
         showCardOverlay('🚔','GO TO JAIL','Busted!',
             `${player.name} is going to jail!\nReason: ${player.jailReason}\nUp to ${player.jailMaxTurns} turns | Bail: ${fmt(player.jailFine)}${player.vehicleSeized>0?'\n'+CARS[player.vehicleSeized].icon+' '+CARS[player.vehicleSeized].name+' impounded! Fee: '+fmt(CARS[player.vehicleSeized].impound):''}`,
-            'bad');
-        setTimeout(() => { hideCardOverlay(); endTurn(); }, 6000);
+            'bad', () => { endTurn(); });
     }
 }
 
@@ -936,14 +921,13 @@ function handlePayday(player) {
     adjustHappiness(player, 0.5);
     renderPlayerBar();
     showCardOverlay('💰','PAYDAY','Collect Your Check!',
-        `${player.name} collects ${fmt(player.jobPay)} from ${player.job}!\nRent/payment deducted automatically.`,'good');
-    setTimeout(() => { hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+        `${player.name} collects ${fmt(player.jobPay)} from ${player.job}!\nRent/payment deducted automatically.`,'good', () => { checkWinThenEnd(player); });
 }
 
 // ── GOOD SPACE ────────────────────────────────────────────
 function handleGoodSpace(player, space) {
-    if (space.name === 'Vacation Pay') { player.money+=1200; adjustHappiness(player,0.5); renderPlayerBar(); showCardOverlay('✈️','LUCKY!','Vacation Pay',`${player.name} cashed in vacation days! +$1,200`,'good'); setTimeout(()=>{hideCardOverlay();checkWinThenEnd(player);},5000); }
-    else { player.money+=100; renderPlayerBar(); showCardOverlay('✅','LUCKY!',space.name,`${player.name} got lucky! +$100`,'good'); setTimeout(()=>{hideCardOverlay();checkWinThenEnd(player);},5000); }
+    if (space.name === 'Vacation Pay') { player.money+=1200; adjustHappiness(player,0.5); renderPlayerBar(); showCardOverlay('✈️','LUCKY!','Vacation Pay',`${player.name} cashed in vacation days! +$1,200`,'good', () => { checkWinThenEnd(player); }); }
+    else { player.money+=100; renderPlayerBar(); showCardOverlay('✅','LUCKY!',space.name,`${player.name} got lucky! +$100`,'good', () => { checkWinThenEnd(player); }); }
 }
 
 // ── BAD SPACE (#11 — hospital with tow choice) ────────────
@@ -952,8 +936,7 @@ function handleBadSpace(player, space) {
         const assets = player.money + HOUSING[player.housingLevel].price + CARS[player.carLevel].price;
         const t = Math.max(1, Math.round(assets * 0.10));
         charge(player, t); adjustHappiness(player, -0.5); renderPlayerBar();
-        showCardOverlay('📋','TAXES','Pay 10%!',`${player.name} owes 10% on assets (${fmt(assets)})! Tax: ${fmt(t)}`,'bad');
-        setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
+        showCardOverlay('📋','TAXES','Pay 10%!',`${player.name} owes 10% on assets (${fmt(assets)})! Tax: ${fmt(t)}`,'bad', () => { endTurn(); });
     } else if (space.name === 'Hospital') {
         // #11 — hospital: charge, then offer car tow question
         const medBill = scaledFine(player, 500);
@@ -963,14 +946,12 @@ function handleBadSpace(player, space) {
             const towFee = 300;
             showTowChoice(player, medBill, towFee, () => endTurn());
         } else {
-            showCardOverlay('🏥','HOSPITAL','Emergency Visit!',`${player.name} paid ${fmt(medBill)} in medical bills!`,'bad');
-            setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
+            showCardOverlay('🏥','HOSPITAL','Emergency Visit!',`${player.name} paid ${fmt(medBill)} in medical bills!`,'bad', () => { endTurn(); });
         }
     } else {
         const f = scaledFine(player, 100);
         charge(player, f); adjustHappiness(player, -0.5); renderPlayerBar();
-        showCardOverlay('❌','OUCH!',space.name,`${player.name} had bad luck! -${fmt(f)}`,'bad');
-        setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
+        showCardOverlay('❌','OUCH!',space.name,`${player.name} had bad luck! -${fmt(f)}`,'bad', () => { endTurn(); });
     }
 }
 
@@ -992,14 +973,12 @@ function showTowChoice(player, medBill, towFee, callback) {
     yesBtn.onclick = () => {
         if (player.money >= towFee) {
             charge(player, towFee); renderPlayerBar(); closePopup();
-            showCardOverlay('🚗','CAR BACK','Paid Impound!',`${player.name} paid ${fmt(towFee)} to get their car back.`,'good');
-            setTimeout(() => { hideCardOverlay(); callback(); }, 4000);
+            showCardOverlay('🚗','CAR BACK','Paid Impound!',`${player.name} paid ${fmt(towFee)} to get their car back.`,'good', () => { callback(); });
         } else {
             closePopup();
-            showCardOverlay('💸','CANT PAY','Left the Car',`${player.name} can't afford ${fmt(towFee)} impound. Car left behind.`,'bad');
+            showCardOverlay('💸','CANT PAY','Left the Car',`${player.name} can't afford ${fmt(towFee)} impound. Car left behind.`,'bad', () => { callback(); });
             player.carLevel = 0;
             renderPlayerBar();
-            setTimeout(() => { hideCardOverlay(); callback(); }, 4000);
         }
     };
     const noBtn = document.createElement('button');
@@ -1007,8 +986,7 @@ function showTowChoice(player, medBill, towFee, callback) {
     noBtn.onclick = () => {
         closePopup();
         player.carLevel = 0; renderPlayerBar();
-        showCardOverlay('🚗','LEFT BEHIND','Car Gone',`${player.name} left the car in impound. Back to walking.`,'bad');
-        setTimeout(() => { hideCardOverlay(); callback(); }, 4000);
+        showCardOverlay('🚗','LEFT BEHIND','Car Gone',`${player.name} left the car in impound. Back to walking.`,'bad', () => { callback(); });
     };
     content.appendChild(yesBtn); content.appendChild(noBtn);
 }
@@ -1026,22 +1004,18 @@ function handleHouseSpace(player, space) {
     const nextLvl = player.housingLevel + 1;
 
     if (player.housingLevel >= HOUSING.length-1) {
-        showCardOverlay('🏰','HOUSING','Maxed Out!',`${player.name} already lives in a ${cur.name}!`,'good');
-        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 4000); return;
+        showCardOverlay('🏰','HOUSING','Maxed Out!',`${player.name} already lives in a ${cur.name}!`,'good', () => { endTurn(); }); return;
     }
     if (nextLvl > tierRange.max) {
         showCardOverlay('🔒','WRONG DEALER','Out of Range',
-            `${space.name} only sells levels ${tierRange.min}–${tierRange.max}. Current: level ${player.housingLevel}. Try another housing dealer!`,'bad');
-        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000); return;
+            `${space.name} only sells levels ${tierRange.min}–${tierRange.max}. Current: level ${player.housingLevel}. Try another housing dealer!`,'bad', () => { endTurn(); }); return;
     }
     if (nextLvl === 1 && player.carLevel === 0) {
-        showCardOverlay('🚗','NEED A CAR','Car Living Blocked',`${player.name} can't live in a car without owning one! (#10)`,'bad');
-        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000); return;
+        showCardOverlay('🚗','NEED A CAR','Car Living Blocked',`${player.name} can't live in a car without owning one! (#10)`,'bad', () => { endTurn(); }); return;
     }
     const lapsNeeded = HOUSING[nextLvl].lapReq || 0;
     if ((player.laps||0) < lapsNeeded) {
-        showCardOverlay('🔒','LOCKED',`Lap ${lapsNeeded} Required`,`${player.name} needs Lap ${lapsNeeded} for ${HOUSING[nextLvl].name}.`,'bad');
-        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000); return;
+        showCardOverlay('🔒','LOCKED',`Lap ${lapsNeeded} Required`,`${player.name} needs Lap ${lapsNeeded} for ${HOUSING[nextLvl].name}.`,'bad', () => { endTurn(); }); return;
     }
 
     const next = HOUSING[nextLvl];
@@ -1052,12 +1026,10 @@ function handleHouseSpace(player, space) {
             if (player.money >= cost) {
                 player.money -= cost; player.housingLevel = nextLvl;
                 animateAssetIcon('apHousingIcon'); renderPlayerBar(); closePopup();
-                showCardOverlay('🏠','UPGRADED!',next.icon+' '+next.name,`${player.name} upgraded their home!`,'good');
-                setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+                showCardOverlay('🏠','UPGRADED!',next.icon+' '+next.name,`${player.name} upgraded their home!`,'good', () => { checkWinThenEnd(player); });
             } else {
                 closePopup();
-                showCardOverlay('💸','CANT AFFORD IT','Not Enough',`${player.name} needs ${fmt(cost)} but has ${fmt(player.money)}`,'bad');
-                setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+                showCardOverlay('💸','CANT AFFORD IT','Not Enough',`${player.name} needs ${fmt(cost)} but has ${fmt(player.money)}`,'bad', () => { endTurn(); });
             }
         }, () => { closePopup(); endTurn(); });
 }
@@ -1074,18 +1046,15 @@ function handleCarDealerSpace(player, space) {
     const nextLvl = player.carLevel + 1;
 
     if (player.carLevel >= CARS.length-1) {
-        showCardOverlay('🚀','CAR DEALER','Maxed Out!',`${player.name} already drives a ${cur.name}!`,'good');
-        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 4000); return;
+        showCardOverlay('🚀','CAR DEALER','Maxed Out!',`${player.name} already drives a ${cur.name}!`,'good', () => { endTurn(); }); return;
     }
     if (nextLvl > tierRange.max) {
         showCardOverlay('🔒','WRONG DEALER','Out of Range',
-            `${space.name} sells levels ${tierRange.min}–${tierRange.max}. Need a ${nextLvl >= 8?'luxury':'higher-end'} dealer!`,'bad');
-        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000); return;
+            `${space.name} sells levels ${tierRange.min}–${tierRange.max}. Need a ${nextLvl >= 8?'luxury':'higher-end'} dealer!`,'bad', () => { endTurn(); }); return;
     }
     const lapsNeeded = carLapRequired(nextLvl);
     if ((player.laps||0) < lapsNeeded) {
-        showCardOverlay('🔒','LOCKED',`Lap ${lapsNeeded} Required`,`${player.name} needs Lap ${lapsNeeded} for ${CARS[nextLvl].name}.`,'bad');
-        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000); return;
+        showCardOverlay('🔒','LOCKED',`Lap ${lapsNeeded} Required`,`${player.name} needs Lap ${lapsNeeded} for ${CARS[nextLvl].name}.`,'bad', () => { endTurn(); }); return;
     }
     const next = CARS[nextLvl];
     const cost = Math.max(0, next.price - cur.price);
@@ -1095,12 +1064,10 @@ function handleCarDealerSpace(player, space) {
             if (player.money >= cost) {
                 player.money -= cost; player.carLevel = nextLvl;
                 animateAssetIcon('apCarIcon'); renderPlayerBar(); closePopup();
-                showCardOverlay('🚗','NEW RIDE!',next.icon+' '+next.name,`${player.name} got a new ride!`,'good');
-                setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+                showCardOverlay('🚗','NEW RIDE!',next.icon+' '+next.name,`${player.name} got a new ride!`,'good', () => { checkWinThenEnd(player); });
             } else {
                 closePopup();
-                showCardOverlay('💸','CANT AFFORD IT','Not Enough',`${player.name} needs ${fmt(cost)} but has ${fmt(player.money)}`,'bad');
-                setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+                showCardOverlay('💸','CANT AFFORD IT','Not Enough',`${player.name} needs ${fmt(cost)} but has ${fmt(player.money)}`,'bad', () => { endTurn(); });
             }
         }, () => { closePopup(); endTurn(); });
 }
@@ -1110,8 +1077,7 @@ function handleRealtorSpace(player, space) {
     // Show ALL housing options they qualify for by lap
     const available = HOUSING.filter((h,i) => i > player.housingLevel && (player.laps||0) >= (h.lapReq||0));
     if (!available.length) {
-        showCardOverlay('🏢','REALTOR','Nothing Available',`${player.name} doesn't qualify for any upgrades yet. Keep playing!`,'bad');
-        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000); return;
+        showCardOverlay('🏢','REALTOR','Nothing Available',`${player.name} doesn't qualify for any upgrades yet. Keep playing!`,'bad', () => { endTurn(); }); return;
     }
     const best = available[available.length-1];
     const cost = Math.max(0, best.price - HOUSING[player.housingLevel].price);
@@ -1120,12 +1086,10 @@ function handleRealtorSpace(player, space) {
             if (player.money >= cost) {
                 player.money -= cost; player.housingLevel = HOUSING.indexOf(best);
                 animateAssetIcon('apHousingIcon'); renderPlayerBar(); closePopup();
-                showCardOverlay('🏢','UPGRADED!',best.icon+' '+best.name,`${player.name} moved into ${best.name}!`,'good');
-                setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+                showCardOverlay('🏢','UPGRADED!',best.icon+' '+best.name,`${player.name} moved into ${best.name}!`,'good', () => { checkWinThenEnd(player); });
             } else {
                 closePopup();
-                showCardOverlay('💸','CANT AFFORD IT','Not Enough',`${player.name} needs ${fmt(cost)}.`,'bad');
-                setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+                showCardOverlay('💸','CANT AFFORD IT','Not Enough',`${player.name} needs ${fmt(cost)}.`,'bad', () => { endTurn(); });
             }
         }, () => { closePopup(); endTurn(); });
 }
@@ -1149,7 +1113,13 @@ function showUpgradePopup(title, message, yesText, onYes, onNo) {
 }
 
 // ── CARD OVERLAY ─────────────────────────────────────────
-function showCardOverlay(icon, typeLabel, title, body, type) {
+// Card stays face-up until player taps. showCardOverlay takes an optional
+// onDismiss callback; if omitted the overlay just sits open (previous card
+// visible) until the next showCardOverlay call replaces it.
+let _cardDismissCallback = null;
+let _cardDismissEnabled = false;
+
+function showCardOverlay(icon, typeLabel, title, body, type, onDismiss) {
     const overlay = document.getElementById('cardOverlay');
     const display = document.getElementById('cardDisplay');
     document.getElementById('cardIcon').textContent = icon;
@@ -1161,8 +1131,27 @@ function showCardOverlay(icon, typeLabel, title, body, type) {
     else if (type==='bad') display.classList.add('card-bad');
     else if (type==='sarcastic') display.classList.add('card-sarcastic');
     overlay.classList.remove('hidden');
+    _cardDismissCallback = onDismiss || null;
+    // Brief lock so an accidental tap during the slide-in doesn't dismiss
+    _cardDismissEnabled = false;
+    setTimeout(() => { _cardDismissEnabled = true; }, 800);
 }
+
+function dismissCard() {
+    if (!_cardDismissEnabled) return;
+    if (!_cardDismissCallback) return; // no action pending — card just showing last draw
+    _cardDismissEnabled = false;
+    const cb = _cardDismissCallback;
+    _cardDismissCallback = null;
+    // Don't hide the overlay — leave card face-up for everyone to read
+    // It will be replaced when the next card is shown
+    cb();
+}
+
+// Called only when we truly need to clear the card (new game, jail break roll-off etc.)
 function hideCardOverlay() {
+    _cardDismissCallback = null;
+    _cardDismissEnabled = false;
     const overlay = document.getElementById('cardOverlay');
     const display = document.getElementById('cardDisplay');
     display.classList.add('card-fade-out');
@@ -1182,8 +1171,7 @@ function handleJobOffice(player) {
         `${player.name}, job offer:\n${offer.icon} ${offer.name} | Payday: ${fmt(offer.pay)}\nCurrent: ${player.job} (${fmt(player.jobPay)})${nextUnlock}`,
         'TAKE IT!', () => {
             player.job=offer.name; player.jobPay=offer.pay; adjustHappiness(player,0.5); renderPlayerBar(); closePopup();
-            showCardOverlay('💼','NEW JOB!',offer.icon+' '+offer.name,`${player.name} is now working as ${offer.name}! Payday: ${fmt(offer.pay)}`,'good');
-            setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+            showCardOverlay('💼','NEW JOB!',offer.icon+' '+offer.name,`${player.name} is now working as ${offer.name}! Payday: ${fmt(offer.pay)}`,'good', () => { checkWinThenEnd(player); });
         }, () => { closePopup(); endTurn(); });
 }
 
@@ -1192,8 +1180,7 @@ function handleJobCard(player) {
     const result = card.effect(player);
     renderPlayerBar();
     const isGood = !result.includes('FIRED') && !result.includes('best job');
-    showCardOverlay(card.icon,'JOB CARD',card.name,result,isGood?'good':'bad');
-    setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+    showCardOverlay(card.icon,'JOB CARD',card.name,result,isGood?'good':'bad', () => { checkWinThenEnd(player); });
 }
 
 // ── HOUSING/CAR CARD ──────────────────────────────────────
@@ -1201,15 +1188,13 @@ function handleHousingCard(player) {
     const card = drawCard(HOUSING_CARDS);
     const result = card.effect(player);
     renderPlayerBar();
-    showCardOverlay(card.icon||'🏘️','HOUSE CARD',card.name,result[1],result[2]||'bad');
-    setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+    showCardOverlay(card.icon||'🏘️','HOUSE CARD',card.name,result[1],result[2]||'bad', () => { checkWinThenEnd(player); });
 }
 function handleCarCard(player) {
     const card = drawCard(CAR_CARDS);
     const result = card.effect(player);
     renderPlayerBar();
-    showCardOverlay(card.icon||'🔧','CAR CARD',card.name,result[1],result[2]||'bad');
-    setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+    showCardOverlay(card.icon||'🔧','CAR CARD',card.name,result[1],result[2]||'bad', () => { checkWinThenEnd(player); });
 }
 
 // ── HUSTLE SPACES ─────────────────────────────────────────
@@ -1343,8 +1328,7 @@ function handleHustle(player, space) {
             renderPlayerBar();
             showCardOverlay('🎯','ODD JOB',won?'Bonus Earned!':'Base Pay Only',
                 won ? `Crushed it! Earned $${earn} bonus!` : `Tough one. Base pay: $${base}.`,
-                won?'good':'sarcastic');
-            setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+                won?'good':'sarcastic', () => { checkWinThenEnd(player); });
         });
         return;
     }
@@ -1365,8 +1349,7 @@ function handleHustle(player, space) {
         else if (earn<0)  { charge(player,Math.abs(earn)); adjustHappiness(player,-0.5); }
         renderPlayerBar();
         const type = earn>0?'good':earn<0?'bad':'sarcastic';
-        showCardOverlay(space.icon,'HUSTLE — '+space.name+' (rolled '+die+')', earn>0?'+'+fmt(earn):earn<0?'-'+fmt(Math.abs(earn)):'Nothing', picked.msg, type);
-        setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5500);
+        showCardOverlay(space.icon,'HUSTLE — '+space.name+' (rolled '+die+')', earn>0?'+'+fmt(earn):earn<0?'-'+fmt(Math.abs(earn)):'Nothing', picked.msg, type, () => { checkWinThenEnd(player); });
     });
 }
 
