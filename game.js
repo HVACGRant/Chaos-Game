@@ -190,49 +190,55 @@ const SARCASTIC_CARDS = [
 ];
 
 // ── Board Layout ─────────────────────────────────────────
-// 40 spaces: 4 corners + 12 blank + action spaces
-// house, car dealer, job office, house/car/job cards
+// 40 spaces: 4 corners + 16 blanks (4 per side) + 20 action/hustle spaces
 const BOARD_SPACES = [
-    { id: 0,  type: 'corner',  icon: '🏁', name: 'START',       desc: 'Begin your new life!' },
-    { id: 1,  type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
-    { id: 2,  type: 'card',    icon: '🃏', name: 'Good Card',   desc: 'Draw a Good Card!' },
-    { id: 3,  type: 'job',     icon: '💼', name: 'Job Office',  desc: 'Get or change your job!' },
-    { id: 4,  type: 'house',   icon: '🏠', name: 'House',       desc: 'Buy or upgrade housing!' },
-    { id: 5,  type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
-    { id: 6,  type: 'card',    icon: '😈', name: 'Bad Card',    desc: 'Draw a Bad Card!' },
-    { id: 7,  type: 'hcard',   icon: '🏘️', name: 'House Card',  desc: 'Draw a Housing Card!' },
-    { id: 8,  type: 'good',    icon: '💵', name: 'Found $20',   desc: 'Collect $20!' },
-    { id: 9,  type: 'jcard',   icon: '📋', name: 'Job Card',    desc: 'Draw a Job Card!' },
-    { id: 10, type: 'corner',  icon: '⛓️', name: 'JAIL',        desc: 'Just Visiting... or IN!' },
-    { id: 11, type: 'card',    icon: '🏠', name: 'Sarcastic Card', desc: 'Draw a Sarcastic Card!' },
-    { id: 12, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
-    { id: 13, type: 'car',     icon: '🚗', name: 'Car Dealer',  desc: 'Buy or upgrade your car!' },
-    { id: 14, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
-    { id: 15, type: 'payday',  icon: '💰', name: 'PAYDAY',      desc: 'Collect your paycheck!' },
-    { id: 16, type: 'jcard',   icon: '📋', name: 'Job Card',    desc: 'Draw a Job Card!' },
-    { id: 17, type: 'ccard',   icon: '🔧', name: 'Car Card',    desc: 'Draw a Car Card!' },
-    { id: 18, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
-    { id: 19, type: 'bad',     icon: '🏥', name: 'Hospital',    desc: 'Pay $500!' },
-    { id: 20, type: 'corner',  icon: '🎁', name: 'FREE DAY',    desc: '+1 Happiness!' },
-    { id: 21, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
-    { id: 22, type: 'card',    icon: '😈', name: 'Bad Card',    desc: 'Draw a Bad Card!' },
-    { id: 23, type: 'job',     icon: '💼', name: 'Job Office',  desc: 'Get or change your job!' },
-    { id: 24, type: 'bad',     icon: '📋', name: 'TAXES',       desc: 'Pay 10% of total assets!' },
-    { id: 25, type: 'house',   icon: '🏠', name: 'House',       desc: 'Buy or upgrade housing!' },
-    { id: 26, type: 'hcard',   icon: '🏘️', name: 'House Card',  desc: 'Draw a Housing Card!' },
-    { id: 27, type: 'good',    icon: '✈️',  name: 'Vacation Pay',desc: 'Collect $1,200!' },
-    { id: 28, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
-    { id: 29, type: 'card',    icon: '🃏', name: 'Good Card',   desc: 'Draw a Good Card!' },
-    { id: 30, type: 'corner',  icon: '🚔', name: 'GO TO JAIL',  desc: 'Go directly to Jail!' },
-    { id: 31, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
-    { id: 32, type: 'car',     icon: '🚗', name: 'Car Dealer',  desc: 'Buy or upgrade your car!' },
-    { id: 33, type: 'ccard',   icon: '🔧', name: 'Car Card',    desc: 'Draw a Car Card!' },
-    { id: 34, type: 'good',    icon: '🎰', name: 'Casino Win',  desc: 'Win $1,400!' },
-    { id: 35, type: 'jcard',   icon: '📋', name: 'Job Card',    desc: 'Draw a Job Card!' },
-    { id: 36, type: 'card',    icon: '🏠', name: 'Sarcastic Card', desc: 'Draw a Sarcastic Card!' },
-    { id: 37, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
-    { id: 38, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
-    { id: 39, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
+    // Bottom row (START → JAIL), spaces 0-10 — 4 blanks: 1,3,6,8
+    { id: 0,  type: 'corner',  icon: '🏁', name: 'START',          desc: 'Begin your new life!' },
+    { id: 1,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 2,  type: 'hustle',  icon: '⛺', name: 'Pop Up Tent',    desc: 'Set up a pop-up shop for quick cash!' },
+    { id: 3,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 4,  type: 'house',   icon: '🏠', name: 'House',          desc: 'Buy or upgrade housing!' },
+    { id: 5,  type: 'hustle',  icon: '🎨', name: 'Craft Show',     desc: 'Sell your crafts for cash!' },
+    { id: 6,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 7,  type: 'hustle',  icon: '📦', name: 'Storage Locker', desc: 'Buy a storage locker auction!' },
+    { id: 8,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 9,  type: 'jcard',   icon: '📋', name: 'Job Card',       desc: 'Draw a Job Card!' },
+    { id: 10, type: 'corner',  icon: '⛓️', name: 'JAIL',           desc: 'Just Visiting... or IN!' },
+
+    // Right side (JAIL → FREE DAY), spaces 11-19 — 4 blanks: 12,14,17,18
+    { id: 11, type: 'hustle',  icon: '🌮', name: 'Food Truck',     desc: 'Run a food truck for the day!' },
+    { id: 12, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 13, type: 'car',     icon: '🚗', name: 'Car Dealer',     desc: 'Buy or upgrade your car!' },
+    { id: 14, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 15, type: 'payday',  icon: '💰', name: 'PAYDAY',         desc: 'Collect your paycheck!' },
+    { id: 16, type: 'hustle',  icon: '🏷️', name: 'Yard Sale',      desc: 'Hold a yard sale for quick cash!' },
+    { id: 17, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 18, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 19, type: 'bad',     icon: '🏥', name: 'Hospital',       desc: 'Pay $500!' },
+
+    // Top row (FREE DAY → GO TO JAIL), spaces 20-30 — 4 blanks: 21,23,28,29
+    { id: 20, type: 'corner',  icon: '🎁', name: 'FREE DAY',       desc: '+1 Happiness!' },
+    { id: 21, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 22, type: 'hustle',  icon: '🎪', name: 'Flea Market',    desc: 'Sell stuff at the flea market!' },
+    { id: 23, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 24, type: 'bad',     icon: '📋', name: 'TAXES',          desc: 'Pay 10% of total assets!' },
+    { id: 25, type: 'house',   icon: '🏠', name: 'House',          desc: 'Buy or upgrade housing!' },
+    { id: 26, type: 'hustle',  icon: '🚜', name: 'Scrap Metal',    desc: 'Sell scrap metal for quick cash!' },
+    { id: 27, type: 'good',    icon: '✈️',  name: 'Vacation Pay',   desc: 'Collect $1,200!' },
+    { id: 28, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 29, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 30, type: 'corner',  icon: '🚔', name: 'GO TO JAIL',     desc: 'Go directly to Jail!' },
+
+    // Left side (GO TO JAIL → START), spaces 31-39 — 4 blanks: 31,34,37,38
+    { id: 31, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 32, type: 'hustle',  icon: '🍋', name: 'Lemonade Stand', desc: 'Run a lemonade stand!' },
+    { id: 33, type: 'hustle',  icon: '🎸', name: 'Busking',        desc: 'Play music on the street!' },
+    { id: 34, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 35, type: 'hustle',  icon: '🌿', name: 'Lawn Mowing',    desc: 'Mow lawns for quick cash!' },
+    { id: 36, type: 'hustle',  icon: '🧹', name: 'Car Wash',       desc: 'Run a car wash!' },
+    { id: 37, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 38, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 39, type: 'job',     icon: '💼', name: 'Job Office',     desc: 'Get or change your job!' },
 ];
 
 // Clockwise: START=bottom-right corner, goes left along bottom,
@@ -708,6 +714,7 @@ function landOnSpace(player, space) {
         case 'ccard':   handleCarCard(player); break;
         case 'job':     handleJobOffice(player); break;
         case 'jcard':   handleJobCard(player); break;
+        case 'hustle':  handleHustle(player, space); break;
         default:        endTurn(); break;
     }
     } catch(e) { console.error("landOnSpace error:", e); endTurn(); }
@@ -1257,4 +1264,167 @@ function handleJobCard(player) {
     const isGood = !result.includes('FIRED') && !result.includes('best job');
     showCardOverlay(card.icon, 'JOB CARD', card.name, result, isGood ? 'good' : 'bad');
     setTimeout(() => { hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+}
+
+// ── Hustle Spaces — roll 1 die, 1-3 bad, 4-6 good ───────
+const HUSTLE_DATA = {
+    'Pop Up Tent': {
+        bad: [
+            { die: 1, earn: -80,  msg: 'Permit officer shut you down before you opened. -$80' },
+            { die: 2, earn: -50,  msg: 'Rain killed the crowd. Lost setup costs. -$50' },
+            { die: 3, earn: -30,  msg: 'Nobody came. Packed up early. -$30' },
+        ],
+        good: [
+            { die: 4, earn: 200,  msg: 'Decent foot traffic, solid sales! +$200' },
+            { die: 5, earn: 350,  msg: 'Sold out by noon! Great day. +$350' },
+            { die: 6, earn: 500,  msg: 'VIRAL moment — line around the block! +$500' },
+        ],
+    },
+    'Craft Show': {
+        bad: [
+            { die: 1, earn: -100, msg: 'Booth fee wasted, zero sales. -$100' },
+            { die: 2, earn: -60,  msg: 'Dropped and broke your best piece. -$60' },
+            { die: 3, earn: -30,  msg: 'Slow show, barely covered parking. -$30' },
+        ],
+        good: [
+            { die: 4, earn: 250,  msg: 'People loved your work! +$250' },
+            { die: 5, earn: 400,  msg: 'Custom orders coming in! +$400' },
+            { die: 6, earn: 600,  msg: 'Local news featured your booth! +$600' },
+        ],
+    },
+    'Storage Locker': {
+        bad: [
+            { die: 1, earn: -200, msg: 'Full of wet furniture and trash. Lost bid. -$200' },
+            { die: 2, earn: -100, msg: 'Nothing sellable. Cost more to haul away. -$100' },
+            { die: 3, earn: -50,  msg: 'Bidding war, overpaid, barely broke even. -$50' },
+        ],
+        good: [
+            { die: 4, earn: 400,  msg: 'Some decent electronics to flip! +$400' },
+            { die: 5, earn: 700,  msg: 'Found antiques worth big money! +$700' },
+            { die: 6, earn: 1200, msg: 'JACKPOT — hidden cash in a box! +$1,200' },
+        ],
+    },
+    'Food Truck': {
+        bad: [
+            { die: 1, earn: -200, msg: 'Health inspector shut you down. Fine. -$200' },
+            { die: 2, earn: -100, msg: 'Generator died, lost all your food. -$100' },
+            { die: 3, earn: -50,  msg: 'Parked in wrong spot, got towed. -$50' },
+        ],
+        good: [
+            { die: 4, earn: 300,  msg: 'Steady lunch crowd! +$300' },
+            { die: 5, earn: 500,  msg: 'Office park found you — cleaned out! +$500' },
+            { die: 6, earn: 800,  msg: 'Food festival — 3 hour wait line! +$800' },
+        ],
+    },
+    'Yard Sale': {
+        bad: [
+            { die: 1, earn: -40,  msg: 'Sold grandmas china for $2. Regret. -$40 sanity.' },
+            { die: 2, earn: -20,  msg: 'Rain came, everything got soaked. -$20' },
+            { die: 3, earn: 0,    msg: 'Only the neighbor came. Bought nothing.' },
+        ],
+        good: [
+            { die: 4, earn: 150,  msg: 'Cleared out the clutter! +$150' },
+            { die: 5, earn: 280,  msg: 'Collectibles sold fast! +$280' },
+            { die: 6, earn: 450,  msg: 'Antique hunter showed up, paid top dollar! +$450' },
+        ],
+    },
+    'Flea Market': {
+        bad: [
+            { die: 1, earn: -80,  msg: 'Table fee, zero sales, long day. -$80' },
+            { die: 2, earn: -50,  msg: 'Someone stole from your table. -$50' },
+            { die: 3, earn: -20,  msg: 'Slow Sunday crowd. Barely worth it. -$20' },
+        ],
+        good: [
+            { die: 4, earn: 200,  msg: 'Solid hustle day! +$200' },
+            { die: 5, earn: 380,  msg: 'Everything went! +$380' },
+            { die: 6, earn: 550,  msg: 'Resellers buying everything in bulk! +$550' },
+        ],
+    },
+    'Scrap Metal': {
+        bad: [
+            { die: 1, earn: -100, msg: 'Truck broke hauling it. Repair bill. -$100' },
+            { die: 2, earn: -60,  msg: 'Prices dropped, not worth the trip. -$60' },
+            { die: 3, earn: -30,  msg: 'Got to the yard and they were closed. -$30' },
+        ],
+        good: [
+            { die: 4, earn: 200,  msg: 'Good haul, decent payout! +$200' },
+            { die: 5, earn: 350,  msg: 'Found copper wire — jackpot metal! +$350' },
+            { die: 6, earn: 500,  msg: 'Construction site had a full dumpster. +$500' },
+        ],
+    },
+    'Lemonade Stand': {
+        bad: [
+            { die: 1, earn: -30,  msg: 'City shut you down, no permit. -$30' },
+            { die: 2, earn: -20,  msg: 'Dog knocked over the whole pitcher. -$20' },
+            { die: 3, earn: 0,    msg: 'Cold day. Nobody wanted lemonade.' },
+        ],
+        good: [
+            { die: 4, earn: 80,   msg: 'Hot day, good spot! +$80' },
+            { die: 5, earn: 150,  msg: 'Line around the block! +$150' },
+            { die: 6, earn: 250,  msg: 'Influencer posted your stand. Sold out! +$250' },
+        ],
+    },
+    'Busking': {
+        bad: [
+            { die: 1, earn: -50,  msg: 'Broke a string, no backup. Embarrassing. -$50' },
+            { die: 2, earn: -20,  msg: 'Cop moved you along after 10 minutes. -$20' },
+            { die: 3, earn: 0,    msg: 'Crickets. Nobody even looked up.' },
+        ],
+        good: [
+            { die: 4, earn: 100,  msg: 'Decent tips rolling in! +$100' },
+            { die: 5, earn: 200,  msg: 'Crowd gathered, hat overflowing! +$200' },
+            { die: 6, earn: 350,  msg: 'Talent scout handed you a card. +$350' },
+        ],
+    },
+    'Lawn Mowing': {
+        bad: [
+            { die: 1, earn: -100, msg: 'Mower engine seized. Repair bill. -$100' },
+            { die: 2, earn: -60,  msg: 'Hit a sprinkler head. Customer furious. -$60' },
+            { die: 3, earn: -20,  msg: 'One job canceled last minute. -$20' },
+        ],
+        good: [
+            { die: 4, earn: 150,  msg: 'Got a few yards done! +$150' },
+            { die: 5, earn: 280,  msg: 'Whole street hired you! +$280' },
+            { die: 6, earn: 400,  msg: 'HOA contracted you for the season! +$400' },
+        ],
+    },
+    'Car Wash': {
+        bad: [
+            { die: 1, earn: -80,  msg: 'Scratched a Mercedes. Owner not happy. -$80' },
+            { die: 2, earn: -40,  msg: 'Hose burst, water everywhere. -$40' },
+            { die: 3, earn: -20,  msg: 'Only 2 cars all day. Lost money on soap. -$20' },
+        ],
+        good: [
+            { die: 4, earn: 180,  msg: 'Solid Saturday hustle! +$180' },
+            { die: 5, earn: 300,  msg: 'Line wrapped around the block! +$300' },
+            { die: 6, earn: 450,  msg: 'Car show came through — 40 cars! +$450' },
+        ],
+    },
+};
+
+function handleHustle(player, space) {
+    const data = HUSTLE_DATA[space.name];
+    if (!data) { endTurn(); return; }
+
+    const d1El = document.getElementById('die1');
+    const d2El = document.getElementById('die2');
+    const die = Math.ceil(Math.random() * 6);
+
+    animateDice(d1El, d2El, die, null, () => {
+        document.getElementById('diceResult').textContent =
+            DICE_FACES[die] + ' = ' + die + (die <= 3 ? ' 😬 Bad luck!' : ' 😎 Nice roll!');
+
+        const outcomes = die <= 3 ? data.bad : data.good;
+        const picked = outcomes[die <= 3 ? die - 1 : die - 4];
+        const earn = picked.earn;
+
+        if (earn > 0)       player.money += earn;
+        else if (earn < 0)  charge(player, Math.abs(earn));
+
+        renderPlayerBar();
+        const type = earn > 0 ? 'good' : earn < 0 ? 'bad' : 'sarcastic';
+        const label = earn > 0 ? '+' + fmt(earn) : earn < 0 ? '-' + fmt(Math.abs(earn)) : 'Nothing';
+        showCardOverlay(space.icon, 'HUSTLE — ' + space.name + ' (rolled ' + die + ')', label, picked.msg, type);
+        setTimeout(() => { hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+    });
 }
