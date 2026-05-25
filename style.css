@@ -198,8 +198,9 @@ body {
 /* ── GAME BOARD ── */
 .game-board {
     display: grid;
-    grid-template-columns: repeat(11, 1fr);
-    grid-template-rows: repeat(11, 1fr);
+    /* Edge cols/rows are 1.7x the inner ones — bigger squares, same board size */
+    grid-template-columns: 1.7fr repeat(8, 1fr) 1.7fr;
+    grid-template-rows: 1.7fr repeat(8, 1fr) 1.7fr;
     gap: 2px;
     width: min(94vmin, 640px);
     height: min(94vmin, 640px);
@@ -221,7 +222,7 @@ body {
     padding: 2px 1px;
     text-align: center;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     cursor: pointer;
     transition: border-color 0.2s;
 }
@@ -229,12 +230,12 @@ body {
 .board-space.clickable-space { border-color: rgba(245,166,35,0.4); }
 
 .space-icon {
-    font-size: clamp(0.9em, 2.8vmin, 1.6em);
+    font-size: clamp(1.1em, 3.2vmin, 2em);
     line-height: 1;
     flex-shrink: 0;
 }
 .space-name {
-    font-size: clamp(0.42em, 1.1vmin, 0.7em);
+    font-size: clamp(0.44em, 1.2vmin, 0.72em);
     line-height: 1.15;
     word-break: break-word;
     color: #eee;
@@ -251,12 +252,13 @@ body {
     bottom: 0;
     left: 0; right: 0;
     overflow: visible;
+    z-index: 2;
 }
 .space-piece {
-    font-size: clamp(1.4em, 3.8vmin, 2.4em);
+    font-size: clamp(1.8em, 4.8vmin, 3em);
     line-height: 1;
     cursor: default;
-    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.8));
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.9));
 }
 
 /* Space type colours */
@@ -271,11 +273,12 @@ body {
 .board-space.job     { background: rgba(138,43,226,0.25); border-color: #8a2be2; }
 .board-space.jcard   { background: rgba(138,43,226,0.15); border-color: #8a2be2; }
 .board-space.hustle  { background: rgba(255,140,0,0.18);  border-color: #ff8c00; }
+.board-space.fastfood{ background: rgba(220,50,50,0.22);  border-color: #ff2a2a; }
 .board-space.blank   { background: rgba(10,10,26,0.3);    border-color: rgba(255,255,255,0.05); opacity:0.6; }
 
 /* CENTER OF BOARD — smaller to allow bigger edge spaces */
 .center-area {
-    grid-column: 2/11; grid-row: 2/11;
+    grid-column: 2/10; grid-row: 2/10;
     background: rgba(0,0,0,0.7);
     border: 1px solid var(--navy);
     border-radius: 6px;
@@ -284,9 +287,9 @@ body {
     gap: 3px; padding: 6px;
     overflow: hidden;
 }
-.center-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.2em,3.5vmin,2.2em); color: var(--red); letter-spacing: 4px; text-shadow: 0 0 20px rgba(233,69,96,0.7); }
-.center-sub   { color: var(--grey); font-size: clamp(0.5em,1.3vmin,0.8em); letter-spacing: 2px; }
-.center-goal  { color: var(--gold); font-size: clamp(0.5em,1.2vmin,0.75em); font-weight: 600; }
+.center-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(0.9em,2.5vmin,1.6em); color: var(--red); letter-spacing: 3px; text-shadow: 0 0 20px rgba(233,69,96,0.7); }
+.center-sub   { color: var(--grey); font-size: clamp(0.38em,1vmin,0.6em); letter-spacing: 2px; }
+.center-goal  { color: var(--gold); font-size: clamp(0.38em,0.95vmin,0.6em); font-weight: 600; }
 
 /* Card deck stack in center */
 .card-stacks {
@@ -446,15 +449,26 @@ body {
 .card-sarcastic .card-title { color:var(--gold); }
 .card-body { color:#ddd; font-size:0.95em; line-height:1.5; }
 
-.card-dismiss-hint {
-    margin-top: 18px;
+.card-continue-btn {
+    display: block;
+    margin: 20px auto 0;
+    padding: 12px 32px;
+    background: linear-gradient(135deg, var(--red), #c23152);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 0.75em;
+    font-size: 1.1em;
     letter-spacing: 3px;
-    color: rgba(255,255,255,0.35);
-    animation: hintPulse 1.5s ease-in-out infinite;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(233,69,96,0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+    touch-action: manipulation;
 }
-@keyframes hintPulse { 0%,100%{opacity:0.3} 50%{opacity:0.8} }
+.card-continue-btn:active { transform: scale(0.96); }
+.card-good .card-continue-btn { background: linear-gradient(135deg, #2ea87e, #4ecca3); box-shadow: 0 4px 15px rgba(78,204,163,0.4); color: #0a0a1a; }
+.card-bad .card-continue-btn { background: linear-gradient(135deg, var(--red), #c23152); }
+.card-sarcastic .card-continue-btn { background: linear-gradient(135deg, #c98a00, var(--gold)); color: #0a0a1a; }
 
 .card-fade-out { animation:cardFadeOut 0.4s ease forwards; }
 @keyframes cardFadeOut { to{opacity:0;transform:scale(0.9)} }
