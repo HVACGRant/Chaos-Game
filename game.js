@@ -368,7 +368,6 @@ function setupPlayers() {
     showScreen('playerSetupScreen');
 }
 // ── AVATAR BUILDER ────────────────────────────────────────
-// tempSetup is a stable object — never reassign, only mutate properties
 const tempSetup = { avatar: '', avatarSlots: { base:'', overlay:'', hat:'', item:'', vibe:'' } };
 
 function abBuild() {
@@ -381,36 +380,36 @@ function abRefresh() {
     const preview = document.getElementById('abPreview');
     if (preview) preview.textContent = built || '❓';
     tempSetup.avatar = built;
+    // Update slot display labels
+    const s = tempSetup.avatarSlots;
+    ['base','overlay','hat','item','vibe'].forEach(k => {
+        const el = document.getElementById('sl-' + k);
+        if (el) el.textContent = s[k] || '—';
+    });
 }
 
-// Called directly from onclick on every button
 function abPick(slot, emoji) {
     const s = tempSetup.avatarSlots;
-    // Toggle off if same emoji picked again
+    // Toggle off if same picked again
     s[slot] = (s[slot] === emoji) ? '' : emoji;
-    // Update highlights for this slot only
-    document.querySelectorAll('.ab-pick').forEach(b => {
-        if (b.dataset.slot === slot) {
-            b.classList.toggle('selected', b.dataset.emoji === s[slot]);
-        }
+    // Update selected highlights — only same slot buttons
+    document.querySelectorAll('.ab-e[data-slot="' + slot + '"]').forEach(b => {
+        b.classList.toggle('sel', b.dataset.emoji === s[slot] && s[slot] !== '');
     });
     abRefresh();
 }
 
-function abTab(tabEl) {
-    const panelId = tabEl.dataset.panel;
-    document.querySelectorAll('.ab-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.ab-panel').forEach(p => p.classList.remove('active'));
-    tabEl.classList.add('active');
-    const panel = document.getElementById('ab-panel-' + panelId);
-    if (panel) panel.classList.add('active');
+function abClear(slot) {
+    tempSetup.avatarSlots[slot] = '';
+    document.querySelectorAll('.ab-e[data-slot="' + slot + '"]').forEach(b => b.classList.remove('sel'));
+    abRefresh();
 }
 
 function abReset() {
     const s = tempSetup.avatarSlots;
     Object.keys(s).forEach(k => s[k] = '');
     tempSetup.avatar = '';
-    document.querySelectorAll('.ab-pick').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.ab-e').forEach(b => b.classList.remove('sel'));
     abRefresh();
 }
 
@@ -419,16 +418,11 @@ function showPlayerSetup() {
     document.getElementById('playerSetupTitle').textContent = `Player ${idx+1} Setup`;
     document.getElementById('playerName').value = '';
     abReset();
-    // Reset to first tab
-    const firstTab = document.querySelector('.ab-tab');
-    if (firstTab) abTab(firstTab);
     document.getElementById('nextPlayerBtn').textContent =
         idx === gameState.numPlayers-1 ? 'START CHAOS!' : 'NEXT PLAYER';
 }
 
-function selectAvatar(emoji) {
-    tempSetup.avatar = emoji; // legacy fallback
-}
+function selectAvatar(emoji) { tempSetup.avatar = emoji; }
 
 function nextPlayer() {
     const name = document.getElementById('playerName').value.trim();
