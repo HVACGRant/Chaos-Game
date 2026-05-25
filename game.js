@@ -74,66 +74,69 @@ const CARS = [
 
 // ── BOARD SPACES (#12 — 1 housing, 1 car dealer, 1 realtor per side) ──
 const BOARD_SPACES = [
-    // Bottom row (START → JAIL) id 0–9, row=9 col=9→0
-    { id:0,  type:'corner',  icon:'🏁', name:'START',          desc:'Begin your new life!' },
-    { id:1,  type:'hustle',  icon:'🛻', name:'Junk Hauling',   desc:'Haul junk for quick cash!' },
-    { id:2,  type:'hustle',  icon:'⛺', name:'Pop Up Tent',    desc:'Set up a pop-up shop!' },
-    { id:3,  type:'hustle',  icon:'🐟', name:'Fishing Trip',   desc:'Sell your catch!' },
-    { id:4,  type:'car',     icon:'🚗', name:'AutoZone Deals', desc:'Budget cars — buy or upgrade!' },
-    { id:5,  type:'hustle',  icon:'🎨', name:'Craft Show',     desc:'Sell your crafts!' },
-    { id:6,  type:'fastfood', icon:'🍔', name:"McDonald's",    desc:'Hungry? Spend some cash!' },
-    { id:7,  type:'house',   icon:'🏠', name:'Budget Housing', desc:'Affordable homes!', tier:'budget' },
-    { id:8,  type:'realtor', icon:'🏢', name:'City Realty',    desc:'Entry-level realtor!' },
-    { id:9,  type:'corner',  icon:'⛓️', name:'JAIL',           desc:'Just Visiting... or IN!' },
+    // Bottom row: id 0-9, row=9, col=9→0 (START at bottom-right, JAIL at bottom-left)
+    { id:0,  type:'corner',   icon:'🏁', name:'START',          desc:'Begin your new life!' },
+    { id:1,  type:'hustle',   icon:'🛻', name:'Junk Hauling',   desc:'Haul junk for quick cash!' },
+    { id:2,  type:'hustle',   icon:'⛺', name:'Pop Up Tent',    desc:'Set up a pop-up shop!' },
+    { id:3,  type:'hustle',   icon:'🐟', name:'Fishing Trip',   desc:'Sell your catch!' },
+    { id:4,  type:'car',      icon:'🚗', name:'AutoZone Deals', desc:'Budget cars — buy or upgrade!' },
+    { id:5,  type:'fastfood', icon:'🍔', name:"McDonald's",    desc:'Hungry? Spend some cash!' },
+    { id:6,  type:'house',    icon:'🏠', name:'Budget Housing', desc:'Affordable homes!', tier:'budget' },
+    { id:7,  type:'realtor',  icon:'🏢', name:'City Realty',    desc:'Entry-level realtor!' },
+    { id:8,  type:'hustle',   icon:'🎨', name:'Craft Show',     desc:'Sell your crafts!' },
+    { id:9,  type:'corner',   icon:'⛓️', name:'JAIL',           desc:'Just Visiting... or IN!' },
 
-    // Left side (JAIL → FREE DAY) id 10–18, col=0 row=9→1  (going up)
-    { id:10, type:'hustle',  icon:'🌮', name:'Food Truck',     desc:'Run a food truck!' },
-    { id:11, type:'hustle',  icon:'🪟', name:'Window Washing', desc:'Wash windows for cash!' },
-    { id:12, type:'car',     icon:'🚘', name:'Mid Auto Sales', desc:'Mid-range cars $3k–$22k!' },
-    { id:13, type:'hustle',  icon:'🐕', name:'Dog Walking',    desc:'Walk dogs for tips!' },
-    { id:14, type:'payday',  icon:'💰', name:'PAYDAY',         desc:'Collect your paycheck!' },
-    { id:15, type:'hustle',  icon:'🏷️', name:'Yard Sale',      desc:'Hold a yard sale!' },
-    { id:16, type:'hustle',  icon:'🃏', name:'Card Games',     desc:'Play cards for money!' },
-    { id:17, type:'house',   icon:'🏘️', name:'Mid Housing',    desc:'Mid-range homes $5k–$30k!', tier:'mid' },
-    { id:18, type:'bad',     icon:'🏥', name:'Hospital',       desc:'Emergency visit!' },
+    // Left col: id 10-17, col=0, row=8→1 (going up, skipping corners)
+    { id:10, type:'hustle',   icon:'🌮', name:'Food Truck',     desc:'Run a food truck!' },
+    { id:11, type:'hustle',   icon:'🪟', name:'Window Washing', desc:'Wash windows for cash!' },
+    { id:12, type:'car',      icon:'🚘', name:'Mid Auto Sales', desc:'Mid-range cars $3k–$22k!' },
+    { id:13, type:'hustle',   icon:'🐕', name:'Dog Walking',    desc:'Walk dogs for tips!' },
+    { id:14, type:'payday',   icon:'💰', name:'PAYDAY',         desc:'Collect your paycheck!' },
+    { id:15, type:'hustle',   icon:'🏷️', name:'Yard Sale',      desc:'Hold a yard sale!' },
+    { id:16, type:'hustle',   icon:'🃏', name:'Card Games',     desc:'Play cards for money!' },
+    { id:17, type:'house',    icon:'🏘️', name:'Mid Housing',    desc:'Mid-range homes $5k–$30k!', tier:'mid' },
 
     // Top-left corner
-    { id:19, type:'corner',  icon:'🎁', name:'FREE DAY',       desc:'+0.5 Happiness!' },
+    { id:18, type:'corner',   icon:'🎁', name:'FREE DAY',       desc:'+0.5 Happiness!' },
 
-    // Top row (FREE DAY → GO TO JAIL) id 20–28, row=0 col=1→9
-    { id:20, type:'hustle',  icon:'🧺', name:'Laundry Service',desc:'Run a laundry hustle!' },
-    { id:21, type:'hustle',  icon:'🎪', name:'Flea Market',    desc:'Sell at the flea market!' },
-    { id:22, type:'realtor', icon:'🏡', name:'Prestige Homes', desc:'Luxury realtor!', tier:'luxury' },
-    { id:23, type:'bad',     icon:'📋', name:'TAXES',          desc:'Pay 10% of total assets!' },
-    { id:24, type:'fastfood', icon:'🌮', name:'Taco Bell',      desc:'Live Mas. Spend some cash!' },
-    { id:25, type:'hustle',  icon:'🚜', name:'Scrap Metal',    desc:'Sell scrap metal!' },
-    { id:26, type:'car',     icon:'🏎️', name:'Luxury Motors',  desc:'High-end cars $14k–$60k!' },
-    { id:27, type:'hustle',  icon:'🎮', name:'Gaming Tourney', desc:'Enter a gaming tournament!' },
-    { id:28, type:'good',    icon:'✈️',  name:'Vacation Pay',  desc:'Collect $1,200!' },
+    // Top row: id 19-26, row=0, col=1→8 (going right, skipping corners)
+    { id:19, type:'hustle',   icon:'🧺', name:'Laundry Service',desc:'Run a laundry hustle!' },
+    { id:20, type:'hustle',   icon:'🎪', name:'Flea Market',    desc:'Sell at the flea market!' },
+    { id:21, type:'realtor',  icon:'🏡', name:'Prestige Homes', desc:'Luxury realtor!', tier:'luxury' },
+    { id:22, type:'bad',      icon:'📋', name:'TAXES',          desc:'Pay 10% of total assets!' },
+    { id:23, type:'fastfood', icon:'🌮', name:'Taco Bell',      desc:'Live Mas. Spend some cash!' },
+    { id:24, type:'hustle',   icon:'🚜', name:'Scrap Metal',    desc:'Sell scrap metal!' },
+    { id:25, type:'car',      icon:'🏎️', name:'Luxury Motors',  desc:'High-end cars $14k–$60k!' },
+    { id:26, type:'good',     icon:'✈️',  name:'Vacation Pay',  desc:'Collect $1,200!' },
 
     // Top-right corner
-    { id:29, type:'corner',  icon:'🚔', name:'GO TO JAIL',     desc:'Go directly to Jail!' },
+    { id:27, type:'corner',   icon:'🚔', name:'GO TO JAIL',     desc:'Go directly to Jail!' },
 
-    // Right side (GO TO JAIL → START) id 30–38, col=9 row=8→1 (going down)
-    { id:30, type:'hustle',  icon:'🚲', name:'Bike Courier',   desc:'Deliver packages by bike!' },
-    { id:31, type:'hustle',  icon:'🍋', name:'Lemonade Stand', desc:'Run a lemonade stand!' },
-    { id:32, type:'hustle',  icon:'🎸', name:'Busking',        desc:'Play music on the street!' },
-    { id:33, type:'house',   icon:'🏰', name:'Elite Estates',  desc:'Luxury homes $45k–$150k!', tier:'luxury' },
-    { id:34, type:'hustle',  icon:'🌿', name:'Lawn Mowing',    desc:'Mow lawns for cash!' },
-    { id:35, type:'hustle',  icon:'🧹', name:'Car Wash',       desc:'Run a car wash!' },
-    { id:36, type:'realtor', icon:'🏦', name:'Metro Realty',   desc:'Mid-tier realtor!', tier:'mid' },
-    { id:37, type:'hustle',  icon:'🎲', name:'Street Dice',    desc:'Roll dice for money!' },
-    { id:38, type:'job',     icon:'💼', name:'Job Office',     desc:'Get or change your job!' },
+    // Right col: id 28-35, col=9, row=1→8 (going down, skipping corners)
+    { id:28, type:'hustle',   icon:'🚲', name:'Bike Courier',   desc:'Deliver packages by bike!' },
+    { id:29, type:'hustle',   icon:'🍋', name:'Lemonade Stand', desc:'Run a lemonade stand!' },
+    { id:30, type:'hustle',   icon:'🎸', name:'Busking',        desc:'Play music on the street!' },
+    { id:31, type:'house',    icon:'🏰', name:'Elite Estates',  desc:'Luxury homes $45k–$150k!', tier:'luxury' },
+    { id:32, type:'hustle',   icon:'🌿', name:'Lawn Mowing',    desc:'Mow lawns for cash!' },
+    { id:33, type:'bad',      icon:'🏥', name:'Hospital',       desc:'Emergency visit!' },
+    { id:34, type:'realtor',  icon:'🏦', name:'Metro Realty',   desc:'Mid-tier realtor!', tier:'mid' },
+    { id:35, type:'job',      icon:'💼', name:'Job Office',     desc:'Get or change your job!' },
 ];
 
-// 10×10 grid — corners at (9,9), (9,0), (0,0), (0,9)
-// Clockwise: START=bottom-right, bottom goes right→left, left side goes bottom→top,
-// top goes left→right, right side goes top→bottom
+// 10×10 grid — verified no overlaps, 36 unique positions
+// Bottom: id0-9  row=9, col=9-id
+// Left:   id10-17 col=0, row=8-(id-10)=18-id
+// Corner: id18   (0,0)
+// Top:    id19-26 row=0, col=id-18
+// Corner: id27   (0,9)
+// Right:  id28-35 col=9, row=id-27
 function getGridPosition(id) {
-    if (id <= 9)  return { row:9, col:9-id };        // bottom: col 9→0
-    if (id <= 19) return { row:9-(id-9), col:0 };    // left: row 9→0
-    if (id <= 29) return { row:0, col:id-19 };        // top: col 1→9  (wait, 19→col0, 20→col1...29→col9) ✓
-    return { row:id-29, col:9 };                      // right: row 1→9
+    if (id <= 9)  return { row:9, col:9-id };
+    if (id <= 17) return { row:18-id, col:0 };
+    if (id === 18) return { row:0, col:0 };
+    if (id <= 26) return { row:0, col:id-18 };
+    if (id === 27) return { row:0, col:9 };
+    return { row:id-27, col:9 };
 }
 
 // ── JAIL REASONS (#20) ───────────────────────────────────
@@ -364,20 +367,69 @@ function setupPlayers() {
     showPlayerSetup();
     showScreen('playerSetupScreen');
 }
+// ── AVATAR BUILDER ────────────────────────────────────────
+const abState = { base:'', overlay:'', hat:'', item:'', vibe:'' };
+
+function abBuild() {
+    // Compose avatar from layers: base + overlay + hat + item + vibe
+    const parts = [abState.base, abState.overlay, abState.hat, abState.item, abState.vibe]
+        .filter(Boolean);
+    return parts.length ? parts.join('') : '❓';
+}
+
+function abRefresh() {
+    const preview = document.getElementById('abPreview');
+    if (preview) preview.textContent = abBuild();
+    // Sync tempSetup.avatar so nextPlayer() can read it
+    tempSetup.avatar = abBuild() === '❓' ? '' : abBuild();
+}
+
+function abSet(slot, emoji) {
+    // Toggle off if already selected
+    abState[slot] = abState[slot] === emoji ? '' : emoji;
+    // Highlight selected buttons in this slot
+    document.querySelectorAll(`.ab-pick`).forEach(btn => {
+        if (btn.getAttribute('onclick') === `abSet('${slot}','${emoji}')`) {
+            btn.classList.toggle('selected', abState[slot] === emoji);
+        } else if (btn.getAttribute('onclick') && btn.getAttribute('onclick').startsWith(`abSet('${slot}'`)) {
+            btn.classList.remove('selected');
+        }
+    });
+    abRefresh();
+}
+
+function abTab(tabEl, panelId) {
+    document.querySelectorAll('.ab-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.ab-panel').forEach(p => p.classList.remove('active'));
+    tabEl.classList.add('active');
+    const panel = document.getElementById('panel-' + panelId);
+    if (panel) panel.classList.add('active');
+}
+
+function abReset() {
+    Object.keys(abState).forEach(k => abState[k] = '');
+    document.querySelectorAll('.ab-pick').forEach(b => b.classList.remove('selected'));
+    abRefresh();
+}
+
 function showPlayerSetup() {
     const idx = gameState.currentSetupPlayer;
     document.getElementById('playerSetupTitle').textContent = `Player ${idx+1} Setup`;
     document.getElementById('playerName').value = '';
-    document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('selected'));
+    abReset();
+    // Reset to first tab
+    const firstTab = document.querySelector('.ab-tab');
+    if (firstTab) abTab(firstTab, 'human');
     tempSetup = { avatar: '' };
     document.getElementById('nextPlayerBtn').textContent =
         idx === gameState.numPlayers-1 ? 'START CHAOS!' : 'NEXT PLAYER';
 }
+
 function selectAvatar(emoji) {
+    // Legacy — not used by builder, kept for safety
     tempSetup.avatar = emoji;
-    document.querySelectorAll('.avatar-btn').forEach(b =>
-        b.classList.toggle('selected', b.textContent === emoji));
 }
+
 function nextPlayer() {
     const name = document.getElementById('playerName').value.trim();
     if (!tempSetup.avatar) { alert('Pick an avatar!'); return; }
@@ -678,7 +730,7 @@ function rollDice() {
 
 // #14 — after rolling, highlight clickable destination and wait for tap
 function afterRoll(player, steps) {
-    const dest = (player.position + steps) % 39;
+    const dest = (player.position + steps) % 36;
     gameState.waitingForMove = true;
     gameState.pendingSteps = steps;
     gameState.pendingPlayer = player;
@@ -699,7 +751,7 @@ function clearClickableSpaces() {
 
 function onSpaceClick(spaceId) {
     if (!gameState.waitingForMove) return;
-    const dest = (gameState.pendingPlayer.position + gameState.pendingSteps) % 39;
+    const dest = (gameState.pendingPlayer.position + gameState.pendingSteps) % 36;
     if (spaceId !== dest) return; // must click correct space
     gameState.waitingForMove = false;
     clearClickableSpaces();
@@ -783,7 +835,7 @@ function payBailEarly() {
 // ── MOVE ─────────────────────────────────────────────────
 function movePlayer(player, steps) {
     const oldPos = player.position;
-    const newPos = (oldPos + steps) % 39;
+    const newPos = (oldPos + steps) % 36;
 
     // Lap bonus
     if (newPos <= oldPos && steps > 0) {
@@ -907,11 +959,11 @@ function handleCorner(player, space) {
         showCardOverlay('🏁','START','Back at the Beginning!',`${player.name} landed on START!`,'good', () => { endTurn(); });
     } else if (space.id === 9) {
         showCardOverlay('⛓️','JAIL','Just Visiting',`${player.name} is just visiting. Stay cool!`,'', () => { endTurn(); });
-    } else if (space.id === 19) {
+    } else if (space.id === 18) {
         adjustHappiness(player, 0.5);
         renderPlayerBar();
         showCardOverlay('🎁','FREE DAY','Nothing Happens! +0.5 Mood',`${player.name} gets a free day off! Enjoy. +0.5 Happiness!`,'good', () => { endTurn(); });
-    } else if (space.id === 29) {
+    } else if (space.id === 27) {
         sendToJail(player);
         renderPlayerBar();
         updatePlayerPieces();
@@ -1045,8 +1097,8 @@ function handleHouseSpace(player, space) {
 function handleCarDealerSpace(player, space) {
     const tierRange = {
         4:  { min:0,  max:4,  label:'Budget' },   // AutoZone Deals (id 4)
-        12: { min:2,  max:7,  label:'Mid-Range' }, // Mid Auto Sales (id 12)
-        26: { min:5,  max:10, label:'Luxury' },    // Luxury Motors (id 26)
+        12: { min:2,  max:7,  label:'Mid-Range' }, // Mid Auto Sales (id 12) ✓
+        25: { min:5,  max:10, label:'Luxury' },    // Luxury Motors (id 25)
     }[space.id] || { min:0, max:10, label:'All' };
 
     const cur = CARS[player.carLevel];
@@ -1148,25 +1200,44 @@ function showCardOverlay(icon, typeLabel, title, body, type, onDismiss) {
                 const cb = _cardDismissCallback;
                 _cardDismissCallback = null;
                 btn.style.display = 'none';
+                // Hide overlay first, THEN run callback
+                overlay.classList.add('hidden');
+                // Update the last-drawn banner so everyone can still see what was drawn
+                updateLastCardBanner(icon, typeLabel, title, type);
                 cb();
             };
         } else {
-            btn.style.display = 'none';
-            btn.onclick = null;
+            // Info-only card (no action needed) — still show a close button
+            btn.style.display = 'block';
+            btn.textContent = '▶ GOT IT';
+            btn.onclick = () => {
+                btn.style.display = 'none';
+                overlay.classList.add('hidden');
+                updateLastCardBanner(icon, typeLabel, title, type);
+            };
         }
     }
 
     overlay.classList.remove('hidden');
 }
 
-function dismissCard() { /* no-op — button handles it now */ }
+// Show the last drawn card in a small always-visible banner on the game screen
+function updateLastCardBanner(icon, label, title, type) {
+    let banner = document.getElementById('lastCardBanner');
+    if (!banner) return;
+    banner.textContent = icon + ' ' + label + ': ' + title;
+    banner.className = 'last-card-banner';
+    if (type==='good') banner.classList.add('lcb-good');
+    else if (type==='bad') banner.classList.add('lcb-bad');
+    else if (type==='sarcastic') banner.classList.add('lcb-sarcastic');
+    banner.classList.remove('hidden');
+}
+
+function dismissCard() { /* handled by button */ }
 
 function hideCardOverlay() {
     _cardDismissCallback = null;
-    const overlay = document.getElementById('cardOverlay');
-    const display = document.getElementById('cardDisplay');
-    display.classList.add('card-fade-out');
-    setTimeout(() => { overlay.classList.add('hidden'); display.classList.remove('card-fade-out'); }, 450);
+    document.getElementById('cardOverlay').classList.add('hidden');
 }
 
 // ── JOB OFFICE ───────────────────────────────────────────
