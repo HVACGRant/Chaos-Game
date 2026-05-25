@@ -190,55 +190,57 @@ const SARCASTIC_CARDS = [
 ];
 
 // ── Board Layout ─────────────────────────────────────────
-// 40 spaces: corners 0,10,20,30 | limit: 1 jail, 1 payday, 2 each card type
+// 40 spaces: 4 corners + 20 blank + action spaces mixed in randomly
 const BOARD_SPACES = [
-    { id: 0,  type: 'corner', icon: '🏁', name: 'START',      desc: 'Begin your new life!' },
-    { id: 1,  type: 'bad',    icon: '🔥', name: 'Scuffed Rims', desc: 'Pay $100 - 2 Happiness' },
-    { id: 2,  type: 'card',   icon: '🃏', name: 'Good Card',  desc: 'Draw a Good Card!' },
-    { id: 3,  type: 'good',   icon: '💵', name: 'Found $20',  desc: 'Collect $20!' },
-    { id: 4,  type: 'card',   icon: '😈', name: 'Bad Card',   desc: 'Draw a Bad Card!' },
-    { id: 5,  type: 'bad',    icon: '🎰', name: 'Casino',     desc: 'Gamble $200!' },
-    { id: 6,  type: 'card',   icon: '🏠', name: 'Sarcastic Card', desc: 'Draw a Sarcastic Card!' },
-    { id: 7,  type: 'good',   icon: '🧺', name: 'Picnic',     desc: '+1 Happiness!' },
-    { id: 8,  type: 'bad',    icon: '💸', name: 'Lost Backpack', desc: 'Lost $30!' },
-    { id: 9,  type: 'card',   icon: '🃏', name: 'Good Card',  desc: 'Draw a Good Card!' },
-    { id: 10, type: 'corner', icon: '⛓️', name: 'JAIL',       desc: 'Just Visiting... or IN!' },
-    { id: 11, type: 'card',   icon: '😈', name: 'Bad Card',   desc: 'Draw a Bad Card!' },
-    { id: 12, type: 'card',   icon: '🏠', name: 'Sarcastic Card', desc: 'Draw a Sarcastic Card!' },
-    { id: 13, type: 'bad',    icon: '⛽', name: 'Out of Gas', desc: 'Tow: $150!' },
-    { id: 14, type: 'good',   icon: '✈️',  name: 'Vacation Pay', desc: 'Collect $1,200!' },
-    { id: 15, type: 'payday', icon: '💰', name: 'PAYDAY',     desc: 'Collect your paycheck!' },
-    { id: 16, type: 'card',   icon: '🃏', name: 'Good Card',  desc: 'Draw a Good Card!' },
-    { id: 17, type: 'bad',    icon: '🏥', name: 'Hospital',   desc: 'Pay $500!' },
-    { id: 18, type: 'card',   icon: '😈', name: 'Bad Card',   desc: 'Draw a Bad Card!' },
-    { id: 19, type: 'card',   icon: '🏠', name: 'Sarcastic Card', desc: 'Draw a Sarcastic Card!' },
-    { id: 20, type: 'corner', icon: '🎁', name: 'FREE DAY',   desc: 'Nothing happens!' },
-    { id: 21, type: 'good',   icon: '💵', name: 'Found $100', desc: 'Collect $100!' },
-    { id: 22, type: 'card',   icon: '🃏', name: 'Good Card',  desc: 'Draw a Good Card!' },
-    { id: 23, type: 'card',   icon: '😈', name: 'Bad Card',   desc: 'Draw a Bad Card!' },
-    { id: 24, type: 'bad',    icon: '📋', name: 'TAXES',      desc: 'Pay 10x payday!' },
-    { id: 25, type: 'card',   icon: '🏠', name: 'Sarcastic Card', desc: 'Draw a Sarcastic Card!' },
-    { id: 26, type: 'card',   icon: '🃏', name: 'Good Card',  desc: 'Draw a Good Card!' },
-    { id: 27, type: 'bad',    icon: '🎓', name: 'Prom Night', desc: 'Spend $1,000!' },
-    { id: 28, type: 'card',   icon: '😈', name: 'Bad Card',   desc: 'Draw a Bad Card!' },
-    { id: 29, type: 'good',   icon: '🎰', name: 'Casino Win', desc: 'Win $1,400!' },
-    { id: 30, type: 'corner', icon: '🚔', name: 'GO TO JAIL', desc: 'Go directly to Jail!' },
-    { id: 31, type: 'card',   icon: '🏠', name: 'Sarcastic Card', desc: 'Draw a Sarcastic Card!' },
-    { id: 32, type: 'card',   icon: '🃏', name: 'Good Card',  desc: 'Draw a Good Card!' },
-    { id: 33, type: 'card',   icon: '😈', name: 'Bad Card',   desc: 'Draw a Bad Card!' },
-    { id: 34, type: 'good',   icon: '💵', name: 'Found $50',  desc: 'Collect $50!' },
-    { id: 35, type: 'bad',    icon: '💸', name: 'Mugged',     desc: 'Lose $400!' },
-    { id: 36, type: 'card',   icon: '🃏', name: 'Good Card',  desc: 'Draw a Good Card!' },
-    { id: 37, type: 'card',   icon: '🏠', name: 'Sarcastic Card', desc: 'Draw a Sarcastic Card!' },
-    { id: 38, type: 'bad',    icon: '🔥', name: 'Fender Bender', desc: 'Pay $400!' },
-    { id: 39, type: 'card',   icon: '😈', name: 'Bad Card',   desc: 'Draw a Bad Card!' },
+    { id: 0,  type: 'corner',  icon: '🏁', name: 'START',          desc: 'Begin your new life!' },
+    { id: 1,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 2,  type: 'card',    icon: '🃏', name: 'Good Card',       desc: 'Draw a Good Card!' },
+    { id: 3,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 4,  type: 'bad',     icon: '🔥', name: 'Scuffed Rims',   desc: 'Pay $100 - 2 Happiness' },
+    { id: 5,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 6,  type: 'card',    icon: '😈', name: 'Bad Card',        desc: 'Draw a Bad Card!' },
+    { id: 7,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 8,  type: 'good',    icon: '💵', name: 'Found $20',      desc: 'Collect $20!' },
+    { id: 9,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 10, type: 'corner',  icon: '⛓️', name: 'JAIL',            desc: 'Just Visiting... or IN!' },
+    { id: 11, type: 'card',    icon: '🏠', name: 'Sarcastic Card',  desc: 'Draw a Sarcastic Card!' },
+    { id: 12, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 13, type: 'bad',     icon: '⛽', name: 'Out of Gas',      desc: 'Tow: $150!' },
+    { id: 14, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 15, type: 'payday',  icon: '💰', name: 'PAYDAY',          desc: 'Collect your paycheck!' },
+    { id: 16, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 17, type: 'card',    icon: '🃏', name: 'Good Card',       desc: 'Draw a Good Card!' },
+    { id: 18, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 19, type: 'bad',     icon: '🏥', name: 'Hospital',        desc: 'Pay $500!' },
+    { id: 20, type: 'corner',  icon: '🎁', name: 'FREE DAY',        desc: 'Nothing happens!' },
+    { id: 21, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 22, type: 'card',    icon: '😈', name: 'Bad Card',        desc: 'Draw a Bad Card!' },
+    { id: 23, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 24, type: 'bad',     icon: '📋', name: 'TAXES',           desc: 'Pay 10% of total assets!' },
+    { id: 25, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 26, type: 'card',    icon: '🏠', name: 'Sarcastic Card',  desc: 'Draw a Sarcastic Card!' },
+    { id: 27, type: 'good',    icon: '✈️',  name: 'Vacation Pay',   desc: 'Collect $1,200!' },
+    { id: 28, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 29, type: 'card',    icon: '🃏', name: 'Good Card',       desc: 'Draw a Good Card!' },
+    { id: 30, type: 'corner',  icon: '🚔', name: 'GO TO JAIL',      desc: 'Go directly to Jail!' },
+    { id: 31, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 32, type: 'card',    icon: '😈', name: 'Bad Card',        desc: 'Draw a Bad Card!' },
+    { id: 33, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 34, type: 'good',    icon: '🎰', name: 'Casino Win',      desc: 'Win $1,400!' },
+    { id: 35, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 36, type: 'card',    icon: '🏠', name: 'Sarcastic Card',  desc: 'Draw a Sarcastic Card!' },
+    { id: 37, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
+    { id: 38, type: 'bad',     icon: '💸', name: 'Mugged',          desc: 'Lose $400!' },
+    { id: 39, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
 ];
 
+// Clockwise: START=bottom-right corner, goes left along bottom,
+// up left side, right along top, down right side back to jail
 function getGridPosition(id) {
-    if (id <= 10)  return { row: 10, col: id };
-    if (id <= 20)  return { row: 10-(id-10), col: 10 };
-    if (id <= 30)  return { row: 0, col: 10-(id-20) };
-    return { row: id-30, col: 0 };
+    if (id <= 10)  return { row: 10, col: 10 - id };       // bottom: right→left
+    if (id <= 20)  return { row: 10-(id-10), col: 0 };     // left: bottom→top
+    if (id <= 30)  return { row: 0, col: id-20 };           // top: left→right
+    return { row: id-30, col: 10 };                         // right: top→bottom
 }
 
 // ── Helpers ───────────────────────────────────────────────
@@ -374,7 +376,7 @@ function buildBoard() {
                     div.className='center-area';
                     div.style.gridColumn='2/11';
                     div.style.gridRow='2/11';
-                    div.innerHTML=`<div class="center-title">⚡ CHAOS ⚡</div><div class="center-sub">The Game of Life</div><div class="center-goal">Win: ${fmt(gameState.winGoal)}</div><div class="center-players" id="centerPlayers"></div>`;
+                    div.innerHTML=`<div class="center-title">⚡ CHAOS ⚡</div><div class="center-sub">The Game of Life</div><div class="center-goal">🏆 Win: ${fmt(gameState.winGoal)}</div><div class="center-players-grid" id="centerPlayers"></div>`;
                 } else { div.style.display='none'; }
             } else {
                 div.style.background='transparent';
@@ -388,8 +390,6 @@ function buildBoard() {
 
 function updatePlayerPieces() {
     document.querySelectorAll('.space-players').forEach(el=>el.innerHTML='');
-    const centerEl = document.getElementById('centerPlayers');
-    if (centerEl) centerEl.innerHTML='';
 
     gameState.players.forEach(p => {
         const el = document.getElementById(`sp-${p.position}`);
@@ -401,9 +401,25 @@ function updatePlayerPieces() {
             el.appendChild(span);
         }
     });
+
+    // Update center player cards
+    const centerEl = document.getElementById('centerPlayers');
+    if (!centerEl) return;
+    centerEl.innerHTML = '';
+    gameState.players.forEach((p, i) => {
+        const card = document.createElement('div');
+        card.className = `center-player-card ${i === gameState.currentPlayerIndex ? 'active' : ''}`;
+        card.innerHTML = `
+            <div class="cpc-avatar">${p.avatar}</div>
+            <div class="cpc-name">${p.name}</div>
+            <div class="cpc-money">${fmt(p.money)}</div>
+            <div class="cpc-pos">${p.inJail ? '⛓️ JAIL' : BOARD_SPACES[p.position]?.name || ''}</div>
+        `;
+        centerEl.appendChild(card);
+    });
 }
 
-// ── Player Bar ────────────────────────────────────────────
+// ── Player Bar (left column - compact list) ───────────────
 function renderPlayerBar() {
     const bar = document.getElementById('playerInfoBar');
     bar.innerHTML = '';
@@ -416,23 +432,37 @@ function renderPlayerBar() {
                 <span class="token-name">${p.name}</span>
             </div>
             <div class="token-money">${fmt(p.money)}</div>
-            <div class="token-details">
-                <span>${HOUSING[p.housingLevel].icon}${HOUSING[p.housingLevel].name}</span>
-                <span>${CARS[p.carLevel].icon}${CARS[p.carLevel].name}</span>
-                <span>😊${p.happiness}</span>
-            </div>
-            <div class="token-details"><span>💼${p.job}</span></div>
-            ${p.inJail?'<div class="token-jail">⛓️ IN JAIL ('+p.jailTurns+'/3)</div>':''}
+            <div class="token-details">${p.job} | 😊${p.happiness}</div>
+            ${p.inJail?'<div class="token-jail">⛓️ IN JAIL</div>':''}
         `;
         bar.appendChild(div);
     });
+    updateActivePlayerPanel();
+}
+
+// ── Active Player Panel (right column) ───────────────────
+function updateActivePlayerPanel() {
+    const p = gameState.players[gameState.currentPlayerIndex];
+    document.getElementById('apAvatar').textContent = p.avatar;
+    document.getElementById('apName').textContent = p.name;
+    document.getElementById('apMoney').textContent = fmt(p.money);
+    document.getElementById('apJob').textContent = '💼 ' + p.job;
+    document.getElementById('apHousing').textContent = HOUSING[p.housingLevel].icon + ' ' + HOUSING[p.housingLevel].name;
+    document.getElementById('apCar').textContent = CARS[p.carLevel].icon + ' ' + CARS[p.carLevel].name;
+    document.getElementById('apHappiness').textContent = '😊 Happiness: ' + p.happiness + '/10';
+    const jailEl = document.getElementById('apJail');
+    if (p.inJail) {
+        jailEl.textContent = '⛓️ IN JAIL - Turn ' + (p.jailTurns+1) + '/3';
+        jailEl.classList.remove('hidden');
+    } else {
+        jailEl.classList.add('hidden');
+    }
 }
 
 function updateCurrentPlayerDisplay() {
     const p = gameState.players[gameState.currentPlayerIndex];
     const hoopty = CARS[p.carLevel].isHoopty;
-    document.getElementById('currentPlayerInfo').innerHTML =
-        `${p.avatar} <strong>${p.name}</strong> | ${fmt(p.money)}${hoopty?' | 🚗 Hoopty Roll!':''}`;
+    updateActivePlayerPanel();
     document.getElementById('gameMessage').textContent = p.inJail
         ? `In jail! Turn ${p.jailTurns+1}/3. Roll doubles to escape!`
         : hoopty ? 'Hoopty! Roll 1 die — 1-3 dead battery, 4-6 it starts!'
@@ -578,6 +608,7 @@ function movePlayer(player, steps) {
 function landOnSpace(player, space) {
     if (!space) { endTurn(); return; }
     switch(space.type) {
+        case 'blank':    handleBlank(player, space); break;
         case 'corner':  handleCorner(player, space); break;
         case 'payday':  handlePayday(player); break;
         case 'card':    handleCardSpace(player, space); break;
@@ -585,6 +616,11 @@ function landOnSpace(player, space) {
         case 'bad':     handleBadSpace(player, space); break;
         default:        endTurn(); break;
     }
+}
+
+function handleBlank(player, space) {
+    document.getElementById('gameMessage').textContent = player.name + ' landed on an empty space. Nothing happens!';
+    setTimeout(() => { endTurn(); }, 1200);
 }
 
 function handleCorner(player, space) {
@@ -662,7 +698,7 @@ function handleBadSpace(player, space) {
     if (space.name==='Scuffed Rims')   { charge(player,100); player.happiness=Math.max(0,player.happiness-2); label='-$100'; msg=`${player.name} scuffed their rims! -$100, -2 Happiness.`; }
     else if (space.name==='Lost Backpack') { charge(player,30);  label='-$30';    msg=`${player.name} lost their backpack!`; }
     else if (space.name==='Out of Gas')    { charge(player,150); label='-$150';   msg=`${player.name} ran out of gas! Tow: $150.`; }
-    else if (space.name==='TAXES')         { const t=player.jobPay*10; charge(player,t); label=`-${fmt(t)}`; msg=`${player.name} paid 10x payday in taxes! ${fmt(t)} gone!`; }
+    else if (space.name==='TAXES') { const assets=player.money+HOUSING[player.housingLevel].price+CARS[player.carLevel].price; const t=Math.max(1,Math.round(assets*0.10)); charge(player,t); label=fmt(-t); msg=player.name+' owes 10% tax on total assets ('+fmt(assets)+')! Tax bill: '+fmt(t); }
     else if (space.name==='Hospital')      { charge(player,500); label='-$500';   msg=`${player.name} had a hospital visit!`; }
     else if (space.name==='Prom Night')    { charge(player,1000);label='-$1,000'; msg=`${player.name} went to prom! -$1,000`; }
     else if (space.name==='Mugged')        { charge(player,400); label='-$400';   msg=`${player.name} got mugged! -$400`; }
