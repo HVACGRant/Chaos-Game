@@ -444,6 +444,16 @@ body {
 .card-sarcastic .card-title { color:var(--gold); }
 .card-body { color:#ddd; font-size:0.95em; line-height:1.5; }
 
+.card-dismiss-hint {
+    margin-top: 18px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.75em;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.35);
+    animation: hintPulse 1.5s ease-in-out infinite;
+}
+@keyframes hintPulse { 0%,100%{opacity:0.3} 50%{opacity:0.8} }
+
 .card-fade-out { animation:cardFadeOut 0.4s ease forwards; }
 @keyframes cardFadeOut { to{opacity:0;transform:scale(0.9)} }
 
