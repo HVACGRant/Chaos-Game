@@ -510,10 +510,13 @@ function updateCurrentPlayerDisplay() {
     const p = gameState.players[gameState.currentPlayerIndex];
     const hoopty = CARS[p.carLevel].isHoopty;
     updateActivePlayerPanel();
-    document.getElementById('gameMessage').textContent = p.inJail
-        ? `In jail! Turn ${p.jailTurns+1}/3. Roll doubles to escape!`
-        : hoopty ? 'Hoopty! Roll 1 die — 1-3 dead battery, 4-6 it starts!'
-        : 'Roll the dice!';
+    let rollMsg = 'Roll the dice!';
+    if (p.inJail) rollMsg = 'In jail! Turn ' + (p.jailTurns+1) + '/3. Roll doubles to escape!';
+    else if (hoopty) rollMsg = '🚗 Hoopty! Roll 1 die — 1-3 dead battery, 4-6 it starts!';
+    else if (p.carLevel === 0) rollMsg = '🚶 Walking — Roll 1 die!';
+    else if (p.carLevel === 1) rollMsg = '🚲 On your bike — Roll 1 die!';
+    else rollMsg = '🚗 You have a ride — Roll 2 dice!';
+    document.getElementById('gameMessage').textContent = rollMsg;
     document.getElementById('diceResult').textContent='';
     document.getElementById('rollDiceBtn').disabled=false;
     gameState.waitingForHoopty = false;
@@ -588,7 +591,19 @@ function rollDice() {
         return;
     }
 
-    // Normal roll
+    // No motor vehicle (no car or bike, levels 0-1) = 1 die
+    if (player.carLevel <= 1) {
+        const label = player.carLevel === 0 ? '🚶 Walking' : '🚲 Biking';
+        const die1 = Math.ceil(Math.random()*6);
+        animateDice(d1El, d2El, die1, null, () => {
+            document.getElementById('diceResult').textContent = `${DICE_FACES[die1]} = ${die1} (${label})`;
+            movePlayer(player, die1);
+        });
+        return;
+    }
+
+    // Motor vehicle (level 2+ handled above for Hoopty, level 3+ = 2 dice)
+    // Normal roll - 2 dice
     const die1 = Math.ceil(Math.random()*6);
     const die2 = Math.ceil(Math.random()*6);
     const doubles = die1===die2;
