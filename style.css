@@ -435,3 +435,16 @@ body {
 }
 .board-space.blank .space-icon { opacity: 0.15; font-size: 1em; }
 
+
+/* ── New space types ── */
+.board-space.house  { background: rgba(78,204,163,0.2);  border-color: #4ecca3; }
+.board-space.car    { background: rgba(245,166,35,0.2);  border-color: #f5a623; }
+.board-space.hcard  { background: rgba(78,204,163,0.15); border-color: #4ecca3; }
+.board-space.ccard  { background: rgba(245,166,35,0.15); border-color: #f5a623; }
+
+/* ── Bigger avatars ── */
+.avatar-btn { font-size: 2.4em !important; min-width: 64px !important; padding: 10px !important; }
+.token-avatar { font-size: 1.8em !important; }
+.ap-avatar { font-size: 4em !important; }
+.cpc-avatar { font-size: 2.4em !important; }
+.space-piece { font-size: 1.6em !important; }
