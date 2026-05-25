@@ -147,13 +147,14 @@
         </div>
     </div>
 
-    <!-- CARD OVERLAY -->
-    <div id="cardOverlay" class="card-overlay hidden">
+    <!-- CARD OVERLAY — stays face-up until tapped -->
+    <div id="cardOverlay" class="card-overlay hidden" onclick="dismissCard()">
         <div id="cardDisplay" class="card-display">
             <div class="card-type-label" id="cardTypeLabel"></div>
             <div class="card-icon" id="cardIcon"></div>
             <div class="card-title" id="cardTitle"></div>
             <div class="card-body" id="cardBody"></div>
+            <div class="card-dismiss-hint">TAP ANYWHERE TO CONTINUE</div>
         </div>
     </div>
 
