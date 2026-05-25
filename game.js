@@ -196,7 +196,7 @@ const BOARD_SPACES = [
     { id: 1,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
     { id: 2,  type: 'card',    icon: '🃏', name: 'Good Card',       desc: 'Draw a Good Card!' },
     { id: 3,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 4,  type: 'bad',     icon: '🔥', name: 'Scuffed Rims',   desc: 'Pay $100 - 2 Happiness' },
+    { id: 4,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
     { id: 5,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
     { id: 6,  type: 'card',    icon: '😈', name: 'Bad Card',        desc: 'Draw a Bad Card!' },
     { id: 7,  type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
@@ -230,7 +230,7 @@ const BOARD_SPACES = [
     { id: 35, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
     { id: 36, type: 'card',    icon: '🏠', name: 'Sarcastic Card',  desc: 'Draw a Sarcastic Card!' },
     { id: 37, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
-    { id: 38, type: 'bad',     icon: '💸', name: 'Mugged',          desc: 'Lose $400!' },
+    { id: 38, type: 'blank',  icon: '⬜', name: '',               desc: 'Nothing happens here.' },
     { id: 39, type: 'blank',   icon: '⬜', name: '',               desc: 'Nothing happens here.' },
 ];
 
@@ -442,20 +442,21 @@ function renderPlayerBar() {
 
 // ── Active Player Panel (right column) ───────────────────
 function updateActivePlayerPanel() {
+    if (gameState.phase !== 'playing') return;
     const p = gameState.players[gameState.currentPlayerIndex];
-    document.getElementById('apAvatar').textContent = p.avatar;
-    document.getElementById('apName').textContent = p.name;
-    document.getElementById('apMoney').textContent = fmt(p.money);
-    document.getElementById('apJob').textContent = '💼 ' + p.job;
-    document.getElementById('apHousing').textContent = HOUSING[p.housingLevel].icon + ' ' + HOUSING[p.housingLevel].name;
-    document.getElementById('apCar').textContent = CARS[p.carLevel].icon + ' ' + CARS[p.carLevel].name;
-    document.getElementById('apHappiness').textContent = '😊 Happiness: ' + p.happiness + '/10';
+    if (!p) return;
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('apAvatar', p.avatar);
+    set('apName', p.name);
+    set('apMoney', fmt(p.money));
+    set('apJob', '💼 ' + p.job);
+    set('apHousing', HOUSING[p.housingLevel].icon + ' ' + HOUSING[p.housingLevel].name);
+    set('apCar', CARS[p.carLevel].icon + ' ' + CARS[p.carLevel].name);
+    set('apHappiness', '😊 Happiness: ' + p.happiness + '/10');
     const jailEl = document.getElementById('apJail');
-    if (p.inJail) {
-        jailEl.textContent = '⛓️ IN JAIL - Turn ' + (p.jailTurns+1) + '/3';
-        jailEl.classList.remove('hidden');
-    } else {
-        jailEl.classList.add('hidden');
+    if (jailEl) {
+        if (p.inJail) { jailEl.textContent = '⛓️ IN JAIL - Turn ' + (p.jailTurns+1) + '/3'; jailEl.classList.remove('hidden'); }
+        else { jailEl.classList.add('hidden'); }
     }
 }
 
@@ -607,6 +608,7 @@ function movePlayer(player, steps) {
 // ── Land ─────────────────────────────────────────────────
 function landOnSpace(player, space) {
     if (!space) { endTurn(); return; }
+    try {
     switch(space.type) {
         case 'blank':    handleBlank(player, space); break;
         case 'corner':  handleCorner(player, space); break;
@@ -616,6 +618,7 @@ function landOnSpace(player, space) {
         case 'bad':     handleBadSpace(player, space); break;
         default:        endTurn(); break;
     }
+    } catch(e) { console.error("landOnSpace error:", e); endTurn(); }
 }
 
 function handleBlank(player, space) {
@@ -698,7 +701,7 @@ function handleBadSpace(player, space) {
     if (space.name==='Scuffed Rims')   { charge(player,100); player.happiness=Math.max(0,player.happiness-2); label='-$100'; msg=`${player.name} scuffed their rims! -$100, -2 Happiness.`; }
     else if (space.name==='Lost Backpack') { charge(player,30);  label='-$30';    msg=`${player.name} lost their backpack!`; }
     else if (space.name==='Out of Gas')    { charge(player,150); label='-$150';   msg=`${player.name} ran out of gas! Tow: $150.`; }
-    else if (space.name==='TAXES') { const assets=player.money+HOUSING[player.housingLevel].price+CARS[player.carLevel].price; const t=Math.max(1,Math.round(assets*0.10)); charge(player,t); label=fmt(-t); msg=player.name+' owes 10% tax on total assets ('+fmt(assets)+')! Tax bill: '+fmt(t); }
+    else if (space.name==='TAXES') { const assets=player.money+HOUSING[player.housingLevel].price+CARS[player.carLevel].price; const t=Math.max(1,Math.round(assets*0.10)); charge(player,t); label='-'+fmt(t); msg=player.name+' owes 10% tax on total assets ('+fmt(assets)+')! Tax bill: '+fmt(t); }
     else if (space.name==='Hospital')      { charge(player,500); label='-$500';   msg=`${player.name} had a hospital visit!`; }
     else if (space.name==='Prom Night')    { charge(player,1000);label='-$1,000'; msg=`${player.name} went to prom! -$1,000`; }
     else if (space.name==='Mugged')        { charge(player,400); label='-$400';   msg=`${player.name} got mugged! -$400`; }
