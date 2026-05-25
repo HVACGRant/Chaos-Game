@@ -256,15 +256,22 @@ function sendToJail(p) {
 }
 
 function upgradeHousing(p, lvls) {
-    const nl = Math.min(HOUSING.length-1, p.housingLevel+lvls);
+    // Always only upgrade 1 level at a time regardless of lvls passed
+    let nl = Math.min(HOUSING.length-1, p.housingLevel + 1);
     if (nl === p.housingLevel) return p.name + ' already has max housing!';
+
+    // Block Car Living (level 1) if player has no car
+    if (nl === 1 && p.carLevel === 0) {
+        return p.name + " can't live in a car — they don't own one! Buy a car first.";
+    }
+
     const cost = Math.max(0, HOUSING[nl].price - HOUSING[p.housingLevel].price);
     if (p.money >= cost) {
         p.money -= cost; p.housingLevel = nl;
         animateAssetIcon('apHousingIcon');
         return p.name + ' upgraded to ' + HOUSING[nl].name + '!';
     }
-    return p.name + "'s broke - can't afford the housing upgrade.";
+    return p.name + " can't afford " + HOUSING[nl].name + '. Need ' + fmt(cost) + ', have ' + fmt(p.money) + '.';
 }
 
 function upgradeCar(p, lvls) {
@@ -394,7 +401,7 @@ function buildBoard() {
                     div.className='center-area';
                     div.style.gridColumn='2/11';
                     div.style.gridRow='2/11';
-                    div.innerHTML=`<div class="center-title">⚡ CHAOS ⚡</div><div class="center-sub">The Game of Life</div><div class="center-goal">🏆 Win: ${fmt(gameState.winGoal)}</div><div class="center-players-grid" id="centerPlayers"></div>`;
+                    div.innerHTML=`<div class="center-title">⚡ CHAOS ⚡</div><div class="center-sub">The Game of Life</div><div class="center-goal">🏆 Win: ${fmt(gameState.winGoal)}</div>`;
                 } else { div.style.display='none'; }
             } else {
                 div.style.background='transparent';
@@ -420,21 +427,7 @@ function updatePlayerPieces() {
         }
     });
 
-    // Update center player cards
-    const centerEl = document.getElementById('centerPlayers');
-    if (!centerEl) return;
-    centerEl.innerHTML = '';
-    gameState.players.forEach((p, i) => {
-        const card = document.createElement('div');
-        card.className = `center-player-card ${i === gameState.currentPlayerIndex ? 'active' : ''}`;
-        card.innerHTML = `
-            <div class="cpc-avatar">${p.avatar}</div>
-            <div class="cpc-name">${p.name}</div>
-            <div class="cpc-money">${fmt(p.money)}</div>
-            <div class="cpc-pos">${p.inJail ? '⛓️ JAIL' : BOARD_SPACES[p.position]?.name || ''}</div>
-        `;
-        centerEl.appendChild(card);
-    });
+    // Center player cards removed
 }
 
 // ── Player Bar (left column - compact list) ───────────────
@@ -709,27 +702,38 @@ const CAR_CARDS = [
     { name: 'Car Raffle Win!',   effect: p => { const r=upgradeCar(p,2); return [r.includes('upgraded')?'BIG UPGRADE!':'Maxed', r]; } },
     { name: 'Car Got Stolen',    effect: p => { if(p.carLevel === 0){ return ['Free Pass!', p.name+' has no car to steal!']; } p.carLevel=Math.max(0,p.carLevel-1); return ['Downgraded', p.name+" car got stolen!"]; } },
     { name: 'Free Oil Change',   effect: p => { p.money+=80; return ['+$80', p.name+' got a free oil change coupon! +$80']; } },
-    { name: 'Double Upgrade!',   effect: p => { const r=upgradeCar(p,2); return [r.includes('upgraded')?'DOUBLE UPGRADE!':'Maxed', r]; } },
+    { name: 'Double Upgrade!',   effect: p => { const r1=upgradeCar(p,1); const r2=upgradeCar(p,1); const bothUp=r1.includes('upgraded')&&r2.includes('upgraded'); const oneUp=r1.includes('upgraded')||r2.includes('upgraded'); return [bothUp?'DOUBLE UPGRADE!':oneUp?'UPGRADED!':'Maxed', oneUp?(r1+' '+r2):r1]; } },
     { name: 'Fender Bender',     effect: p => { if(p.carLevel === 0){ return ['Free Pass!', p.name+' has no car to fender bend!']; } charge(p,400); return ['-$400', p.name+' had a fender bender! -$400']; } },
 ];
 
 // ── House Space: buy/upgrade housing ─────────────────────
 function handleHouseSpace(player) {
     const cur = HOUSING[player.housingLevel];
-    const next = HOUSING[Math.min(HOUSING.length-1, player.housingLevel+1)];
+    const nextLvl = player.housingLevel + 1;
     const alreadyMax = player.housingLevel >= HOUSING.length-1;
+
     if (alreadyMax) {
-        showCardOverlay('🏰','HOUSE',"You Are Maxed Out!", player.name+' already lives in a '+cur.name+'!','good');
+        showCardOverlay('🏰','HOUSE','You Are Maxed Out!', player.name+' already lives in a Mansion!','good');
         setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
         return;
     }
+
+    // Block Car Living if no car
+    if (nextLvl === 1 && player.carLevel === 0) {
+        showCardOverlay('🚗','NEED A CAR FIRST!','Car Living Blocked',
+            player.name+" can't live in a car without owning one! Buy a car first.", 'bad');
+        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
+        return;
+    }
+
+    const next = HOUSING[nextLvl];
     const cost = Math.max(0, next.price - cur.price);
     const popup = document.getElementById('popup');
-    const title = document.getElementById('popupTitle');
-    const message = document.getElementById('popupMessage');
     const content = popup.querySelector('.popup-content');
-    title.textContent = '🏠 House';
-    message.textContent = player.name+', upgrade from '+cur.icon+' '+cur.name+' to '+next.icon+' '+next.name+'?'+(cost>0?' Cost: '+fmt(cost):' FREE!');
+    document.getElementById('popupTitle').textContent = '🏠 House';
+    document.getElementById('popupMessage').textContent =
+        player.name+', upgrade from '+cur.icon+' '+cur.name+' → '+next.icon+' '+next.name+
+        (cost > 0 ? '\nCost: '+fmt(cost) : '\nFREE!');
     content.className = 'popup-content popup-good';
     popup.classList.remove('hidden');
     content.querySelectorAll('button').forEach(b=>b.remove());
@@ -738,14 +742,16 @@ function handleHouseSpace(player) {
     yesBtn.onclick = () => {
         if (player.money >= cost) {
             player.money -= cost;
-            player.housingLevel++;
+            player.housingLevel = nextLvl;
+            animateAssetIcon('apHousingIcon');
             renderPlayerBar();
             closePopup();
-            showCardOverlay('🏠','UPGRADED!',next.icon+' '+next.name,player.name+' upgraded their home!','good');
+            showCardOverlay('🏠','UPGRADED!',next.icon+' '+next.name, player.name+' upgraded their home!','good');
             setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
         } else {
             closePopup();
-            showCardOverlay('💸','CANT AFFORD IT','Not Enough Money',player.name+' needs '+fmt(cost)+' but only has '+fmt(player.money),'bad');
+            showCardOverlay('💸','CANT AFFORD IT','Not Enough Money',
+                player.name+' needs '+fmt(cost)+' but only has '+fmt(player.money),'bad');
             setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
         }
     };
@@ -821,42 +827,6 @@ function handleCarCard(player) {
 
 
 // ── House Space ───────────────────────────────────────────
-function handleHouseSpace(player) {
-    const cur = HOUSING[player.housingLevel];
-    const nextLvl = Math.min(HOUSING.length-1, player.housingLevel+1);
-    const next = HOUSING[nextLvl];
-    if (player.housingLevel >= HOUSING.length-1) {
-        showCardOverlay('🏰','HOUSE',"Already Maxed!", player.name+' already lives in a '+cur.name+'!','good');
-        setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
-        return;
-    }
-    const cost = Math.max(0, next.price - cur.price);
-    const popup = document.getElementById('popup');
-    const content = popup.querySelector('.popup-content');
-    document.getElementById('popupTitle').textContent = '🏠 House';
-    document.getElementById('popupMessage').textContent = player.name+', upgrade from '+cur.icon+' '+cur.name+' to '+next.icon+' '+next.name+'? Cost: '+(cost>0?fmt(cost):'FREE!');
-    content.className = 'popup-content popup-good';
-    popup.classList.remove('hidden');
-    content.querySelectorAll('button').forEach(b=>b.remove());
-    const yesBtn = document.createElement('button');
-    yesBtn.className='btn'; yesBtn.style.marginRight='10px'; yesBtn.textContent='UPGRADE!';
-    yesBtn.onclick = () => {
-        if (player.money >= cost) {
-            player.money -= cost; player.housingLevel = nextLvl;
-            renderPlayerBar(); closePopup();
-            showCardOverlay('🏠','UPGRADED!',next.icon+' '+next.name, player.name+' upgraded their home!','good');
-            setTimeout(()=>{ hideCardOverlay(); checkWinThenEnd(player); }, 5000);
-        } else {
-            closePopup();
-            showCardOverlay('💸','CANT AFFORD IT','Not Enough Money', player.name+' needs '+fmt(cost)+' but only has '+fmt(player.money),'bad');
-            setTimeout(()=>{ hideCardOverlay(); endTurn(); }, 5000);
-        }
-    };
-    const noBtn = document.createElement('button');
-    noBtn.className='btn'; noBtn.style.background='linear-gradient(135deg,#0f3460,#16213e)'; noBtn.textContent='PASS';
-    noBtn.onclick = () => { closePopup(); endTurn(); };
-    content.appendChild(yesBtn); content.appendChild(noBtn);
-}
 
 // ── Car Dealer Space ──────────────────────────────────────
 function handleCarDealerSpace(player) {
