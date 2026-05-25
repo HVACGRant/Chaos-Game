@@ -14,7 +14,7 @@ let gameState = {
     pendingPlayer: null,
     stealContext: null,
 };
-let tempSetup = { avatar: '' };
+
 
 // ── HELPERS ──────────────────────────────────────────────
 function charge(p, amt) { p.money = Math.max(0, p.money - amt); }
@@ -368,30 +368,32 @@ function setupPlayers() {
     showScreen('playerSetupScreen');
 }
 // ── AVATAR BUILDER ────────────────────────────────────────
-const abState = { base:'', overlay:'', hat:'', item:'', vibe:'' };
+// tempSetup is a stable object — never reassign, only mutate properties
+const tempSetup = { avatar: '', avatarSlots: { base:'', overlay:'', hat:'', item:'', vibe:'' } };
 
 function abBuild() {
-    return [abState.base, abState.overlay, abState.hat, abState.item, abState.vibe]
-        .filter(Boolean).join('') || '❓';
+    const s = tempSetup.avatarSlots;
+    return [s.base, s.overlay, s.hat, s.item, s.vibe].filter(Boolean).join('') || '';
 }
 
 function abRefresh() {
     const built = abBuild();
     const preview = document.getElementById('abPreview');
-    if (preview) preview.textContent = built;
-    tempSetup.avatar = built === '❓' ? '' : built;
+    if (preview) preview.textContent = built || '❓';
+    tempSetup.avatar = built;
 }
 
-function abSet(btn) {
-    const slot  = btn.dataset.slot;
-    const emoji = btn.dataset.emoji;
-    if (!slot || !emoji) return;
-    // Toggle off if already active
-    const already = abState[slot] === emoji;
-    abState[slot] = already ? '' : emoji;
-    // Update highlight — only buttons in same slot
-    document.querySelectorAll(`.ab-pick[data-slot="${slot}"]`)
-        .forEach(b => b.classList.toggle('selected', b.dataset.emoji === abState[slot]));
+// Called directly from onclick on every button
+function abPick(slot, emoji) {
+    const s = tempSetup.avatarSlots;
+    // Toggle off if same emoji picked again
+    s[slot] = (s[slot] === emoji) ? '' : emoji;
+    // Update highlights for this slot only
+    document.querySelectorAll('.ab-pick').forEach(b => {
+        if (b.dataset.slot === slot) {
+            b.classList.toggle('selected', b.dataset.emoji === s[slot]);
+        }
+    });
     abRefresh();
 }
 
@@ -405,16 +407,12 @@ function abTab(tabEl) {
 }
 
 function abReset() {
-    Object.keys(abState).forEach(k => abState[k] = '');
+    const s = tempSetup.avatarSlots;
+    Object.keys(s).forEach(k => s[k] = '');
+    tempSetup.avatar = '';
     document.querySelectorAll('.ab-pick').forEach(b => b.classList.remove('selected'));
     abRefresh();
 }
-
-// Wire up pick buttons via event delegation (no inline onclick needed)
-document.addEventListener('click', function(e) {
-    const btn = e.target.closest('.ab-pick');
-    if (btn) abSet(btn);
-});
 
 function showPlayerSetup() {
     const idx = gameState.currentSetupPlayer;
@@ -424,7 +422,6 @@ function showPlayerSetup() {
     // Reset to first tab
     const firstTab = document.querySelector('.ab-tab');
     if (firstTab) abTab(firstTab);
-    tempSetup = { avatar: '' };
     document.getElementById('nextPlayerBtn').textContent =
         idx === gameState.numPlayers-1 ? 'START CHAOS!' : 'NEXT PLAYER';
 }
