@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CHAOS - The Game of Life</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,7 +12,10 @@
     <!-- INTRO SCREEN -->
     <div id="introScreen" class="screen">
         <div class="prison-gates">
-            <h1>⛓️ CHAOS ⛓️</h1>
+            <div class="logo-wrap">
+                <h1 class="logo">⛓️ CHAOS ⛓️</h1>
+                <p class="logo-sub">The Game of Life</p>
+            </div>
             <p class="intro-text">You just got out of Prison...</p>
             <p class="intro-text">It is your right to do whatever you want</p>
             <p class="intro-text">But you have to follow the rules!</p>
@@ -22,9 +26,12 @@
 
     <!-- SETUP SCREEN -->
     <div id="setupScreen" class="screen hidden">
-        <h1>⚡ CHAOS ⚡</h1>
-        <h2>Game Setup</h2>
-        
+        <div class="logo-wrap">
+            <h1 class="logo">⚡ CHAOS ⚡</h1>
+            <p class="logo-sub">The Game of Life</p>
+        </div>
+        <h2 class="setup-heading">Game Setup</h2>
+
         <div class="setup-section">
             <h3>How Many Players?</h3>
             <div class="player-buttons">
@@ -42,8 +49,13 @@
 
         <div class="setup-section">
             <h3>Win Goal?</h3>
-            <button class="goal-btn" onclick="setGoal(1000000)">$1,000,000</button>
-            <button class="goal-btn" onclick="setGoal(5000000)">$5,000,000</button>
+            <div class="goal-buttons">
+                <button class="goal-btn" onclick="setGoal(100000)">$100,000</button>
+                <button class="goal-btn" onclick="setGoal(250000)">$250,000</button>
+                <button class="goal-btn" onclick="setGoal(500000)">$500,000</button>
+                <button class="goal-btn" onclick="setGoal(1000000)">$1,000,000</button>
+                <button class="goal-btn" onclick="setGoal(5000000)">$5,000,000</button>
+            </div>
         </div>
 
         <button id="setupDoneBtn" class="btn hidden" onclick="setupPlayers()">
@@ -53,8 +65,10 @@
 
     <!-- PLAYER SETUP SCREEN -->
     <div id="playerSetupScreen" class="screen hidden">
-        <h1>⚡ CHAOS ⚡</h1>
-        <h2 id="playerSetupTitle">Player 1 Setup</h2>
+        <div class="logo-wrap">
+            <h1 class="logo">⚡ CHAOS ⚡</h1>
+        </div>
+        <h2 id="playerSetupTitle" class="setup-heading">Player 1 Setup</h2>
 
         <div class="setup-section">
             <h3>Choose Your Avatar!!</h3>
@@ -83,17 +97,39 @@
     </div>
 
     <!-- GAME SCREEN -->
-    <div id="gameScreen" class="screen hidden">
-        <h1>⚡ CHAOS ⚡</h1>
-        <div id="playerInfoBar" class="player-info-bar"></div>
-        <div id="gameBoard" class="game-board"></div>
-        <div class="game-controls">
-            <div id="currentPlayerInfo" class="current-player-info"></div>
-            <button id="rollDiceBtn" class="btn dice-btn" onclick="rollDice()">
-                🎲 ROLL DICE
-            </button>
-            <div id="diceResult" class="dice-result"></div>
-            <div id="gameMessage" class="game-message"></div>
+    <div id="gameScreen" class="screen hidden game-layout">
+        <!-- LEFT: Board -->
+        <div class="board-column">
+            <div class="game-header">
+                <span class="logo game-logo">⚡ CHAOS ⚡</span>
+                <span id="winGoalDisplay" class="win-goal-display"></span>
+            </div>
+            <div id="gameBoard" class="game-board"></div>
+        </div>
+
+        <!-- RIGHT: Controls + Players -->
+        <div class="side-column">
+            <div id="playerInfoBar" class="player-info-bar"></div>
+            <div class="game-controls">
+                <div id="currentPlayerInfo" class="current-player-info"></div>
+                <div id="diceArea" class="dice-area">
+                    <div id="die1" class="die">🎲</div>
+                    <div id="die2" class="die">🎲</div>
+                </div>
+                <button id="rollDiceBtn" class="btn dice-btn" onclick="rollDice()">🎲 ROLL DICE</button>
+                <div id="diceResult" class="dice-result"></div>
+                <div id="gameMessage" class="game-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CARD OVERLAY -->
+    <div id="cardOverlay" class="card-overlay hidden">
+        <div id="cardDisplay" class="card-display">
+            <div class="card-type-label" id="cardTypeLabel"></div>
+            <div class="card-icon" id="cardIcon"></div>
+            <div class="card-title" id="cardTitle"></div>
+            <div class="card-body" id="cardBody"></div>
         </div>
     </div>
 
