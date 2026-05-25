@@ -89,14 +89,31 @@ body {
 }
 .goal-btn:hover, .goal-btn.selected { background: var(--gold); color: var(--dark); }
 
-.avatar-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.avatar-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 55vh;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+.avatar-cat-label {
+    color: var(--gold);
+    font-size: 0.75em;
+    letter-spacing: 2px;
+    font-weight: 700;
+    text-align: left;
+    padding: 4px 2px 2px;
+    border-bottom: 1px solid rgba(245,166,35,0.25);
+}
+.avatar-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start; }
 .avatar-btn {
     background: var(--navy); border: 2px solid var(--green);
-    padding: 10px; font-size: 2em; border-radius: 10px;
-    cursor: pointer; transition: all 0.2s; min-width: 58px;
+    padding: 8px; font-size: 2em; border-radius: 10px;
+    cursor: pointer; transition: all 0.15s; min-width: 52px;
     touch-action: manipulation;
 }
-.avatar-btn:hover, .avatar-btn.selected { background: var(--green); }
+.avatar-btn:hover, .avatar-btn.selected { background: var(--green); transform: scale(1.1); }
 
 .name-input {
     width: 100%; padding: 12px;
