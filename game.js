@@ -74,60 +74,66 @@ const CARS = [
 
 // ── BOARD SPACES (#12 — 1 housing, 1 car dealer, 1 realtor per side) ──
 const BOARD_SPACES = [
-    // Bottom (START → JAIL) id 0–10
+    // Bottom row (START → JAIL) id 0–9, row=9 col=9→0
     { id:0,  type:'corner',  icon:'🏁', name:'START',          desc:'Begin your new life!' },
     { id:1,  type:'hustle',  icon:'🛻', name:'Junk Hauling',   desc:'Haul junk for quick cash!' },
     { id:2,  type:'hustle',  icon:'⛺', name:'Pop Up Tent',    desc:'Set up a pop-up shop!' },
     { id:3,  type:'hustle',  icon:'🐟', name:'Fishing Trip',   desc:'Sell your catch!' },
     { id:4,  type:'car',     icon:'🚗', name:'AutoZone Deals', desc:'Budget cars — buy or upgrade!' },
     { id:5,  type:'hustle',  icon:'🎨', name:'Craft Show',     desc:'Sell your crafts!' },
-    { id:6,  type:'hustle',  icon:'🍕', name:'Pizza Delivery', desc:'Deliver for tip money!' },
-    { id:7,  type:'house',   icon:'🏠', name:'Budget Housing', desc:'Affordable homes — buy/upgrade!', tier:'budget' },
-    { id:8,  type:'hustle',  icon:'📸', name:'Photography',    desc:'Shoot photos for cash!' },
-    { id:9,  type:'realtor', icon:'🏢', name:'City Realty',    desc:'Entry-level realtor — buy anything you qualify for!' },
-    { id:10, type:'corner',  icon:'⛓️', name:'JAIL',           desc:'Just Visiting... or IN!' },
+    { id:6,  type:'fastfood', icon:'🍔', name:"McDonald's",    desc:'Hungry? Spend some cash!' },
+    { id:7,  type:'house',   icon:'🏠', name:'Budget Housing', desc:'Affordable homes!', tier:'budget' },
+    { id:8,  type:'realtor', icon:'🏢', name:'City Realty',    desc:'Entry-level realtor!' },
+    { id:9,  type:'corner',  icon:'⛓️', name:'JAIL',           desc:'Just Visiting... or IN!' },
 
-    // Right (JAIL → FREE DAY) id 11–20
-    { id:11, type:'hustle',  icon:'🌮', name:'Food Truck',     desc:'Run a food truck!' },
-    { id:12, type:'hustle',  icon:'🪟', name:'Window Washing', desc:'Wash windows for cash!' },
-    { id:13, type:'car',     icon:'🚘', name:'Mid Auto Sales', desc:'Mid-range cars — $3k–$22k!' },
-    { id:14, type:'hustle',  icon:'🐕', name:'Dog Walking',    desc:'Walk dogs for tips!' },
-    { id:15, type:'payday',  icon:'💰', name:'PAYDAY',         desc:'Collect your paycheck!' },
-    { id:16, type:'hustle',  icon:'🏷️', name:'Yard Sale',      desc:'Hold a yard sale!' },
-    { id:17, type:'hustle',  icon:'🃏', name:'Card Games',     desc:'Play cards for money!' },
-    { id:18, type:'house',   icon:'🏘️', name:'Mid Housing',    desc:'Mid-range homes $5k–$30k!', tier:'mid' },
-    { id:19, type:'bad',     icon:'🏥', name:'Hospital',       desc:'Emergency visit!' },
-    { id:20, type:'corner',  icon:'🎁', name:'FREE DAY',       desc:'+0.5 Happiness!' },
+    // Left side (JAIL → FREE DAY) id 10–18, col=0 row=9→1  (going up)
+    { id:10, type:'hustle',  icon:'🌮', name:'Food Truck',     desc:'Run a food truck!' },
+    { id:11, type:'hustle',  icon:'🪟', name:'Window Washing', desc:'Wash windows for cash!' },
+    { id:12, type:'car',     icon:'🚘', name:'Mid Auto Sales', desc:'Mid-range cars $3k–$22k!' },
+    { id:13, type:'hustle',  icon:'🐕', name:'Dog Walking',    desc:'Walk dogs for tips!' },
+    { id:14, type:'payday',  icon:'💰', name:'PAYDAY',         desc:'Collect your paycheck!' },
+    { id:15, type:'hustle',  icon:'🏷️', name:'Yard Sale',      desc:'Hold a yard sale!' },
+    { id:16, type:'hustle',  icon:'🃏', name:'Card Games',     desc:'Play cards for money!' },
+    { id:17, type:'house',   icon:'🏘️', name:'Mid Housing',    desc:'Mid-range homes $5k–$30k!', tier:'mid' },
+    { id:18, type:'bad',     icon:'🏥', name:'Hospital',       desc:'Emergency visit!' },
 
-    // Top (FREE DAY → GO TO JAIL) id 21–30
-    { id:21, type:'hustle',  icon:'🧺', name:'Laundry Service',desc:'Run a laundry hustle!' },
-    { id:22, type:'hustle',  icon:'🎪', name:'Flea Market',    desc:'Sell at the flea market!' },
-    { id:23, type:'realtor', icon:'🏡', name:'Prestige Homes', desc:'Luxury realtor — high end listings!', tier:'luxury' },
-    { id:24, type:'bad',     icon:'📋', name:'TAXES',          desc:'Pay 10% of total assets!' },
-    { id:25, type:'hustle',  icon:'🪴', name:'Plant Selling',  desc:'Sell plants from your yard!' },
-    { id:26, type:'hustle',  icon:'🚜', name:'Scrap Metal',    desc:'Sell scrap metal!' },
-    { id:27, type:'car',     icon:'🏎️', name:'Luxury Motors',  desc:'High-end cars $14k–$60k!' },
-    { id:28, type:'hustle',  icon:'🎮', name:'Gaming Tourney', desc:'Enter a gaming tournament!' },
-    { id:29, type:'good',    icon:'✈️',  name:'Vacation Pay',  desc:'Collect $1,200!' },
-    { id:30, type:'corner',  icon:'🚔', name:'GO TO JAIL',     desc:'Go directly to Jail!' },
+    // Top-left corner
+    { id:19, type:'corner',  icon:'🎁', name:'FREE DAY',       desc:'+0.5 Happiness!' },
 
-    // Left (GO TO JAIL → START) id 31–39
-    { id:31, type:'hustle',  icon:'🚲', name:'Bike Courier',   desc:'Deliver packages by bike!' },
-    { id:32, type:'hustle',  icon:'🍋', name:'Lemonade Stand', desc:'Run a lemonade stand!' },
-    { id:33, type:'hustle',  icon:'🎸', name:'Busking',        desc:'Play music on the street!' },
-    { id:34, type:'house',   icon:'🏰', name:'Elite Estates',  desc:'Luxury homes $45k–$150k!', tier:'luxury' },
-    { id:35, type:'hustle',  icon:'🌿', name:'Lawn Mowing',    desc:'Mow lawns for cash!' },
-    { id:36, type:'hustle',  icon:'🧹', name:'Car Wash',       desc:'Run a car wash!' },
-    { id:37, type:'realtor', icon:'🏦', name:'Metro Realty',   desc:'Mid-tier realtor — mid/luxury homes!', tier:'mid' },
-    { id:38, type:'hustle',  icon:'🎲', name:'Street Dice',    desc:'Roll dice for money!' },
-    { id:39, type:'job',     icon:'💼', name:'Job Office',     desc:'Get or change your job!' },
+    // Top row (FREE DAY → GO TO JAIL) id 20–28, row=0 col=1→9
+    { id:20, type:'hustle',  icon:'🧺', name:'Laundry Service',desc:'Run a laundry hustle!' },
+    { id:21, type:'hustle',  icon:'🎪', name:'Flea Market',    desc:'Sell at the flea market!' },
+    { id:22, type:'realtor', icon:'🏡', name:'Prestige Homes', desc:'Luxury realtor!', tier:'luxury' },
+    { id:23, type:'bad',     icon:'📋', name:'TAXES',          desc:'Pay 10% of total assets!' },
+    { id:24, type:'fastfood', icon:'🌮', name:'Taco Bell',      desc:'Live Mas. Spend some cash!' },
+    { id:25, type:'hustle',  icon:'🚜', name:'Scrap Metal',    desc:'Sell scrap metal!' },
+    { id:26, type:'car',     icon:'🏎️', name:'Luxury Motors',  desc:'High-end cars $14k–$60k!' },
+    { id:27, type:'hustle',  icon:'🎮', name:'Gaming Tourney', desc:'Enter a gaming tournament!' },
+    { id:28, type:'good',    icon:'✈️',  name:'Vacation Pay',  desc:'Collect $1,200!' },
+
+    // Top-right corner
+    { id:29, type:'corner',  icon:'🚔', name:'GO TO JAIL',     desc:'Go directly to Jail!' },
+
+    // Right side (GO TO JAIL → START) id 30–38, col=9 row=8→1 (going down)
+    { id:30, type:'hustle',  icon:'🚲', name:'Bike Courier',   desc:'Deliver packages by bike!' },
+    { id:31, type:'hustle',  icon:'🍋', name:'Lemonade Stand', desc:'Run a lemonade stand!' },
+    { id:32, type:'hustle',  icon:'🎸', name:'Busking',        desc:'Play music on the street!' },
+    { id:33, type:'house',   icon:'🏰', name:'Elite Estates',  desc:'Luxury homes $45k–$150k!', tier:'luxury' },
+    { id:34, type:'hustle',  icon:'🌿', name:'Lawn Mowing',    desc:'Mow lawns for cash!' },
+    { id:35, type:'hustle',  icon:'🧹', name:'Car Wash',       desc:'Run a car wash!' },
+    { id:36, type:'realtor', icon:'🏦', name:'Metro Realty',   desc:'Mid-tier realtor!', tier:'mid' },
+    { id:37, type:'hustle',  icon:'🎲', name:'Street Dice',    desc:'Roll dice for money!' },
+    { id:38, type:'job',     icon:'💼', name:'Job Office',     desc:'Get or change your job!' },
 ];
 
+// 10×10 grid — corners at (9,9), (9,0), (0,0), (0,9)
+// Clockwise: START=bottom-right, bottom goes right→left, left side goes bottom→top,
+// top goes left→right, right side goes top→bottom
 function getGridPosition(id) {
-    if (id <= 10) return { row:10, col:10-id };
-    if (id <= 20) return { row:10-(id-10), col:0 };
-    if (id <= 30) return { row:0, col:id-20 };
-    return { row:id-30, col:10 };
+    if (id <= 9)  return { row:9, col:9-id };        // bottom: col 9→0
+    if (id <= 19) return { row:9-(id-9), col:0 };    // left: row 9→0
+    if (id <= 29) return { row:0, col:id-19 };        // top: col 1→9  (wait, 19→col0, 20→col1...29→col9) ✓
+    return { row:id-29, col:9 };                      // right: row 1→9
 }
 
 // ── JAIL REASONS (#20) ───────────────────────────────────
@@ -138,7 +144,7 @@ const JAIL_REASONS = [
 ];
 
 function sendToJail(p, reason) {
-    p.position = 10;
+    p.position = 9;
     p.inJail = true;
     p.jailTurns = 0;
     p.jailReason = reason || rnd(JAIL_REASONS);
@@ -412,10 +418,10 @@ function buildBoard() {
     const board = document.getElementById('gameBoard');
     board.innerHTML = '';
     const cells = {};
-    for (let r=0;r<=10;r++) for(let c=0;c<=10;c++) cells[`${r},${c}`]=null;
+    for (let r=0;r<=9;r++) for(let c=0;c<=9;c++) cells[`${r},${c}`]=null;
     BOARD_SPACES.forEach(s => { const p=getGridPosition(s.id); cells[`${p.row},${p.col}`]=s; });
-    for (let r=0;r<=10;r++) {
-        for (let c=0;c<=10;c++) {
+    for (let r=0;r<=9;r++) {
+        for (let c=0;c<=9;c++) {
             const space = cells[`${r},${c}`];
             const div = document.createElement('div');
             if (space) {
@@ -424,11 +430,11 @@ function buildBoard() {
                 div.innerHTML = `<div class="space-icon">${space.icon}</div><div class="space-name">${space.name}</div><div class="space-players" id="sp-${space.id}"></div>`;
                 // #14 — click to move
                 div.addEventListener('click', () => onSpaceClick(space.id));
-            } else if (r>=1&&r<=9&&c>=1&&c<=9) {
-                if (r===5&&c===5) {
+            } else if (r>=1&&r<=8&&c>=1&&c<=8) {
+                if (r===4&&c===4) {
                     div.className='center-area';
-                    div.style.gridColumn='2/11';
-                    div.style.gridRow='2/11';
+                    div.style.gridColumn='2/10';
+                    div.style.gridRow='2/10';
                     div.innerHTML=`
                         <div class="center-title">⚡ CHAOS ⚡</div>
                         <div class="center-sub">The Game of Life</div>
@@ -672,7 +678,7 @@ function rollDice() {
 
 // #14 — after rolling, highlight clickable destination and wait for tap
 function afterRoll(player, steps) {
-    const dest = (player.position + steps) % 40;
+    const dest = (player.position + steps) % 39;
     gameState.waitingForMove = true;
     gameState.pendingSteps = steps;
     gameState.pendingPlayer = player;
@@ -693,7 +699,7 @@ function clearClickableSpaces() {
 
 function onSpaceClick(spaceId) {
     if (!gameState.waitingForMove) return;
-    const dest = (gameState.pendingPlayer.position + gameState.pendingSteps) % 40;
+    const dest = (gameState.pendingPlayer.position + gameState.pendingSteps) % 39;
     if (spaceId !== dest) return; // must click correct space
     gameState.waitingForMove = false;
     clearClickableSpaces();
@@ -777,7 +783,7 @@ function payBailEarly() {
 // ── MOVE ─────────────────────────────────────────────────
 function movePlayer(player, steps) {
     const oldPos = player.position;
-    const newPos = (oldPos + steps) % 40;
+    const newPos = (oldPos + steps) % 39;
 
     // Lap bonus
     if (newPos <= oldPos && steps > 0) {
@@ -888,7 +894,8 @@ function landOnSpace(player, space) {
             case 'realtor': handleRealtorSpace(player, space); break;
             case 'job':     handleJobOffice(player); break;
             case 'jcard':   handleJobCard(player); break;
-            case 'hustle':  handleHustle(player, space); break;
+            case 'hustle':   handleHustle(player, space); break;
+            case 'fastfood': handleFastFood(player, space); break;
             default:        endTurn(); break;
         }
     } catch(e) { console.error('landOnSpace error:', e); endTurn(); }
@@ -898,13 +905,13 @@ function landOnSpace(player, space) {
 function handleCorner(player, space) {
     if (space.id === 0) {
         showCardOverlay('🏁','START','Back at the Beginning!',`${player.name} landed on START!`,'good', () => { endTurn(); });
-    } else if (space.id === 10) {
+    } else if (space.id === 9) {
         showCardOverlay('⛓️','JAIL','Just Visiting',`${player.name} is just visiting. Stay cool!`,'', () => { endTurn(); });
-    } else if (space.id === 20) {
+    } else if (space.id === 19) {
         adjustHappiness(player, 0.5);
         renderPlayerBar();
         showCardOverlay('🎁','FREE DAY','Nothing Happens! +0.5 Mood',`${player.name} gets a free day off! Enjoy. +0.5 Happiness!`,'good', () => { endTurn(); });
-    } else if (space.id === 30) {
+    } else if (space.id === 29) {
         sendToJail(player);
         renderPlayerBar();
         updatePlayerPieces();
@@ -1037,9 +1044,9 @@ function handleHouseSpace(player, space) {
 // ── CAR DEALER SPACE (#12 — tiered pricing) ───────────────
 function handleCarDealerSpace(player, space) {
     const tierRange = {
-        4:  { min:0,  max:4,  label:'Budget' },  // AutoZone Deals (id 4)
-        13: { min:2,  max:7,  label:'Mid-Range' },// Mid Auto Sales (id 13)
-        27: { min:5,  max:10, label:'Luxury' },   // Luxury Motors (id 27)
+        4:  { min:0,  max:4,  label:'Budget' },   // AutoZone Deals (id 4)
+        12: { min:2,  max:7,  label:'Mid-Range' }, // Mid Auto Sales (id 12)
+        26: { min:5,  max:10, label:'Luxury' },    // Luxury Motors (id 26)
     }[space.id] || { min:0, max:10, label:'All' };
 
     const cur = CARS[player.carLevel];
@@ -1117,8 +1124,6 @@ function showUpgradePopup(title, message, yesText, onYes, onNo) {
 // onDismiss callback; if omitted the overlay just sits open (previous card
 // visible) until the next showCardOverlay call replaces it.
 let _cardDismissCallback = null;
-let _cardDismissEnabled = false;
-let _cardDismissId = 0; // unique id so stale timeouts can't enable a newer card's dismiss
 
 function showCardOverlay(icon, typeLabel, title, body, type, onDismiss) {
     const overlay = document.getElementById('cardOverlay');
@@ -1132,40 +1137,32 @@ function showCardOverlay(icon, typeLabel, title, body, type, onDismiss) {
     else if (type==='bad') display.classList.add('card-bad');
     else if (type==='sarcastic') display.classList.add('card-sarcastic');
 
-    // Show hint only when there's something to dismiss
-    const hint = document.getElementById('cardDismissHint');
-    if (hint) hint.style.opacity = onDismiss ? '1' : '0';
+    _cardDismissCallback = onDismiss || null;
+
+    const btn = document.getElementById('cardContinueBtn');
+    if (btn) {
+        if (onDismiss) {
+            btn.style.display = 'block';
+            btn.onclick = () => {
+                if (!_cardDismissCallback) return;
+                const cb = _cardDismissCallback;
+                _cardDismissCallback = null;
+                btn.style.display = 'none';
+                cb();
+            };
+        } else {
+            btn.style.display = 'none';
+            btn.onclick = null;
+        }
+    }
 
     overlay.classList.remove('hidden');
-
-    // Reset state for this new card
-    _cardDismissCallback = onDismiss || null;
-    _cardDismissEnabled = false;
-    _cardDismissId++;
-    const myId = _cardDismissId;
-
-    // Lock for 900ms so slide-in animation doesn't get accidentally tapped
-    setTimeout(() => {
-        if (_cardDismissId === myId) _cardDismissEnabled = true;
-    }, 900);
 }
 
-function dismissCard() {
-    if (!_cardDismissEnabled) return;
-    if (!_cardDismissCallback) return;
-    // Grab and clear before calling — prevents double-fire
-    _cardDismissEnabled = false;
-    const cb = _cardDismissCallback;
-    _cardDismissCallback = null;
-    // Card stays visible (face-up) — only replaced when next card shows
-    cb();
-}
+function dismissCard() { /* no-op — button handles it now */ }
 
-// Hard-hide the overlay (used only for non-card transitions like game start)
 function hideCardOverlay() {
     _cardDismissCallback = null;
-    _cardDismissEnabled = false;
-    _cardDismissId++;
     const overlay = document.getElementById('cardOverlay');
     const display = document.getElementById('cardDisplay');
     display.classList.add('card-fade-out');
@@ -1209,6 +1206,59 @@ function handleCarCard(player) {
     const result = card.effect(player);
     renderPlayerBar();
     showCardOverlay(card.icon||'🔧','CAR CARD',card.name,result[1],result[2]||'bad', () => { checkWinThenEnd(player); });
+}
+
+// ── FAST FOOD (#landAndSpend) ─────────────────────────────
+const FAST_FOOD_DATA = {
+    "McDonald's": {
+        icon: '🍔',
+        color: 'bad',
+        menu: [
+            { item: 'Big Mac Meal',          price: 12,  msg: "Double-fisted a Big Mac meal. Worth it." },
+            { item: 'McFlurry + Nuggets',    price: 9,   msg: "Oreo McFlurry and 10 nuggets. No regrets." },
+            { item: 'Quarter Pounder Meal',  price: 14,  msg: "Quarter Pounder, large fries, large Coke. The works." },
+            { item: 'Happy Meal (for you)',  price: 7,   msg: "You ordered a Happy Meal. For yourself. No shame." },
+            { item: 'Full Family Haul',      price: 45,  msg: "Accidentally fed the whole block. $45 gone." },
+            { item: 'Just a McDouble',       price: 4,   msg: "McDouble and a water cup. Living within the means." },
+            { item: 'Breakfast Run',         price: 11,  msg: "Egg McMuffin, hash browns, coffee. Classic." },
+            { item: 'Late Night Drive-Thru', price: 18,  msg: "2am drive-thru run. Regrettable but delicious." },
+        ]
+    },
+    'Taco Bell': {
+        icon: '🌮',
+        color: 'bad',
+        menu: [
+            { item: 'Crunchwrap Supreme',    price: 10,  msg: "Crunchwrap Supreme meal. Perfection in a hexagon." },
+            { item: 'Nacho Fries Box',       price: 8,   msg: "Nacho fries box. Gone in 4 minutes flat." },
+            { item: '$5 Cravings Box',       price: 5,   msg: "Five dollar cravings box. Actual value: priceless." },
+            { item: 'Party Pack (24 tacos)', price: 32,  msg: "24-taco party pack. Just you. No party." },
+            { item: 'Baja Blast + Nachos',   price: 9,   msg: "Baja Blast and a loaded nacho. Living Mas." },
+            { item: 'Cheesy Gordita Crunch', price: 11,  msg: "Cheesy Gordita Crunch combo. Absolutely demolished." },
+            { item: 'Mexican Pizza',         price: 7,   msg: "Mexican Pizza returned and you showed up." },
+            { item: 'Freeze + Quesadilla',   price: 8,   msg: "Mango freeze and a quesadilla. Perfect." },
+        ]
+    },
+};
+
+function handleFastFood(player, space) {
+    const data = FAST_FOOD_DATA[space.name];
+    if (!data) { endTurn(); return; }
+
+    // Pick a random menu item
+    const order = data.menu[Math.floor(Math.random() * data.menu.length)];
+    const scaledPrice = scaledFine(player, order.price); // richer players pay more (inflation)
+    charge(player, scaledPrice);
+    adjustHappiness(player, 0.5); // food makes you happy
+    renderPlayerBar();
+
+    showCardOverlay(
+        data.icon,
+        space.name.toUpperCase(),
+        order.item + ' — ' + fmt(scaledPrice),
+        order.msg + '\n\n' + player.name + ' spent ' + fmt(scaledPrice) + ' at ' + space.name + '.',
+        'bad',
+        () => { checkWinThenEnd(player); }
+    );
 }
 
 // ── HUSTLE SPACES ─────────────────────────────────────────
