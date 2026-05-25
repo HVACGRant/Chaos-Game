@@ -62,7 +62,7 @@ const GOOD_CARDS = [
     { name: 'Tax Refund',          icon: '📋', effect: p => { p.money += 500;  return ['+$500', `${p.name} got a tax refund!`]; } },
     { name: 'Side Hustle',         icon: '💼', effect: p => { p.money += 800;  return ['+$800', `${p.name}'s side hustle paid off!`]; } },
     { name: 'Lottery Win',         icon: '🎰', effect: p => { p.money += 2000; return ['+$2,000', `${p.name} won the lottery!`]; } },
-    { name: 'Work Bonus',          icon: '💵', effect: p => { const b = p.jobPay; p.money += b; return [`+${fmt(b)}`, `${p.name} got a work bonus!`]; } },
+    { name: 'Work Bonus',          icon: '💵', effect: p => { if(p.jobPay <= 2000){ return ['Free Pass!', p.name+' is unemployed - no bonus!']; } const b=p.jobPay; p.money+=b; return ['+'+fmt(b), p.name+' got a work bonus!']; } },
     { name: 'Found $100',          icon: '💰', effect: p => { p.money += 100;  return ['+$100', `${p.name} found $100 on the ground!`]; } },
     { name: 'Birthday Money',      icon: '🎂', effect: p => { p.money += 300;  return ['+$300', `Happy birthday ${p.name}! Grandma sent $300.`]; } },
     { name: 'Garage Sale Win',     icon: '🏷️', effect: p => { p.money += 400;  return ['+$400', `${p.name} sold junk for $400!`]; } },
@@ -82,14 +82,14 @@ const GOOD_CARDS = [
     { name: 'Rebate Check',        icon: '📬', effect: p => { p.money += 200;  return ['+$200', `${p.name} got a rebate check in the mail!`]; } },
     { name: 'Craigslist Flip',     icon: '🛋️', effect: p => { p.money += 450;  return ['+$450', `${p.name} flipped furniture on Craigslist!`]; } },
     { name: 'Happy Hour',          icon: '🍺', effect: p => { p.happiness = Math.min(10,p.happiness+2); return ['+2 Happiness', `${p.name} had a great time at happy hour!`]; } },
-    { name: 'Got a Raise',         icon: '⬆️',  effect: p => { p.jobPay = Math.round(p.jobPay * 1.2); return [`+20% Pay`, `${p.name} got a 20% raise! New payday: ${fmt(p.jobPay)}`]; } },
+    { name: 'Got a Raise',         icon: '⬆️',  effect: p => { if(p.jobPay <= 2000){ return ['Free Pass!', p.name+' is unemployed - no raise available!']; } p.jobPay = Math.round(p.jobPay * 1.2); return ['+20% Pay', p.name+' got a 20% raise! New payday: '+fmt(p.jobPay)]; } },
     { name: 'Insurance Payout',    icon: '📄', effect: p => { p.money += 1500; return ['+$1,500', `${p.name} got an insurance payout!`]; } },
     { name: 'Estate Check',        icon: '🏛️', effect: p => { p.money += 3000; return ['+$3,000', `${p.name} inherited $3,000 from a distant uncle!`]; } },
     { name: 'Fantasy League Win',  icon: '🏈', effect: p => { p.money += 800;  return ['+$800', `${p.name} won the fantasy league!`]; } },
     { name: 'Online Survey',       icon: '📊', effect: p => { p.money += 100;  return ['+$100', `${p.name} did a survey for $100!`]; } },
     { name: 'Plasma Donation',     icon: '🩸', effect: p => { p.money += 150;  return ['+$150', `${p.name} donated plasma for $150!`]; } },
     { name: 'Poker Night Win',     icon: '🃏', effect: p => { p.money += 600;  return ['+$600', `${p.name} cleaned up at poker night!`]; } },
-    { name: 'Promoted!',           icon: '🏆', effect: p => { p.jobPay = Math.round(p.jobPay*1.3); return ['+30% Pay', `${p.name} got promoted! New payday: ${fmt(p.jobPay)}`]; } },
+    { name: 'Promoted!',           icon: '🏆', effect: p => { if(p.jobPay <= 2000){ return ['Free Pass!', p.name+' is unemployed - no promotion available!']; } p.jobPay = Math.round(p.jobPay*1.3); return ['+30% Pay', p.name+' got promoted! New payday: '+fmt(p.jobPay)]; } },
     { name: 'Home Raffle Win',     icon: '🏡', effect: p => { const r = upgradeHousing(p,2); return [r.includes('upgraded')?'BIG UPGRADE!':'Maxed', r]; } },
     { name: 'Sold Shoes Online',   icon: '👟', effect: p => { p.money += 300;  return ['+$300', `${p.name} sold sneakers online for $300!`]; } },
     { name: 'Cash Back',           icon: '💳', effect: p => { p.money += 175;  return ['+$175', `${p.name} redeemed credit card cash back!`]; } },
@@ -116,10 +116,10 @@ const BAD_CARDS = [
     { name: 'Groceries',           icon: '🛒', effect: p => { charge(p,150);  return ['-$150', `${p.name} bought groceries. Life is expensive!`]; } },
     { name: 'Go To Jail',          icon: '⛓️', effect: p => { sendToJail(p);  return ['JAIL!', `${p.name} is going to jail!`]; } },
     { name: 'Rent Raised',         icon: '🏠', effect: p => { charge(p,500);  return ['-$500', `${p.name}'s landlord raised the rent!`]; } },
-    { name: 'Pipes Burst',         icon: '🚿', effect: p => { charge(p,800);  return ['-$800', `${p.name}'s pipes burst!`]; } },
-    { name: 'Flat Tire',           icon: '🔧', effect: p => { charge(p,150);  return ['-$150', `${p.name} got a flat tire!`]; } },
-    { name: 'Engine Blew Up',      icon: '💨', effect: p => { charge(p,1500); return ['-$1,500', `${p.name}'s engine blew up!`]; } },
-    { name: 'Fender Bender',       icon: '🚗', effect: p => { charge(p,400);  return ['-$400', `${p.name} had a fender bender!`]; } },
+    { name: 'Pipes Burst',         icon: '🚿', effect: p => { if(p.housingLevel < 3){ return ['Free Pass!', p.name+' has no plumbing to burst!']; } charge(p,800);  return ['-$800', p.name+"'s pipes burst!"]; } },
+    { name: 'Flat Tire',           icon: '🔧', effect: p => { if(p.carLevel === 0){ return ['Free Pass!', p.name+' has no car - no flat tire!']; } charge(p,150);  return ['-$150', p.name+' got a flat tire!']; } },
+    { name: 'Engine Blew Up',      icon: '💨', effect: p => { if(p.carLevel === 0){ return ['Free Pass!', p.name+' has no car - no engine to blow!']; } charge(p,1500); return ['-$1,500', p.name+"'s engine blew up!"]; } },
+    { name: 'Fender Bender',       icon: '🚗', effect: p => { if(p.carLevel === 0){ return ['Free Pass!', p.name+' has no car to fender bend!']; } charge(p,400);  return ['-$400', p.name+' had a fender bender!']; } },
     { name: 'Car Stolen',          icon: '🔑', effect: p => { p.carLevel = Math.max(0,p.carLevel-1); return ['Car Downgraded', `${p.name}'s car got stolen!`]; } },
     { name: 'IRS Audit',           icon: '📋', effect: p => { const t=p.jobPay*5; charge(p,t); return [`-${fmt(t)}`, `${p.name} got audited! Pay 5x payday!`]; } },
     { name: 'Party Too Hard',      icon: '🍾', effect: p => { charge(p,600);  return ['-$600', `${p.name} spent $600 partying!`]; } },
@@ -138,7 +138,7 @@ const BAD_CARDS = [
     { name: 'Car Registration',    icon: '📄', effect: p => { charge(p,180);  return ['-$180', `${p.name}'s car registration is due! -$180`]; } },
     { name: 'Subscriptions',       icon: '📺', effect: p => { charge(p,120);  return ['-$120', `${p.name} forgot to cancel 6 subscriptions! -$120`]; } },
     { name: 'Move Back w/ Parents',icon: '🏚️', effect: p => { p.housingLevel=Math.max(0,p.housingLevel-2); return ['Housing Downgraded', `${p.name} had to move back with the parents!`]; } },
-    { name: 'Roof Caved In',       icon: '🏠', effect: p => { charge(p,1200); return ['-$1,200', `${p.name}'s roof caved in! -$1,200`]; } },
+    { name: 'Roof Caved In',       icon: '🏠', effect: p => { if(p.housingLevel < 3){ return ['Free Pass!', p.name+' has no roof to cave in!']; } charge(p,1200); return ['-$1,200', p.name+"'s roof caved in! -$1,200"]; } },
     { name: 'Divorce',             icon: '💔', effect: p => { const h=Math.floor(p.money*0.3); charge(p,h); return [`-${fmt(h)}`, `${p.name} is getting divorced! Lost 30% of savings!`]; } },
     { name: 'Gambling Debt',       icon: '🎲', effect: p => { charge(p,700);  return ['-$700', `${p.name} owes $700 in gambling debt!`]; } },
     { name: 'Medical Bills',       icon: '🏥', effect: p => { charge(p,1800); return ['-$1,800', `${p.name} got a massive medical bill! -$1,800`]; } },
@@ -190,49 +190,49 @@ const SARCASTIC_CARDS = [
 ];
 
 // ── Board Layout ─────────────────────────────────────────
-// 40 spaces: 4 corners + 20 blank + action spaces
-// Includes: house square, house cards, car dealer, car cards
+// 40 spaces: 4 corners + 12 blank + action spaces
+// house, car dealer, job office, house/car/job cards
 const BOARD_SPACES = [
-    { id: 0,  type: 'corner',   icon: '🏁', name: 'START',        desc: 'Begin your new life!' },
-    { id: 1,  type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
-    { id: 2,  type: 'card',     icon: '🃏', name: 'Good Card',    desc: 'Draw a Good Card!' },
-    { id: 3,  type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
-    { id: 4,  type: 'house',    icon: '🏠', name: 'House',        desc: 'Buy or upgrade your housing!' },
-    { id: 5,  type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
-    { id: 6,  type: 'card',     icon: '😈', name: 'Bad Card',     desc: 'Draw a Bad Card!' },
-    { id: 7,  type: 'hcard',    icon: '🏘️', name: 'House Card',   desc: 'Draw a Housing Card!' },
-    { id: 8,  type: 'good',     icon: '💵', name: 'Found $20',   desc: 'Collect $20!' },
-    { id: 9,  type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
-    { id: 10, type: 'corner',   icon: '⛓️', name: 'JAIL',         desc: 'Just Visiting... or IN!' },
-    { id: 11, type: 'card',     icon: '🏠', name: 'Sarcastic Card', desc: 'Draw a Sarcastic Card!' },
-    { id: 12, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
-    { id: 13, type: 'car',      icon: '🚗', name: 'Car Dealer',   desc: 'Buy or upgrade your car!' },
-    { id: 14, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
-    { id: 15, type: 'payday',   icon: '💰', name: 'PAYDAY',       desc: 'Collect your paycheck!' },
-    { id: 16, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
-    { id: 17, type: 'ccard',    icon: '🔧', name: 'Car Card',     desc: 'Draw a Car Card!' },
-    { id: 18, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
-    { id: 19, type: 'bad',      icon: '🏥', name: 'Hospital',     desc: 'Pay $500!' },
-    { id: 20, type: 'corner',   icon: '🎁', name: 'FREE DAY',     desc: 'Nothing happens!' },
-    { id: 21, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
-    { id: 22, type: 'card',     icon: '😈', name: 'Bad Card',     desc: 'Draw a Bad Card!' },
-    { id: 23, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
-    { id: 24, type: 'bad',      icon: '📋', name: 'TAXES',        desc: 'Pay 10% of total assets!' },
-    { id: 25, type: 'house',    icon: '🏠', name: 'House',        desc: 'Buy or upgrade your housing!' },
-    { id: 26, type: 'hcard',    icon: '🏘️', name: 'House Card',   desc: 'Draw a Housing Card!' },
-    { id: 27, type: 'good',     icon: '✈️',  name: 'Vacation Pay', desc: 'Collect $1,200!' },
-    { id: 28, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
-    { id: 29, type: 'card',     icon: '🃏', name: 'Good Card',    desc: 'Draw a Good Card!' },
-    { id: 30, type: 'corner',   icon: '🚔', name: 'GO TO JAIL',   desc: 'Go directly to Jail!' },
-    { id: 31, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
-    { id: 32, type: 'car',      icon: '🚗', name: 'Car Dealer',   desc: 'Buy or upgrade your car!' },
-    { id: 33, type: 'ccard',    icon: '🔧', name: 'Car Card',     desc: 'Draw a Car Card!' },
-    { id: 34, type: 'good',     icon: '🎰', name: 'Casino Win',   desc: 'Win $1,400!' },
-    { id: 35, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
-    { id: 36, type: 'card',     icon: '🏠', name: 'Sarcastic Card', desc: 'Draw a Sarcastic Card!' },
-    { id: 37, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
-    { id: 38, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
-    { id: 39, type: 'blank',    icon: '⬜', name: '',             desc: 'Nothing happens here.' },
+    { id: 0,  type: 'corner',  icon: '🏁', name: 'START',       desc: 'Begin your new life!' },
+    { id: 1,  type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
+    { id: 2,  type: 'card',    icon: '🃏', name: 'Good Card',   desc: 'Draw a Good Card!' },
+    { id: 3,  type: 'job',     icon: '💼', name: 'Job Office',  desc: 'Get or change your job!' },
+    { id: 4,  type: 'house',   icon: '🏠', name: 'House',       desc: 'Buy or upgrade housing!' },
+    { id: 5,  type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
+    { id: 6,  type: 'card',    icon: '😈', name: 'Bad Card',    desc: 'Draw a Bad Card!' },
+    { id: 7,  type: 'hcard',   icon: '🏘️', name: 'House Card',  desc: 'Draw a Housing Card!' },
+    { id: 8,  type: 'good',    icon: '💵', name: 'Found $20',   desc: 'Collect $20!' },
+    { id: 9,  type: 'jcard',   icon: '📋', name: 'Job Card',    desc: 'Draw a Job Card!' },
+    { id: 10, type: 'corner',  icon: '⛓️', name: 'JAIL',        desc: 'Just Visiting... or IN!' },
+    { id: 11, type: 'card',    icon: '🏠', name: 'Sarcastic Card', desc: 'Draw a Sarcastic Card!' },
+    { id: 12, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
+    { id: 13, type: 'car',     icon: '🚗', name: 'Car Dealer',  desc: 'Buy or upgrade your car!' },
+    { id: 14, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
+    { id: 15, type: 'payday',  icon: '💰', name: 'PAYDAY',      desc: 'Collect your paycheck!' },
+    { id: 16, type: 'jcard',   icon: '📋', name: 'Job Card',    desc: 'Draw a Job Card!' },
+    { id: 17, type: 'ccard',   icon: '🔧', name: 'Car Card',    desc: 'Draw a Car Card!' },
+    { id: 18, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
+    { id: 19, type: 'bad',     icon: '🏥', name: 'Hospital',    desc: 'Pay $500!' },
+    { id: 20, type: 'corner',  icon: '🎁', name: 'FREE DAY',    desc: '+1 Happiness!' },
+    { id: 21, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
+    { id: 22, type: 'card',    icon: '😈', name: 'Bad Card',    desc: 'Draw a Bad Card!' },
+    { id: 23, type: 'job',     icon: '💼', name: 'Job Office',  desc: 'Get or change your job!' },
+    { id: 24, type: 'bad',     icon: '📋', name: 'TAXES',       desc: 'Pay 10% of total assets!' },
+    { id: 25, type: 'house',   icon: '🏠', name: 'House',       desc: 'Buy or upgrade housing!' },
+    { id: 26, type: 'hcard',   icon: '🏘️', name: 'House Card',  desc: 'Draw a Housing Card!' },
+    { id: 27, type: 'good',    icon: '✈️',  name: 'Vacation Pay',desc: 'Collect $1,200!' },
+    { id: 28, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
+    { id: 29, type: 'card',    icon: '🃏', name: 'Good Card',   desc: 'Draw a Good Card!' },
+    { id: 30, type: 'corner',  icon: '🚔', name: 'GO TO JAIL',  desc: 'Go directly to Jail!' },
+    { id: 31, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
+    { id: 32, type: 'car',     icon: '🚗', name: 'Car Dealer',  desc: 'Buy or upgrade your car!' },
+    { id: 33, type: 'ccard',   icon: '🔧', name: 'Car Card',    desc: 'Draw a Car Card!' },
+    { id: 34, type: 'good',    icon: '🎰', name: 'Casino Win',  desc: 'Win $1,400!' },
+    { id: 35, type: 'jcard',   icon: '📋', name: 'Job Card',    desc: 'Draw a Job Card!' },
+    { id: 36, type: 'card',    icon: '🏠', name: 'Sarcastic Card', desc: 'Draw a Sarcastic Card!' },
+    { id: 37, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
+    { id: 38, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
+    { id: 39, type: 'blank',   icon: '⬜', name: '',            desc: 'Nothing happens here.' },
 ];
 
 // Clockwise: START=bottom-right corner, goes left along bottom,
@@ -257,18 +257,35 @@ function sendToJail(p) {
 
 function upgradeHousing(p, lvls) {
     const nl = Math.min(HOUSING.length-1, p.housingLevel+lvls);
-    if (nl === p.housingLevel) return `${p.name} already has max housing!`;
+    if (nl === p.housingLevel) return p.name + ' already has max housing!';
     const cost = Math.max(0, HOUSING[nl].price - HOUSING[p.housingLevel].price);
-    if (p.money >= cost) { p.money -= cost; p.housingLevel = nl; return `${p.name} upgraded to ${HOUSING[nl].name}!`; }
-    return `${p.name} can't afford the housing upgrade.`;
+    if (p.money >= cost) {
+        p.money -= cost; p.housingLevel = nl;
+        animateAssetIcon('apHousingIcon');
+        return p.name + ' upgraded to ' + HOUSING[nl].name + '!';
+    }
+    return p.name + "'s broke - can't afford the housing upgrade.";
 }
 
 function upgradeCar(p, lvls) {
     const nl = Math.min(CARS.length-1, p.carLevel+lvls);
-    if (nl === p.carLevel) return `${p.name} already has max car!`;
+    if (nl === p.carLevel) return p.name + ' already has max car!';
     const cost = Math.max(0, CARS[nl].price - CARS[p.carLevel].price);
-    if (p.money >= cost) { p.money -= cost; p.carLevel = nl; return `${p.name} upgraded to ${CARS[nl].name}!`; }
-    return `${p.name} can't afford the car upgrade.`;
+    if (p.money >= cost) {
+        p.money -= cost; p.carLevel = nl;
+        animateAssetIcon('apCarIcon');
+        return p.name + ' upgraded to ' + CARS[nl].name + '!';
+    }
+    return p.name + "'s broke - can't afford the car upgrade.";
+}
+
+function animateAssetIcon(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('upgraded');
+    void el.offsetWidth; // force reflow
+    el.classList.add('upgraded');
+    setTimeout(() => el.classList.remove('upgraded'), 600);
 }
 
 function drawCard(deck) { return deck[Math.floor(Math.random()*deck.length)]; }
@@ -451,13 +468,41 @@ function updateActivePlayerPanel() {
     set('apName', p.name);
     set('apMoney', fmt(p.money));
     set('apJob', '💼 ' + p.job);
-    set('apHousing', HOUSING[p.housingLevel].icon + ' ' + HOUSING[p.housingLevel].name);
-    set('apCar', CARS[p.carLevel].icon + ' ' + CARS[p.carLevel].name);
     set('apHappiness', '😊 Happiness: ' + p.happiness + '/10');
+
     const jailEl = document.getElementById('apJail');
     if (jailEl) {
         if (p.inJail) { jailEl.textContent = '⛓️ IN JAIL - Turn ' + (p.jailTurns+1) + '/3'; jailEl.classList.remove('hidden'); }
         else { jailEl.classList.add('hidden'); }
+    }
+
+    // Housing display
+    const house = HOUSING[p.housingLevel];
+    set('apHousingIcon', house.icon);
+    set('apHousingName', house.name);
+    renderUpgradeTrack('housingTrack', p.housingLevel, HOUSING.length);
+
+    // Car display
+    const car = CARS[p.carLevel];
+    set('apCarIcon', car.icon);
+    set('apCarName', car.name);
+    renderUpgradeTrack('carTrack', p.carLevel, CARS.length);
+}
+
+function renderUpgradeTrack(trackId, currentLevel, totalLevels) {
+    const el = document.getElementById(trackId);
+    if (!el) return;
+    el.innerHTML = '';
+    for (let i = 0; i < totalLevels; i++) {
+        const dot = document.createElement('div');
+        if (i < currentLevel) {
+            dot.className = 'upgrade-dot filled';
+        } else if (i === currentLevel) {
+            dot.className = 'upgrade-dot current';
+        } else {
+            dot.className = 'upgrade-dot';
+        }
+        el.appendChild(dot);
     }
 }
 
@@ -621,6 +666,8 @@ function landOnSpace(player, space) {
         case 'car':     handleCarDealerSpace(player); break;
         case 'hcard':   handleHousingCard(player); break;
         case 'ccard':   handleCarCard(player); break;
+        case 'job':     handleJobOffice(player); break;
+        case 'jcard':   handleJobCard(player); break;
         default:        endTurn(); break;
     }
     } catch(e) { console.error("landOnSpace error:", e); endTurn(); }
@@ -630,11 +677,11 @@ function landOnSpace(player, space) {
 // ── Housing Cards Deck ────────────────────────────────────
 const HOUSING_CARDS = [
     { name: 'Free Upgrade!',         effect: p => { const r=upgradeHousing(p,1); return [r.includes('upgraded')?'UPGRADE!':'No change', r]; } },
-    { name: 'Landlord Raised Rent',  effect: p => { charge(p,500); return ['-$500', p.name+'s landlord raised the rent! -$500']; } },
-    { name: 'Pipes Burst',           effect: p => { charge(p,800); return ['-$800', p.name+" pipes burst! -$800"]; } },
+    { name: 'Landlord Raised Rent',  effect: p => { if(p.housingLevel < 3){ return ['Free Pass!', p.name+' has no landlord - living rough!']; } charge(p,500); return ['-$500', p.name+"'s landlord raised the rent! -$500"]; } },
+    { name: 'Pipes Burst',           effect: p => { if(p.housingLevel < 3){ return ['Free Pass!', p.name+' has no plumbing to burst!']; } charge(p,800); return ['-$800', p.name+"'s pipes burst! -$800"]; } },
     { name: 'Raffle Win!',           effect: p => { const r=upgradeHousing(p,2); return [r.includes('upgraded')?'BIG UPGRADE!':'Maxed', r]; } },
     { name: 'Move Back w/ Parents',  effect: p => { p.housingLevel=Math.max(0,p.housingLevel-2); return ['Downgraded', p.name+' moved back with the parents!']; } },
-    { name: 'Roof Caved In',         effect: p => { charge(p,1200); return ['-$1,200', p.name+" roof caved in! -$1,200"]; } },
+    { name: 'Roof Caved In',         effect: p => { if(p.housingLevel < 3){ return ['Free Pass!', p.name+' has no roof to cave in!']; } charge(p,1200); return ['-$1,200', p.name+"'s roof caved in! -$1,200"]; } },
     { name: 'Free Double Upgrade!',  effect: p => { const r=upgradeHousing(p,2); return [r.includes('upgraded')?'DOUBLE UPGRADE!':'Maxed', r]; } },
     { name: 'House Party Damage',    effect: p => { charge(p,400); return ['-$400', p.name+' had a wild house party. Damage: $400']; } },
 ];
@@ -642,13 +689,13 @@ const HOUSING_CARDS = [
 // ── Car Cards Deck ────────────────────────────────────────
 const CAR_CARDS = [
     { name: 'Free Upgrade!',     effect: p => { const r=upgradeCar(p,1); return [r.includes('upgraded')?'UPGRADE!':'No change', r]; } },
-    { name: 'Flat Tire',         effect: p => { charge(p,150); return ['-$150', p.name+' got a flat tire! -$150']; } },
-    { name: 'Engine Blew Up',    effect: p => { charge(p,1500); return ['-$1,500', p.name+" engine blew up! -$1,500"]; } },
+    { name: 'Flat Tire',         effect: p => { if(p.carLevel === 0){ return ['Free Pass!', p.name+' has no car - no flat tire!']; } charge(p,150); return ['-$150', p.name+' got a flat tire! -$150']; } },
+    { name: 'Engine Blew Up',    effect: p => { if(p.carLevel === 0){ return ['Free Pass!', p.name+' has no car - no engine to blow!']; } charge(p,1500); return ['-$1,500', p.name+" engine blew up! -$1,500"]; } },
     { name: 'Car Raffle Win!',   effect: p => { const r=upgradeCar(p,2); return [r.includes('upgraded')?'BIG UPGRADE!':'Maxed', r]; } },
-    { name: 'Car Got Stolen',    effect: p => { p.carLevel=Math.max(0,p.carLevel-1); return ['Downgraded', p.name+" car got stolen!"]; } },
+    { name: 'Car Got Stolen',    effect: p => { if(p.carLevel === 0){ return ['Free Pass!', p.name+' has no car to steal!']; } p.carLevel=Math.max(0,p.carLevel-1); return ['Downgraded', p.name+" car got stolen!"]; } },
     { name: 'Free Oil Change',   effect: p => { p.money+=80; return ['+$80', p.name+' got a free oil change coupon! +$80']; } },
     { name: 'Double Upgrade!',   effect: p => { const r=upgradeCar(p,2); return [r.includes('upgraded')?'DOUBLE UPGRADE!':'Maxed', r]; } },
-    { name: 'Fender Bender',     effect: p => { charge(p,400); return ['-$400', p.name+' had a fender bender! -$400']; } },
+    { name: 'Fender Bender',     effect: p => { if(p.carLevel === 0){ return ['Free Pass!', p.name+' has no car to fender bend!']; } charge(p,400); return ['-$400', p.name+' had a fender bender! -$400']; } },
 ];
 
 // ── House Space: buy/upgrade housing ─────────────────────
@@ -868,7 +915,9 @@ function handleCorner(player, space) {
         showCardOverlay('⛓️','JAIL','Just Visiting',`${player.name} is just visiting jail. Stay cool!`,'');
         setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
     } else if (space.id === 20) {
-        showCardOverlay('🎁','FREE DAY','Nothing Happens',`${player.name} gets a free day! Enjoy the peace.`,'good');
+        player.happiness = Math.min(10, player.happiness + 1);
+        renderPlayerBar();
+        showCardOverlay('🎁','FREE DAY','Nothing Happens! +1 Happiness',player.name+' gets a free day! Enjoy the peace. +1 Happiness!','good');
         setTimeout(() => { hideCardOverlay(); endTurn(); }, 5000);
     } else if (space.id === 30) {
         sendToJail(player);
@@ -1045,3 +1094,82 @@ function showPopup(title, message, type) {
 }
 function closePopup() { document.getElementById('popup').classList.add('hidden'); }
 function showMessage(msg) { document.getElementById('gameMessage').textContent=msg; }
+
+// ── Job Cards Deck ────────────────────────────────────────
+const JOB_CARDS = [
+    { name: 'Dog Walker',     icon: '🐕', pay: 500,   effect: p => { p.job='Dog Walker';    p.jobPay=500;   return p.name+' got hired as a Dog Walker! Payday: $500'; } },
+    { name: 'Fruit Picker',   icon: '🍎', pay: 800,   effect: p => { p.job='Fruit Picker';  p.jobPay=800;   return p.name+' got hired as a Fruit Picker! Payday: $800'; } },
+    { name: 'Wendys',         icon: '🍔', pay: 2400,  effect: p => { p.job='Wendys';        p.jobPay=2400;  return p.name+' is flipping burgers at Wendys! Payday: $2,400'; } },
+    { name: 'Walmart',        icon: '🛒', pay: 2800,  effect: p => { p.job='Walmart';       p.jobPay=2800;  return p.name+' got hired at Walmart! Payday: $2,800'; } },
+    { name: 'Factory Worker', icon: '🏭', pay: 3200,  effect: p => { p.job='Factory Worker';p.jobPay=3200;  return p.name+' is working the line! Payday: $3,200'; } },
+    { name: 'Trash Collector',icon: '🗑️', pay: 3500,  effect: p => { p.job='Trash Collector';p.jobPay=3500; return p.name+' is on the truck! Payday: $3,500'; } },
+    { name: 'House Cleaner',  icon: '🧹', pay: 3800,  effect: p => { p.job='House Cleaner'; p.jobPay=3800;  return p.name+' is scrubbing floors! Payday: $3,800'; } },
+    { name: 'Security',       icon: '🔒', pay: 4000,  effect: p => { p.job='Security';      p.jobPay=4000;  return p.name+' is on patrol! Payday: $4,000'; } },
+    { name: 'DoorDash',       icon: '🚗', pay: 3000,  effect: p => { p.job='DoorDash';      p.jobPay=3000;  return p.name+' is delivering! Payday: $3,000'; } },
+    { name: 'Amazon Driver',  icon: '📦', pay: 5000,  effect: p => { p.job='Amazon Driver'; p.jobPay=5000;  return p.name+' is delivering packages! Payday: $5,000'; } },
+    { name: 'Police',         icon: '👮', pay: 5500,  effect: p => { p.job='Police';        p.jobPay=5500;  return p.name+' is on the force! Payday: $5,500'; } },
+    { name: 'Prison Guard',   icon: '🚔', pay: 6000,  effect: p => { p.job='Prison Guard';  p.jobPay=6000;  return p.name+' is guarding the pen! Payday: $6,000'; } },
+    { name: 'Realtor',        icon: '🏠', pay: 8000,  effect: p => { p.job='Realtor';       p.jobPay=8000;  return p.name+' is selling houses! Payday: $8,000'; } },
+    { name: 'Microsoft',      icon: '💻', pay: 12000, effect: p => { p.job='Microsoft';     p.jobPay=12000; return p.name+' landed a tech job at Microsoft! Payday: $12,000'; } },
+    { name: 'Got Fired!',     icon: '🔥', pay: 2000,  effect: p => { p.job='Unemployed';    p.jobPay=2000;  return p.name+' got FIRED! Back to Unemployed. Payday: $2,000'; } },
+    { name: 'Got Fired!',     icon: '🔥', pay: 2000,  effect: p => { p.job='Unemployed';    p.jobPay=2000;  return p.name+' got FIRED again! Payday: $2,000'; } },
+];
+
+// ── Job Office Space ──────────────────────────────────────
+function handleJobOffice(player) {
+    const jobs = [
+        { name: 'Dog Walker',     icon: '🐕', pay: 500   },
+        { name: 'Fruit Picker',   icon: '🍎', pay: 800   },
+        { name: 'Wendys',         icon: '🍔', pay: 2400  },
+        { name: 'Walmart',        icon: '🛒', pay: 2800  },
+        { name: 'Factory Worker', icon: '🏭', pay: 3200  },
+        { name: 'Trash Collector',icon: '🗑️', pay: 3500  },
+        { name: 'House Cleaner',  icon: '🧹', pay: 3800  },
+        { name: 'Security',       icon: '🔒', pay: 4000  },
+        { name: 'DoorDash',       icon: '🚗', pay: 3000  },
+        { name: 'Amazon Driver',  icon: '📦', pay: 5000  },
+        { name: 'Police',         icon: '👮', pay: 5500  },
+        { name: 'Prison Guard',   icon: '🚔', pay: 6000  },
+        { name: 'Realtor',        icon: '🏠', pay: 8000  },
+        { name: 'Microsoft',      icon: '💻', pay: 12000 },
+    ];
+    // Pick a random job that pays more than current (or any if unemployed)
+    const better = jobs.filter(j => j.pay > player.jobPay);
+    const pool = better.length > 0 ? better : jobs;
+    const offer = pool[Math.floor(Math.random() * pool.length)];
+
+    const popup = document.getElementById('popup');
+    const content = popup.querySelector('.popup-content');
+    document.getElementById('popupTitle').textContent = '💼 Job Office';
+    document.getElementById('popupMessage').textContent =
+        player.name + ', job offer: ' + offer.icon + ' ' + offer.name +
+        ' | Payday: $' + offer.pay.toLocaleString() +
+        '\nCurrent: ' + player.job + ' | $' + player.jobPay.toLocaleString();
+    content.className = 'popup-content popup-good';
+    popup.classList.remove('hidden');
+    content.querySelectorAll('button').forEach(b => b.remove());
+
+    const yesBtn = document.createElement('button');
+    yesBtn.className = 'btn'; yesBtn.style.marginRight = '10px'; yesBtn.textContent = 'TAKE IT!';
+    yesBtn.onclick = () => {
+        player.job = offer.name; player.jobPay = offer.pay;
+        renderPlayerBar(); closePopup();
+        showCardOverlay('💼', 'NEW JOB!', offer.icon + ' ' + offer.name,
+            player.name + ' is now working as ' + offer.name + '! New payday: $' + offer.pay.toLocaleString(), 'good');
+        setTimeout(() => { hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+    };
+    const noBtn = document.createElement('button');
+    noBtn.className = 'btn'; noBtn.style.background = 'linear-gradient(135deg,#0f3460,#16213e)'; noBtn.textContent = 'PASS';
+    noBtn.onclick = () => { closePopup(); endTurn(); };
+    content.appendChild(yesBtn); content.appendChild(noBtn);
+}
+
+// ── Job Card Draw ─────────────────────────────────────────
+function handleJobCard(player) {
+    const card = drawCard(JOB_CARDS);
+    const result = card.effect(player);
+    renderPlayerBar();
+    const isGood = card.pay > 2000 && card.name !== 'Got Fired!';
+    showCardOverlay(card.icon, 'JOB CARD', card.name, result, isGood ? 'good' : 'bad');
+    setTimeout(() => { hideCardOverlay(); checkWinThenEnd(player); }, 5000);
+}
