@@ -371,38 +371,36 @@ function setupPlayers() {
 const abState = { base:'', overlay:'', hat:'', item:'', vibe:'' };
 
 function abBuild() {
-    // Compose avatar from layers: base + overlay + hat + item + vibe
-    const parts = [abState.base, abState.overlay, abState.hat, abState.item, abState.vibe]
-        .filter(Boolean);
-    return parts.length ? parts.join('') : '❓';
+    return [abState.base, abState.overlay, abState.hat, abState.item, abState.vibe]
+        .filter(Boolean).join('') || '❓';
 }
 
 function abRefresh() {
+    const built = abBuild();
     const preview = document.getElementById('abPreview');
-    if (preview) preview.textContent = abBuild();
-    // Sync tempSetup.avatar so nextPlayer() can read it
-    tempSetup.avatar = abBuild() === '❓' ? '' : abBuild();
+    if (preview) preview.textContent = built;
+    tempSetup.avatar = built === '❓' ? '' : built;
 }
 
-function abSet(slot, emoji) {
-    // Toggle off if already selected
-    abState[slot] = abState[slot] === emoji ? '' : emoji;
-    // Highlight selected buttons in this slot
-    document.querySelectorAll(`.ab-pick`).forEach(btn => {
-        if (btn.getAttribute('onclick') === `abSet('${slot}','${emoji}')`) {
-            btn.classList.toggle('selected', abState[slot] === emoji);
-        } else if (btn.getAttribute('onclick') && btn.getAttribute('onclick').startsWith(`abSet('${slot}'`)) {
-            btn.classList.remove('selected');
-        }
-    });
+function abSet(btn) {
+    const slot  = btn.dataset.slot;
+    const emoji = btn.dataset.emoji;
+    if (!slot || !emoji) return;
+    // Toggle off if already active
+    const already = abState[slot] === emoji;
+    abState[slot] = already ? '' : emoji;
+    // Update highlight — only buttons in same slot
+    document.querySelectorAll(`.ab-pick[data-slot="${slot}"]`)
+        .forEach(b => b.classList.toggle('selected', b.dataset.emoji === abState[slot]));
     abRefresh();
 }
 
-function abTab(tabEl, panelId) {
+function abTab(tabEl) {
+    const panelId = tabEl.dataset.panel;
     document.querySelectorAll('.ab-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.ab-panel').forEach(p => p.classList.remove('active'));
     tabEl.classList.add('active');
-    const panel = document.getElementById('panel-' + panelId);
+    const panel = document.getElementById('ab-panel-' + panelId);
     if (panel) panel.classList.add('active');
 }
 
@@ -412,6 +410,12 @@ function abReset() {
     abRefresh();
 }
 
+// Wire up pick buttons via event delegation (no inline onclick needed)
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.ab-pick');
+    if (btn) abSet(btn);
+});
+
 function showPlayerSetup() {
     const idx = gameState.currentSetupPlayer;
     document.getElementById('playerSetupTitle').textContent = `Player ${idx+1} Setup`;
@@ -419,15 +423,14 @@ function showPlayerSetup() {
     abReset();
     // Reset to first tab
     const firstTab = document.querySelector('.ab-tab');
-    if (firstTab) abTab(firstTab, 'human');
+    if (firstTab) abTab(firstTab);
     tempSetup = { avatar: '' };
     document.getElementById('nextPlayerBtn').textContent =
         idx === gameState.numPlayers-1 ? 'START CHAOS!' : 'NEXT PLAYER';
 }
 
 function selectAvatar(emoji) {
-    // Legacy — not used by builder, kept for safety
-    tempSetup.avatar = emoji;
+    tempSetup.avatar = emoji; // legacy fallback
 }
 
 function nextPlayer() {
