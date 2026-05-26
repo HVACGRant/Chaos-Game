@@ -809,14 +809,18 @@ function movePlayer(player, steps) {
     const oldPos = player.position;
     const newPos = (oldPos + steps) % 36;
 
-    // Lap bonus
+    // Lap bonus — collect pay and deduct bills
     if (newPos <= oldPos && steps > 0) {
-        player.money += player.jobPay;
         player.laps++;
-        // collect rent from others (#19)
-        collectRent(player);
-        document.getElementById('gameMessage').textContent =
-            `${player.name} passed START! Lap ${player.laps} | +${fmt(player.jobPay)} 💰`;
+        const bill = collectRent(player);
+        const house = HOUSING[player.housingLevel];
+        const car   = CARS[player.carLevel];
+        let lapMsg = `${player.name} passed START! Lap ${player.laps}\n`;
+        lapMsg += `📥 Payday: ${fmt(bill.gross)}`;
+        if (bill.rent > 0)   lapMsg += `  🏠 -${fmt(bill.rent)}`;
+        if (bill.carPay > 0) lapMsg += `  🚗 -${fmt(bill.carPay)}`;
+        lapMsg += `\n✅ Net: ${fmt(bill.net)} | Balance: ${fmt(player.money)}`;
+        document.getElementById('gameMessage').textContent = lapMsg;
     }
     player.position = newPos;
     player.turnsPlayed++;
@@ -835,17 +839,17 @@ function movePlayer(player, steps) {
 
 // ── RENT/CAR PAYMENT (#19) ────────────────────────────────
 function collectRent(player) {
-    // Housing rent due each lap for levels 2–12
-    if (player.housingLevel >= 2 && player.housingLevel < 13) {
-        const rent = HOUSING[player.housingLevel].rent;
-        charge(player, rent);
-        // flash message handled inline
-    }
-    // Car payment due each lap for levels 2+
-    if (player.carLevel >= 2) {
-        const payment = CARS[player.carLevel].payment;
-        charge(player, payment);
-    }
+    // Returns an object with each bill and net total — does NOT charge directly
+    // Caller must apply the result
+    const gross   = player.jobPay;
+    const rent    = (player.housingLevel >= 2 && player.housingLevel < 13) ? HOUSING[player.housingLevel].rent : 0;
+    const carPay  = (player.carLevel >= 2) ? CARS[player.carLevel].payment : 0;
+    const bills   = rent + carPay;
+    const net     = gross - bills;
+    // Apply to player
+    player.money += gross;
+    charge(player, bills);
+    return { gross, rent, carPay, bills, net };
 }
 
 // ── STEAL (#18) ───────────────────────────────────────────
@@ -947,12 +951,23 @@ function handleCorner(player, space) {
 
 // ── PAYDAY ────────────────────────────────────────────────
 function handlePayday(player) {
-    player.money += player.jobPay;
-    collectRent(player);
+    const bill = collectRent(player);
     adjustHappiness(player, 0.5);
     renderPlayerBar();
-    showCardOverlay('💰','PAYDAY','Collect Your Check!',
-        `${player.name} collects ${fmt(player.jobPay)} from ${player.job}!\nRent/payment deducted automatically.`,'good', () => { checkWinThenEnd(player); });
+
+    const house = HOUSING[player.housingLevel];
+    const car   = CARS[player.carLevel];
+
+    let body = `💼 ${player.job}\n`;
+    body += `━━━━━━━━━━━━━━━━━━\n`;
+    body += `📥 Payday:        ${fmt(bill.gross)}\n`;
+    if (bill.rent > 0)   body += `🏠 ${house.name}:  -${fmt(bill.rent)}\n`;
+    if (bill.carPay > 0) body += `🚗 ${car.name}:    -${fmt(bill.carPay)}\n`;
+    body += `━━━━━━━━━━━━━━━━━━\n`;
+    body += `✅ Net Deposit:   ${fmt(bill.net)}\n`;
+    body += `💰 Balance:       ${fmt(player.money)}`;
+
+    showCardOverlay('💰', 'PAYDAY', player.name + ' gets paid!', body, 'good', () => { checkWinThenEnd(player); });
 }
 
 // ── GOOD SPACE ────────────────────────────────────────────
