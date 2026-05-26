@@ -84,70 +84,61 @@
         <h2 id="playerSetupTitle" class="setup-heading">Player 1 Setup</h2>
 
         <div class="ab-builder">
-
             <!-- SVG Preview -->
             <div class="ab-preview-col">
                 <div class="ab-face-wrap">
-                    <svg id="avatarSVG" viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg" width="150" height="188">
+                    <svg id="avatarSVG" viewBox="0 0 100 160" width="160" height="256" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <!-- Clip: only the top/sides of head for hair front overlay -->
-                            <clipPath id="hairFrontClip">
-                                <rect x="0" y="0" width="120" height="62"/>
-                            </clipPath>
-                            <!-- Clip: full head shape for tight hair styles -->
-                            <clipPath id="headClip">
-                                <ellipse cx="60" cy="72" rx="35" ry="39"/>
-                            </clipPath>
+                            <clipPath id="foreheadClip"><rect x="0" y="0" width="100" height="50"/></clipPath>
                         </defs>
-
-                        <!-- Body + shoulders -->
-                        <ellipse id="svgBody" cx="60" cy="135" rx="38" ry="22" fill="#4a90d9"/>
-                        <!-- Neck -->
-                        <rect id="svgNeck" x="52" y="100" width="16" height="14" fill="#FDBCB4"/>
-
-                        <!-- HAIR BACK — behind everything -->
+                        <ellipse cx="50" cy="157" rx="18" ry="3" fill="rgba(0,0,0,0.3)"/>
+                        <g id="svgLegs">
+                            <rect x="34" y="118" width="12" height="28" rx="5" fill="#1565c0"/>
+                            <rect x="54" y="118" width="12" height="28" rx="5" fill="#1565c0"/>
+                        </g>
+                        <g id="svgShoes">
+                            <ellipse cx="40" cy="147" rx="9" ry="5" fill="#1a1a1a"/>
+                            <ellipse cx="60" cy="147" rx="9" ry="5" fill="#1a1a1a"/>
+                        </g>
+                        <g id="svgBody">
+                            <rect x="29" y="80" width="42" height="42" rx="8" fill="#1976d2"/>
+                            <path d="M42 80 L50 90 L58 80" fill="#fff" opacity="0.9"/>
+                        </g>
+                        <g id="svgArms">
+                            <rect x="16" y="82" width="13" height="30" rx="6" fill="#1976d2"/>
+                            <rect x="71" y="82" width="13" height="30" rx="6" fill="#1976d2"/>
+                        </g>
+                        <g id="svgHands">
+                            <ellipse cx="22" cy="116" rx="7" ry="6" fill="#FDBCB4"/>
+                            <ellipse cx="78" cy="116" rx="7" ry="6" fill="#FDBCB4"/>
+                        </g>
+                        <rect id="svgNeck" x="43" y="75" width="14" height="10" fill="#FDBCB4"/>
                         <g id="svgHairBack"></g>
-
-                        <!-- Ears — behind head, in front of hair back -->
-                        <ellipse id="svgEarL" cx="25" cy="76" rx="7" ry="10" fill="#FDBCB4"/>
-                        <ellipse id="svgEarR" cx="95" cy="76" rx="7" ry="10" fill="#FDBCB4"/>
-                        <!-- Inner ear detail -->
-                        <ellipse id="svgEarLi" cx="25" cy="76" rx="4" ry="6" fill="#e8a882" opacity="0.5"/>
-                        <ellipse id="svgEarRi" cx="95" cy="76" rx="4" ry="6" fill="#e8a882" opacity="0.5"/>
-
-                        <!-- HEAD -->
-                        <ellipse id="svgHead" cx="60" cy="72" rx="35" ry="39" fill="#FDBCB4"/>
-
-                        <!-- FACE FEATURES — all on top of head, below hair front -->
-                        <!-- Eyebrows -->
+                        <ellipse id="svgEarL" cx="23" cy="60" rx="5" ry="7" fill="#FDBCB4"/>
+                        <ellipse id="svgEarR" cx="77" cy="60" rx="5" ry="7" fill="#FDBCB4"/>
+                        <ellipse cx="23" cy="60" rx="3" ry="4.5" fill="#e8a882" opacity="0.5"/>
+                        <ellipse cx="77" cy="60" rx="3" ry="4.5" fill="#e8a882" opacity="0.5"/>
+                        <ellipse id="svgHead" cx="50" cy="58" rx="26" ry="28" fill="#FDBCB4"/>
                         <g id="svgBrows">
-                            <path d="M39 57 Q47 53 55 57" stroke="#5a3e2b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                            <path d="M65 57 Q73 53 81 57" stroke="#5a3e2b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                            <path d="M34 46 Q40 43 46 46" stroke="#5a3e2b" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <path d="M54 46 Q60 43 66 46" stroke="#5a3e2b" stroke-width="2" fill="none" stroke-linecap="round"/>
                         </g>
-                        <!-- Eyes -->
                         <g id="svgEyes">
-                            <ellipse cx="47" cy="68" rx="7" ry="8" fill="white"/>
-                            <ellipse cx="73" cy="68" rx="7" ry="8" fill="white"/>
-                            <circle cx="48" cy="69" r="4" fill="#3d2b1f"/>
-                            <circle cx="74" cy="69" r="4" fill="#3d2b1f"/>
-                            <circle cx="49" cy="68" r="1.5" fill="white"/>
-                            <circle cx="75" cy="68" r="1.5" fill="white"/>
+                            <ellipse cx="40" cy="54" rx="6" ry="6.5" fill="white"/>
+                            <ellipse cx="60" cy="54" rx="6" ry="6.5" fill="white"/>
+                            <circle cx="41" cy="55" r="3.5" fill="#3d2b1f"/>
+                            <circle cx="61" cy="55" r="3.5" fill="#3d2b1f"/>
+                            <circle cx="42" cy="54" r="1.2" fill="white"/>
+                            <circle cx="62" cy="54" r="1.2" fill="white"/>
                         </g>
-                        <!-- Nose -->
                         <g id="svgNose">
-                            <path d="M57 76 Q55 85 52 87 Q60 90 68 87 Q65 85 63 76" stroke="#d4956a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                            <path d="M47 60 Q45 68 43 70 Q50 73 57 70 Q55 68 53 60" stroke="#d4956a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
                         </g>
-                        <!-- Cheeks -->
                         <g id="svgCheeks"></g>
-                        <!-- Mouth -->
                         <g id="svgMouth">
-                            <path d="M48 98 Q60 106 72 98" stroke="#c0605a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                            <path d="M40 77 Q50 85 60 77" stroke="#c0605a" stroke-width="2" fill="none" stroke-linecap="round"/>
                         </g>
-
-                        <!-- HAIR FRONT — clipped to forehead/top only so face stays clear -->
                         <g id="svgHairFront"></g>
-
-                        <!-- EXTRAS — hats, glasses etc, on very top -->
                         <g id="svgExtras"></g>
                     </svg>
                 </div>
@@ -155,23 +146,22 @@
                 <button class="ab-reset-btn" onclick="abReset()">↺ RESET</button>
             </div>
 
-            <!-- Category tabs + options -->
+            <!-- Options -->
             <div class="ab-options-col">
                 <div class="ab-tabs">
-                    <button class="ab-tab active" data-cat="skin"    onclick="abSwitchCat(this)">🎨 Skin</button>
-                    <button class="ab-tab"        data-cat="hair"    onclick="abSwitchCat(this)">💇 Hair</button>
-                    <button class="ab-tab"        data-cat="eyes"    onclick="abSwitchCat(this)">👁️ Eyes</button>
-                    <button class="ab-tab"        data-cat="brows"   onclick="abSwitchCat(this)">〰️ Brows</button>
-                    <button class="ab-tab"        data-cat="nose"    onclick="abSwitchCat(this)">👃 Nose</button>
-                    <button class="ab-tab"        data-cat="mouth"   onclick="abSwitchCat(this)">👄 Mouth</button>
-                    <button class="ab-tab"        data-cat="cheeks"  onclick="abSwitchCat(this)">🌸 Cheeks</button>
-                    <button class="ab-tab"        data-cat="extras"  onclick="abSwitchCat(this)">🎩 Extras</button>
-                    <button class="ab-tab"        data-cat="body"    onclick="abSwitchCat(this)">👕 Body</button>
+                    <button class="ab-tab active" data-cat="skin"   onclick="abSwitchCat(this)">🎨 Skin</button>
+                    <button class="ab-tab" data-cat="hair"   onclick="abSwitchCat(this)">💇 Hair</button>
+                    <button class="ab-tab" data-cat="eyes"   onclick="abSwitchCat(this)">👁 Eyes</button>
+                    <button class="ab-tab" data-cat="brows"  onclick="abSwitchCat(this)">〰 Brows</button>
+                    <button class="ab-tab" data-cat="nose"   onclick="abSwitchCat(this)">👃 Nose</button>
+                    <button class="ab-tab" data-cat="mouth"  onclick="abSwitchCat(this)">👄 Mouth</button>
+                    <button class="ab-tab" data-cat="cheeks" onclick="abSwitchCat(this)">🌸 Cheeks</button>
+                    <button class="ab-tab" data-cat="outfit" onclick="abSwitchCat(this)">👕 Outfit</button>
+                    <button class="ab-tab" data-cat="extras" onclick="abSwitchCat(this)">🎩 Extras</button>
                 </div>
                 <div class="ab-options-grid" id="abOptions"></div>
             </div>
-
-        </div><!-- end ab-builder -->
+        </div>
 
         <div class="setup-section" style="margin-top:10px">
             <h3>Enter Your Name!</h3>
