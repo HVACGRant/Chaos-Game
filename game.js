@@ -42,7 +42,7 @@ function scaledFine(p, base) {
 // ── HOUSING ──────────────────────────────────────────────
 const HOUSING = [
     { level:0,  name:'Homeless',       icon:'🏚️',  price:0,      rent:0,    lapReq:0  },
-    { level:1,  name:'Car Living',     icon:'🚗',  price:0,      rent:0,    lapReq:0  },
+    { level:1,  name:'Cardboard Box',  icon:'📦',  price:0,      rent:0,    lapReq:0  },
     { level:2,  name:"Friend's Couch", icon:'🛋️',  price:500,    rent:100,  lapReq:0  },
     { level:3,  name:'Apartment',      icon:'🏢',  price:2000,   rent:300,  lapReq:0  },
     { level:4,  name:'Mobile Home',    icon:'🏠',  price:4000,   rent:400,  lapReq:25 },
@@ -205,7 +205,7 @@ function getAvailableJobs(p) {
 function upgradeHousing(p, lvls) {
     const nl = Math.min(HOUSING.length-1, p.housingLevel + 1);
     if (nl === p.housingLevel) return p.name + ' already has max housing!';
-    if (nl === 1 && p.carLevel === 0) return p.name + " can't live in a car — buy a car first! (#10)";
+    // Level 1 is Cardboard Box — always available to anyone
     const lapsNeeded = HOUSING[nl].lapReq || 0;
     if ((p.laps||0) < lapsNeeded) return p.name + ' needs Lap ' + lapsNeeded + ' for ' + HOUSING[nl].name + '.';
     const cost = Math.max(0, HOUSING[nl].price - HOUSING[p.housingLevel].price);
@@ -881,7 +881,7 @@ function renderPlayerBar() {
             </div>
             <div class="token-money">${fmt(p.money)}</div>
             <div class="token-details">${p.job}</div>
-            <div class="token-details">${HOUSING[p.housingLevel].icon} ${HOUSING[p.housingLevel].name}</div>
+            <div class="token-details">${p.housingLevel===1&&p.carLevel>=2?'🚗 Car Living':HOUSING[p.housingLevel].icon+' '+HOUSING[p.housingLevel].name}</div>
             <div class="token-details">${CARS[p.carLevel].icon} ${CARS[p.carLevel].name}</div>
             <div class="happiness-bar-wrap">
                 <span style="font-size:0.75em;color:${hColor}">${h.toFixed(1)}😊</span>
@@ -898,6 +898,12 @@ function renderPlayerBar() {
 }
 
 // ── ACTIVE PANEL ──────────────────────────────────────────
+// Get housing display name (level 1 = Cardboard Box or Car Living depending on car)
+function housingDisplayName(p) {
+    if (p.housingLevel === 1 && p.carLevel >= 2) return { name: 'Car Living', icon: '🚗' };
+    return { name: HOUSING[p.housingLevel].name, icon: HOUSING[p.housingLevel].icon };
+}
+
 function updateActivePlayerPanel() {
     if (gameState.phase !== 'playing') return;
     const p = gameState.players[gameState.currentPlayerIndex];
@@ -921,7 +927,7 @@ function updateActivePlayerPanel() {
         } else { jailEl.classList.add('hidden'); }
     }
 
-    const house = HOUSING[p.housingLevel];
+    const house = housingDisplayName(p);
     set('apHousingIcon', house.icon); set('apHousingName', house.name);
     renderUpgradeTrack('housingTrack', p.housingLevel, HOUSING.length);
     const car = CARS[p.carLevel];
@@ -1411,9 +1417,7 @@ function handleHouseSpace(player, space) {
         showCardOverlay('🔒','WRONG DEALER','Out of Range',
             `${space.name} only sells levels ${tierRange.min}–${tierRange.max}. Current: level ${player.housingLevel}. Try another housing dealer!`,'bad', () => { endTurn(); }); return;
     }
-    if (nextLvl === 1 && player.carLevel === 0) {
-        showCardOverlay('🚗','NEED A CAR','Car Living Blocked',`${player.name} can't live in a car without owning one! (#10)`,'bad', () => { endTurn(); }); return;
-    }
+    // Cardboard Box (level 1) available to all — no car required
     const lapsNeeded = HOUSING[nextLvl].lapReq || 0;
     if ((player.laps||0) < lapsNeeded) {
         showCardOverlay('🔒','LOCKED',`Lap ${lapsNeeded} Required`,`${player.name} needs Lap ${lapsNeeded} for ${HOUSING[nextLvl].name}.`,'bad', () => { endTurn(); }); return;
@@ -1422,7 +1426,11 @@ function handleHouseSpace(player, space) {
     const next = HOUSING[nextLvl];
     const cost = Math.max(0, next.price - cur.price);
     const rentInfo = next.rent > 0 ? `\nMonthly rent: ${fmt(next.rent)} (due each lap)` : '';
-    showUpgradePopup(`🏠 ${space.name}`, `${player.name}, upgrade:\n${cur.icon} ${cur.name} → ${next.icon} ${next.name}\nCost: ${cost>0?fmt(cost):'FREE!'}${rentInfo}`,
+    // Smart display for level 1: show Car Living if they have a car, else Cardboard Box
+    const nextDisplay = (nextLvl === 1 && player.carLevel >= 2)
+        ? { icon: '🚗', name: 'Car Living' }
+        : { icon: next.icon, name: next.name };
+    showUpgradePopup(`🏠 ${space.name}`, `${player.name}, upgrade:\n${cur.icon} ${cur.name} → ${nextDisplay.icon} ${nextDisplay.name}\nCost: ${cost>0?fmt(cost):'FREE!'}${rentInfo}`,
         'MOVE IN!', () => {
             if (player.money >= cost) {
                 player.money -= cost; player.housingLevel = nextLvl;
