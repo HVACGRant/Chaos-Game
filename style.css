@@ -156,11 +156,11 @@ body {
     overflow: hidden;
 }
 
-/* LEFT COLUMN — skinny as possible */
+/* LEFT COLUMN — wide enough for 2 player cards side by side */
 .left-col {
     display: flex;
     flex-direction: column;
-    width: 100px;
+    width: 200px;
     flex-shrink: 0;
     gap: 4px;
 }
@@ -179,24 +179,25 @@ body {
 }
 .win-goal-display { color: var(--gold); font-size: 0.62em; font-weight: 600; letter-spacing: 0.5px; font-family: 'Oswald', sans-serif; }
 
-.player-info-bar { display: flex; flex-direction: column; gap: 3px; overflow-y: auto; flex: 1; }
+.player-info-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; overflow-y: auto; flex: 1; align-content: start; }
 
 .player-token {
     background: rgba(0,0,0,0.45);
     border: 1px solid var(--navy);
     border-radius: 6px;
-    padding: 4px 5px;
-    font-size: 0.6em;
+    padding: 4px 4px;
+    font-size: 0.56em;
     transition: all 0.3s;
+    min-width: 0;
 }
 .player-token.active-player {
     border-color: var(--red);
     box-shadow: 0 0 8px rgba(233,69,96,0.5);
     background: rgba(233,69,96,0.12);
 }
-.token-row1 { display: flex; align-items: center; gap: 3px; }
-.token-avatar { font-size: 1.4em; }
-.token-name { font-weight: 700; color: var(--green); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60px; }
+.token-row1 { display: flex; align-items: center; gap: 2px; }
+.token-avatar { font-size: 1.5em; }
+.token-name { font-weight: 700; color: var(--green); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 52px; }
 .token-money { color: var(--gold); font-weight: 600; font-size: 0.95em; margin-top: 1px; }
 .token-details { color: var(--grey); font-size: 0.78em; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .token-happy { font-size: 0.75em; margin-top: 1px; }
@@ -572,7 +573,7 @@ body {
         gap: 4px;
     }
     .all-players-label { display: none; }
-    .player-info-bar { flex-direction: row; flex-wrap: nowrap; gap: 4px; overflow-x: auto; }
+    .player-info-bar { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 4px; overflow-x: auto; grid-template-columns: none; }
     .player-token { min-width: 80px; font-size: 0.55em; }
     .center-col { width: 100%; }
     .game-board {
