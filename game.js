@@ -370,63 +370,390 @@ function setupPlayers() {
     gameState.currentSetupPlayer = 0;
     showPlayerSetup();
     showScreen('playerSetupScreen');
+    // Render SVG after screen is visible
+    setTimeout(() => { abUpdateSVG(); abRenderOptions(); }, 50);
 }
-// ── AVATAR BUILDER ────────────────────────────────────────
-const tempSetup = { avatar: '', avatarSlots: { base:'', overlay:'', hat:'', item:'', vibe:'' } };
+// ── SVG AVATAR BUILDER ────────────────────────────────────
+const tempSetup = { avatar: '' };
 
-function abBuild() {
-    const s = tempSetup.avatarSlots;
-    return [s.base, s.overlay, s.hat, s.item, s.vibe].filter(Boolean).join('') || '';
+// Current avatar state
+const AV = {
+    skin:   '#FDBCB4',
+    hairStyle: 'none',
+    hairColor: '#3d2b1f',
+    eyeStyle:  'normal',
+    eyeColor:  '#3d2b1f',
+    browStyle: 'normal',
+    noseStyle: 'normal',
+    mouthStyle:'smile',
+    cheeks:    'none',
+    extras:    'none',
+    bodyColor: '#4a90d9',
+};
+
+const SKIN_TONES = [
+    { label:'Porcelain', val:'#FFE4D6' },
+    { label:'Ivory',     val:'#FDBCB4' },
+    { label:'Beige',     val:'#F5C5A3' },
+    { label:'Sand',      val:'#E8A882' },
+    { label:'Tan',       val:'#D4855A' },
+    { label:'Caramel',   val:'#C06535' },
+    { label:'Cocoa',     val:'#8B4513' },
+    { label:'Espresso',  val:'#4A2006' },
+    { label:'Olive',     val:'#B5956A' },
+    { label:'Golden',    val:'#D4A055' },
+    { label:'Alien Green', val:'#7EC850' },
+    { label:'Robot Grey',  val:'#9E9E9E' },
+    { label:'Undead',      val:'#B0C4A0' },
+    { label:'Deep Blue',   val:'#4A6FA5' },
+    { label:'Purple',      val:'#9B72CF' },
+];
+
+const HAIR_STYLES = {
+    none:     { label:'Bald',       front:'', back:'' },
+    short:    { label:'Short',      back:'<ellipse cx="60" cy="48" rx="34" ry="22" fill="HCOLOR"/>', front:'<path d="M26 62 Q28 42 60 35 Q92 42 94 62 Q90 52 60 48 Q30 52 26 62Z" fill="HCOLOR"/>' },
+    medium:   { label:'Medium',     back:'<ellipse cx="60" cy="50" rx="34" ry="26" fill="HCOLOR"/>', front:'<path d="M26 68 Q24 45 60 34 Q96 45 94 68 Q90 55 60 50 Q30 55 26 68Z" fill="HCOLOR"/><path d="M26 75 Q22 90 26 100 Q30 88 26 75Z" fill="HCOLOR"/><path d="M94 75 Q98 90 94 100 Q90 88 94 75Z" fill="HCOLOR"/>' },
+    long:     { label:'Long',       back:'<ellipse cx="60" cy="52" rx="34" ry="28" fill="HCOLOR"/><rect x="24" y="70" width="12" height="50" rx="6" fill="HCOLOR"/><rect x="84" y="70" width="12" height="50" rx="6" fill="HCOLOR"/>', front:'<path d="M26 70 Q24 45 60 33 Q96 45 94 70 Q90 55 60 48 Q30 55 26 70Z" fill="HCOLOR"/>' },
+    curly:    { label:'Curly',      back:'', front:'<path d="M28 62 Q20 42 40 32 Q30 25 45 28 Q50 15 60 20 Q70 15 75 28 Q90 25 80 32 Q100 42 92 62 Q88 45 72 40 Q65 30 60 35 Q55 30 48 40 Q32 45 28 62Z" fill="HCOLOR"/>' },
+    ponytail: { label:'Ponytail',   back:'<ellipse cx="60" cy="44" rx="32" ry="18" fill="HCOLOR"/><rect x="55" y="30" width="10" height="60" rx="5" fill="HCOLOR"/>', front:'<path d="M28 62 Q26 40 60 33 Q94 40 92 62 Q88 48 60 44 Q32 48 28 62Z" fill="HCOLOR"/>' },
+    mohawk:   { label:'Mohawk',     back:'', front:'<rect x="54" y="16" width="12" height="30" rx="6" fill="HCOLOR"/>' },
+    afro:     { label:'Afro',       back:'', front:'<ellipse cx="60" cy="50" rx="42" ry="30" fill="HCOLOR"/><ellipse cx="60" cy="72" rx="34" ry="16" fill="SKIN"/>' },
+    braids:   { label:'Braids',     back:'<ellipse cx="60" cy="48" rx="34" ry="22" fill="HCOLOR"/>', front:'<path d="M28 65 Q26 42 60 34 Q94 42 92 65 Q88 50 60 45 Q32 50 28 65Z" fill="HCOLOR"/><rect x="44" y="96" width="8" height="40" rx="4" fill="HCOLOR"/><rect x="68" y="96" width="8" height="40" rx="4" fill="HCOLOR"/>' },
+    spiky:    { label:'Spiky',      back:'', front:'<path d="M30 60 L40 30 L50 55 L60 22 L70 55 L80 30 L90 60 Q86 44 60 38 Q34 44 30 60Z" fill="HCOLOR"/>' },
+    bun:      { label:'Bun',        back:'<ellipse cx="60" cy="46" rx="32" ry="18" fill="HCOLOR"/>', front:'<path d="M28 65 Q26 42 60 35 Q94 42 92 65 Q88 50 60 46 Q32 50 28 65Z" fill="HCOLOR"/><circle cx="60" cy="30" r="12" fill="HCOLOR"/>' },
+};
+
+const HAIR_COLORS = [
+    { label:'Black',    val:'#1a1a1a' },
+    { label:'Dark Brown',val:'#3d2b1f' },
+    { label:'Brown',    val:'#7B4F2E' },
+    { label:'Auburn',   val:'#922B21' },
+    { label:'Red',      val:'#C0392B' },
+    { label:'Strawberry',val:'#E8735A' },
+    { label:'Blonde',   val:'#F0D060' },
+    { label:'Platinum', val:'#F5F0DC' },
+    { label:'Grey',     val:'#9E9E9E' },
+    { label:'White',    val:'#F5F5F5' },
+    { label:'Blue',     val:'#2980B9' },
+    { label:'Purple',   val:'#8E44AD' },
+    { label:'Pink',     val:'#E91E8C' },
+    { label:'Green',    val:'#27AE60' },
+    { label:'Orange',   val:'#E67E22' },
+];
+
+const EYE_STYLES = {
+    normal:   { label:'Round',    svg: '<ellipse cx="46" cy="68" rx="7" ry="8" fill="white"/><ellipse cx="74" cy="68" rx="7" ry="8" fill="white"/><circle cx="47" cy="69" r="4" fill="ECOLOR"/><circle cx="75" cy="69" r="4" fill="ECOLOR"/><circle cx="48" cy="68" r="1.5" fill="white"/><circle cx="76" cy="68" r="1.5" fill="white"/>' },
+    almond:   { label:'Almond',   svg: '<path d="M38 68 Q46 60 54 68 Q46 76 38 68Z" fill="white"/><path d="M66 68 Q74 60 82 68 Q74 76 66 68Z" fill="white"/><circle cx="47" cy="68" r="3.5" fill="ECOLOR"/><circle cx="75" cy="68" r="3.5" fill="ECOLOR"/><circle cx="48" cy="67" r="1.2" fill="white"/><circle cx="76" cy="67" r="1.2" fill="white"/>' },
+    wide:     { label:'Wide',     svg: '<circle cx="46" cy="68" r="9" fill="white"/><circle cx="74" cy="68" r="9" fill="white"/><circle cx="47" cy="69" r="5" fill="ECOLOR"/><circle cx="75" cy="69" r="5" fill="ECOLOR"/><circle cx="49" cy="67" r="2" fill="white"/><circle cx="77" cy="67" r="2" fill="white"/>' },
+    sleepy:   { label:'Sleepy',   svg: '<path d="M38 70 Q46 60 54 70" stroke="white" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M66 70 Q74 60 82 70" stroke="white" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="47" cy="68" r="3" fill="ECOLOR"/><circle cx="75" cy="68" r="3" fill="ECOLOR"/>' },
+    wink:     { label:'Wink',     svg: '<ellipse cx="46" cy="68" rx="7" ry="8" fill="white"/><circle cx="47" cy="69" r="4" fill="ECOLOR"/><circle cx="48" cy="68" r="1.5" fill="white"/><path d="M67 68 Q74 62 81 68" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/>' },
+    angry:    { label:'Angry',    svg: '<ellipse cx="46" cy="70" rx="7" ry="7" fill="white"/><ellipse cx="74" cy="70" rx="7" ry="7" fill="white"/><circle cx="47" cy="71" r="4" fill="ECOLOR"/><circle cx="75" cy="71" r="4" fill="ECOLOR"/>' },
+    star:     { label:'Star',     svg: '<text x="38" y="76" font-size="14" fill="ECOLOR">★</text><text x="66" y="76" font-size="14" fill="ECOLOR">★</text>' },
+    heart:    { label:'Heart ♥',  svg: '<text x="38" y="76" font-size="13" fill="#e91e63">♥</text><text x="66" y="76" font-size="13" fill="#e91e63">♥</text>' },
+};
+
+const EYE_COLORS = [
+    { label:'Dark Brown', val:'#3d2b1f' }, { label:'Brown', val:'#7B4F2E' },
+    { label:'Hazel',      val:'#8B7355' }, { label:'Green',  val:'#2d7a2d' },
+    { label:'Teal',       val:'#008080' }, { label:'Blue',   val:'#1565C0' },
+    { label:'Ice Blue',   val:'#7EC8E3' }, { label:'Grey',   val:'#607D8B' },
+    { label:'Purple',     val:'#6A1B9A' }, { label:'Red',    val:'#C62828' },
+    { label:'Gold',       val:'#F57F17' }, { label:'Black',  val:'#111' },
+];
+
+const BROW_STYLES = {
+    normal:  { label:'Normal',  svg:'<path d="M39 59 Q46 55 53 59" stroke="HCOLOR" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M67 59 Q74 55 81 59" stroke="HCOLOR" stroke-width="2.5" fill="none" stroke-linecap="round"/>' },
+    thick:   { label:'Thick',   svg:'<path d="M38 59 Q46 54 54 59" stroke="HCOLOR" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M66 59 Q74 54 82 59" stroke="HCOLOR" stroke-width="4" fill="none" stroke-linecap="round"/>' },
+    thin:    { label:'Thin',    svg:'<path d="M40 59 Q46 56 52 59" stroke="HCOLOR" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M68 59 Q74 56 80 59" stroke="HCOLOR" stroke-width="1.5" fill="none" stroke-linecap="round"/>' },
+    arched:  { label:'Arched',  svg:'<path d="M39 61 Q46 53 53 59" stroke="HCOLOR" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M67 61 Q74 53 81 59" stroke="HCOLOR" stroke-width="2.5" fill="none" stroke-linecap="round"/>' },
+    angry:   { label:'Angry',   svg:'<path d="M39 57 Q46 61 53 58" stroke="HCOLOR" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M67 58 Q74 61 81 57" stroke="HCOLOR" stroke-width="3" fill="none" stroke-linecap="round"/>' },
+    raised:  { label:'Raised',  svg:'<path d="M39 56 Q46 52 53 55" stroke="HCOLOR" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M67 56 Q74 52 81 55" stroke="HCOLOR" stroke-width="2.5" fill="none" stroke-linecap="round"/>' },
+    none:    { label:'None',    svg:'' },
+};
+
+const NOSE_STYLES = {
+    normal:  { label:'Normal',   svg:'<path d="M57 72 Q55 82 52 84 Q60 87 68 84 Q65 82 63 72" stroke="SHADOW" stroke-width="1.5" fill="none" stroke-linecap="round"/>' },
+    button:  { label:'Button',   svg:'<circle cx="60" cy="82" r="4" fill="SHADOW" opacity="0.4"/><circle cx="57" cy="83" r="1.5" fill="SHADOW" opacity="0.6"/><circle cx="63" cy="83" r="1.5" fill="SHADOW" opacity="0.6"/>' },
+    wide:    { label:'Wide',     svg:'<path d="M53 74 Q50 84 49 86 Q60 90 71 86 Q70 84 67 74" stroke="SHADOW" stroke-width="2" fill="none" stroke-linecap="round"/>' },
+    narrow:  { label:'Narrow',   svg:'<path d="M59 72 Q58 82 57 84 Q60 86 63 84 Q62 82 61 72" stroke="SHADOW" stroke-width="1.5" fill="none" stroke-linecap="round"/>' },
+    pig:     { label:'Pig 🐷',   svg:'<ellipse cx="60" cy="83" rx="8" ry="5" fill="SHADOW" opacity="0.5"/><circle cx="57" cy="83" r="2" fill="SHADOW" opacity="0.7"/><circle cx="63" cy="83" r="2" fill="SHADOW" opacity="0.7"/>' },
+    none:    { label:'None',     svg:'' },
+};
+
+const MOUTH_STYLES = {
+    smile:   { label:'Smile',    svg:'<path d="M48 95 Q60 103 72 95" stroke="#c0605a" stroke-width="2.5" fill="none" stroke-linecap="round"/>' },
+    bigsmile:{ label:'Big Smile',svg:'<path d="M46 93 Q60 108 74 93" stroke="#c0605a" stroke-width="2.5" fill="#e07070" stroke-linecap="round"/><path d="M50 100 Q60 108 70 100" fill="white"/>' },
+    neutral: { label:'Neutral',  svg:'<line x1="50" y1="97" x2="70" y2="97" stroke="#c0605a" stroke-width="2.5" stroke-linecap="round"/>' },
+    frown:   { label:'Frown',    svg:'<path d="M48 100 Q60 92 72 100" stroke="#c0605a" stroke-width="2.5" fill="none" stroke-linecap="round"/>' },
+    smirk:   { label:'Smirk',   svg:'<path d="M50 97 Q58 102 70 95" stroke="#c0605a" stroke-width="2.5" fill="none" stroke-linecap="round"/>' },
+    open:    { label:'Open',     svg:'<ellipse cx="60" cy="97" rx="10" ry="6" fill="#c0605a"/><ellipse cx="60" cy="96" rx="8" ry="4" fill="white"/><ellipse cx="60" cy="98" rx="8" ry="3" fill="#e07070"/>' },
+    teeth:   { label:'Grin',     svg:'<path d="M48 95 Q60 105 72 95 Q60 102 48 95Z" fill="#c0605a"/><rect x="50" y="97" width="20" height="5" rx="1" fill="white"/>' },
+    tongue:  { label:'Silly',    svg:'<path d="M48 95 Q60 105 72 95" stroke="#c0605a" stroke-width="2" fill="#e07070"/><ellipse cx="60" cy="102" rx="6" ry="5" fill="#e84393"/>' },
+};
+
+const CHEEK_STYLES = {
+    none:    { label:'None',     svg:'' },
+    rosy:    { label:'Rosy',     svg:'<ellipse cx="30" cy="82" rx="8" ry="5" fill="#FFB6C1" opacity="0.6"/><ellipse cx="90" cy="82" rx="8" ry="5" fill="#FFB6C1" opacity="0.6"/>' },
+    freckles:{ label:'Freckles', svg:'<circle cx="34" cy="80" r="1.5" fill="#c07040" opacity="0.7"/><circle cx="40" cy="84" r="1.5" fill="#c07040" opacity="0.7"/><circle cx="37" cy="78" r="1" fill="#c07040" opacity="0.7"/><circle cx="80" cy="80" r="1.5" fill="#c07040" opacity="0.7"/><circle cx="86" cy="84" r="1.5" fill="#c07040" opacity="0.7"/><circle cx="83" cy="78" r="1" fill="#c07040" opacity="0.7"/>' },
+    blush:   { label:'Blush',    svg:'<ellipse cx="28" cy="82" rx="10" ry="6" fill="#FF8C94" opacity="0.4"/><ellipse cx="92" cy="82" rx="10" ry="6" fill="#FF8C94" opacity="0.4"/>' },
+    stars:   { label:'Stars ✨', svg:'<text x="22" y="84" font-size="10" opacity="0.8">✨</text><text x="83" y="84" font-size="10" opacity="0.8">✨</text>' },
+    tears:   { label:'Tears',    svg:'<path d="M40 76 Q38 84 36 90" stroke="#87CEEB" stroke-width="2" fill="none"/><path d="M80 76 Q82 84 84 90" stroke="#87CEEB" stroke-width="2" fill="none"/>' },
+};
+
+const EXTRAS_STYLES = {
+    none:      { label:'None',        svg:'' },
+    glasses:   { label:'Glasses',     svg:'<circle cx="46" cy="68" r="10" stroke="#333" stroke-width="2" fill="none" opacity="0.7"/><circle cx="74" cy="68" r="10" stroke="#333" stroke-width="2" fill="none" opacity="0.7"/><line x1="56" y1="68" x2="64" y2="68" stroke="#333" stroke-width="2"/><line x1="26" y1="65" x2="36" y2="67" stroke="#333" stroke-width="2"/><line x1="84" y1="67" x2="94" y2="65" stroke="#333" stroke-width="2"/>' },
+    sunglasses:{ label:'Sunglasses',  svg:'<rect x="32" y="62" width="24" height="14" rx="7" fill="#1a1a1a" opacity="0.85"/><rect x="64" y="62" width="24" height="14" rx="7" fill="#1a1a1a" opacity="0.85"/><line x1="56" y1="68" x2="64" y2="68" stroke="#555" stroke-width="2"/><line x1="26" y1="64" x2="32" y2="66" stroke="#555" stroke-width="2"/><line x1="88" y1="66" x2="94" y2="64" stroke="#555" stroke-width="2"/>' },
+    monocle:   { label:'Monocle',     svg:'<circle cx="74" cy="68" r="10" stroke="#B8860B" stroke-width="2.5" fill="none"/><line x1="84" y1="75" x2="90" y2="90" stroke="#B8860B" stroke-width="1.5"/>' },
+    cowhat:    { label:'Cowboy Hat',  svg:'<ellipse cx="60" cy="45" rx="42" ry="6" fill="#8B4513"/><rect x="30" y="20" width="60" height="28" rx="12" fill="#8B4513"/><rect x="30" y="43" width="60" height="5" rx="2" fill="#6B3410"/>' },
+    tophat:    { label:'Top Hat',     svg:'<rect x="36" y="10" width="48" height="40" rx="4" fill="#1a1a1a"/><rect x="24" y="46" width="72" height="8" rx="4" fill="#1a1a1a"/>' },
+    crown:     { label:'Crown 👑',    svg:'<path d="M24 50 L36 28 L60 42 L84 28 L96 50 L80 44 L60 50 L40 44Z" fill="#FFD700"/><circle cx="36" cy="30" r="4" fill="#FF4444"/><circle cx="60" cy="44" r="4" fill="#4444FF"/><circle cx="84" cy="30" r="4" fill="#44FF44"/>' },
+    beanie:    { label:'Beanie',      svg:'<ellipse cx="60" cy="50" rx="36" ry="20" fill="#E53935"/><rect x="24" y="46" width="72" height="12" rx="6" fill="#C62828"/><circle cx="60" cy="32" r="8" fill="#FF8A80"/>' },
+    halo:      { label:'Halo',        svg:'<ellipse cx="60" cy="26" rx="26" ry="6" fill="none" stroke="#FFD700" stroke-width="4" opacity="0.9"/>' },
+    horns:     { label:'Horns 😈',    svg:'<path d="M34 44 L28 16 L44 36Z" fill="#8B0000"/><path d="M86 44 L92 16 L76 36Z" fill="#8B0000"/>' },
+    headband:  { label:'Headband',    svg:'<rect x="24" y="52" width="72" height="10" rx="5" fill="#E91E63"/><circle cx="60" cy="52" r="7" fill="#FF80AB"/>' },
+    bandana:   { label:'Bandana',     svg:'<path d="M26 65 Q60 80 94 65 Q94 75 60 85 Q26 75 26 65Z" fill="#E53935" opacity="0.85"/>' },
+    piercings: { label:'Piercings',   svg:'<circle cx="22" cy="78" r="3" fill="#C0C0C0"/><circle cx="98" cy="78" r="3" fill="#C0C0C0"/><circle cx="60" cy="90" r="2" fill="#C0C0C0"/>' },
+};
+
+const BODY_COLORS = [
+    { label:'Blue',      val:'#4a90d9' }, { label:'Red',      val:'#e74c3c' },
+    { label:'Green',     val:'#27ae60' }, { label:'Purple',   val:'#8e44ad' },
+    { label:'Orange',    val:'#e67e22' }, { label:'Pink',     val:'#e91e8c' },
+    { label:'Black',     val:'#1a1a1a' }, { label:'White',    val:'#ecf0f1' },
+    { label:'Gold',      val:'#f39c12' }, { label:'Teal',     val:'#16a085' },
+    { label:'Navy',      val:'#2c3e50' }, { label:'Grey',     val:'#7f8c8d' },
+];
+
+// Current active category
+let abCurrentCat = 'skin';
+
+function abSwitchCat(tabEl) {
+    abCurrentCat = tabEl.dataset.cat;
+    document.querySelectorAll('.ab-tab').forEach(t => t.classList.remove('active'));
+    tabEl.classList.add('active');
+    abRenderOptions();
 }
 
-function abRefresh() {
-    const built = abBuild();
-    const preview = document.getElementById('abPreview');
-    if (preview) preview.textContent = built || '❓';
-    tempSetup.avatar = built;
-    // Update slot display labels
-    const s = tempSetup.avatarSlots;
-    ['base','overlay','hat','item','vibe'].forEach(k => {
-        const el = document.getElementById('sl-' + k);
-        if (el) el.textContent = s[k] || '—';
+function abRenderOptions() {
+    const grid = document.getElementById('abOptions');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    if (abCurrentCat === 'skin') {
+        SKIN_TONES.forEach(s => {
+            const btn = document.createElement('button');
+            btn.className = 'ab-swatch' + (AV.skin === s.val ? ' sel' : '');
+            btn.style.background = s.val;
+            btn.title = s.label;
+            btn.onclick = () => { AV.skin = s.val; abUpdateSVG(); abRenderOptions(); };
+            grid.appendChild(btn);
+        });
+    } else if (abCurrentCat === 'hair') {
+        // Hair styles
+        const styleLabel = document.createElement('div');
+        styleLabel.className = 'ab-opt-label';
+        styleLabel.textContent = 'Style';
+        grid.appendChild(styleLabel);
+        const styleRow = document.createElement('div');
+        styleRow.className = 'ab-opt-row';
+        Object.entries(HAIR_STYLES).forEach(([key, hs]) => {
+            const btn = document.createElement('button');
+            btn.className = 'ab-opt-btn' + (AV.hairStyle === key ? ' sel' : '');
+            btn.textContent = hs.label;
+            btn.onclick = () => { AV.hairStyle = key; abUpdateSVG(); abRenderOptions(); };
+            styleRow.appendChild(btn);
+        });
+        grid.appendChild(styleRow);
+        // Hair colors
+        const colLabel = document.createElement('div');
+        colLabel.className = 'ab-opt-label';
+        colLabel.textContent = 'Color';
+        grid.appendChild(colLabel);
+        const colRow = document.createElement('div');
+        colRow.className = 'ab-swatch-row';
+        HAIR_COLORS.forEach(c => {
+            const btn = document.createElement('button');
+            btn.className = 'ab-swatch sm' + (AV.hairColor === c.val ? ' sel' : '');
+            btn.style.background = c.val;
+            btn.title = c.label;
+            btn.onclick = () => { AV.hairColor = c.val; abUpdateSVG(); abRenderOptions(); };
+            colRow.appendChild(btn);
+        });
+        grid.appendChild(colRow);
+    } else if (abCurrentCat === 'eyes') {
+        const styleLabel = document.createElement('div');
+        styleLabel.className = 'ab-opt-label';
+        styleLabel.textContent = 'Style';
+        grid.appendChild(styleLabel);
+        const styleRow = document.createElement('div');
+        styleRow.className = 'ab-opt-row';
+        Object.entries(EYE_STYLES).forEach(([key, es]) => {
+            const btn = document.createElement('button');
+            btn.className = 'ab-opt-btn' + (AV.eyeStyle === key ? ' sel' : '');
+            btn.textContent = es.label;
+            btn.onclick = () => { AV.eyeStyle = key; abUpdateSVG(); abRenderOptions(); };
+            styleRow.appendChild(btn);
+        });
+        grid.appendChild(styleRow);
+        const colLabel = document.createElement('div');
+        colLabel.className = 'ab-opt-label';
+        colLabel.textContent = 'Color';
+        grid.appendChild(colLabel);
+        const colRow = document.createElement('div');
+        colRow.className = 'ab-swatch-row';
+        EYE_COLORS.forEach(c => {
+            const btn = document.createElement('button');
+            btn.className = 'ab-swatch sm' + (AV.eyeColor === c.val ? ' sel' : '');
+            btn.style.background = c.val;
+            btn.title = c.label;
+            btn.onclick = () => { AV.eyeColor = c.val; abUpdateSVG(); abRenderOptions(); };
+            colRow.appendChild(btn);
+        });
+        grid.appendChild(colRow);
+    } else if (abCurrentCat === 'brows') {
+        abRenderStylePicker(grid, BROW_STYLES, 'browStyle');
+    } else if (abCurrentCat === 'nose') {
+        abRenderStylePicker(grid, NOSE_STYLES, 'noseStyle');
+    } else if (abCurrentCat === 'mouth') {
+        abRenderStylePicker(grid, MOUTH_STYLES, 'mouthStyle');
+    } else if (abCurrentCat === 'cheeks') {
+        abRenderStylePicker(grid, CHEEK_STYLES, 'cheeks');
+    } else if (abCurrentCat === 'extras') {
+        abRenderStylePicker(grid, EXTRAS_STYLES, 'extras');
+    } else if (abCurrentCat === 'body') {
+        BODY_COLORS.forEach(c => {
+            const btn = document.createElement('button');
+            btn.className = 'ab-swatch' + (AV.bodyColor === c.val ? ' sel' : '');
+            btn.style.background = c.val;
+            btn.title = c.label;
+            btn.onclick = () => { AV.bodyColor = c.val; abUpdateSVG(); abRenderOptions(); };
+            grid.appendChild(btn);
+        });
+    }
+}
+
+function abRenderStylePicker(grid, styleMap, avKey) {
+    const row = document.createElement('div');
+    row.className = 'ab-opt-row';
+    Object.entries(styleMap).forEach(([key, s]) => {
+        const btn = document.createElement('button');
+        btn.className = 'ab-opt-btn' + (AV[avKey] === key ? ' sel' : '');
+        btn.textContent = s.label;
+        btn.onclick = () => { AV[avKey] = key; abUpdateSVG(); abRenderOptions(); };
+        row.appendChild(btn);
     });
+    grid.appendChild(row);
 }
 
-function abPick(slot, emoji) {
-    const s = tempSetup.avatarSlots;
-    // Toggle off if same picked again
-    s[slot] = (s[slot] === emoji) ? '' : emoji;
-    // Update selected highlights — only same slot buttons
-    document.querySelectorAll('.ab-e[data-slot="' + slot + '"]').forEach(b => {
-        b.classList.toggle('sel', b.dataset.emoji === s[slot] && s[slot] !== '');
+function abUpdateSVG() {
+    const svg = document.getElementById('avatarSVG');
+    if (!svg) return;
+
+    const skin  = AV.skin;
+    const hair  = AV.hairColor;
+    // Shadow color = slightly darker skin
+    const shadow = shadeColor(skin, -30);
+
+    // Skin-colored elements
+    ['svgHead','svgNeck','svgEarL','svgEarR'].forEach(id => {
+        const el = svg.getElementById(id);
+        if (el) el.setAttribute('fill', skin);
     });
-    abRefresh();
+
+    // Body color
+    const body = svg.getElementById('svgBody');
+    if (body) body.setAttribute('fill', AV.bodyColor);
+
+    // Hair back
+    const hb = svg.getElementById('svgHairBack');
+    const hs = HAIR_STYLES[AV.hairStyle] || HAIR_STYLES.none;
+    if (hb) hb.innerHTML = hs.back.replace(/HCOLOR/g, hair).replace(/SKIN/g, skin);
+
+    // Hair front
+    const hf = svg.getElementById('svgHairFront');
+    if (hf) hf.innerHTML = hs.front.replace(/HCOLOR/g, hair).replace(/SKIN/g, skin);
+
+    // Eyes
+    const eyeEl = svg.getElementById('svgEyes');
+    const es = EYE_STYLES[AV.eyeStyle] || EYE_STYLES.normal;
+    if (eyeEl) eyeEl.innerHTML = es.svg.replace(/ECOLOR/g, AV.eyeColor);
+
+    // Eyebrows
+    const browEl = svg.getElementById('svgBrows');
+    const bs = BROW_STYLES[AV.browStyle] || BROW_STYLES.normal;
+    if (browEl) browEl.innerHTML = bs.svg.replace(/HCOLOR/g, hair);
+
+    // Nose
+    const noseEl = svg.getElementById('svgNose');
+    const ns = NOSE_STYLES[AV.noseStyle] || NOSE_STYLES.normal;
+    if (noseEl) noseEl.innerHTML = ns.svg.replace(/SHADOW/g, shadow);
+
+    // Mouth
+    const mouthEl = svg.getElementById('svgMouth');
+    const ms = MOUTH_STYLES[AV.mouthStyle] || MOUTH_STYLES.smile;
+    if (mouthEl) mouthEl.innerHTML = ms.svg;
+
+    // Cheeks
+    const cheekEl = svg.getElementById('svgCheeks');
+    const cs = CHEEK_STYLES[AV.cheeks] || CHEEK_STYLES.none;
+    if (cheekEl) cheekEl.innerHTML = cs.svg;
+
+    // Extras
+    const extEl = svg.getElementById('svgExtras');
+    const xs = EXTRAS_STYLES[AV.extras] || EXTRAS_STYLES.none;
+    if (extEl) extEl.innerHTML = xs.svg;
+
+    // Serialize SVG to use as avatar string
+    tempSetup.avatar = new XMLSerializer().serializeToString(svg);
 }
 
-function abClear(slot) {
-    tempSetup.avatarSlots[slot] = '';
-    document.querySelectorAll('.ab-e[data-slot="' + slot + '"]').forEach(b => b.classList.remove('sel'));
-    abRefresh();
+function shadeColor(hex, amt) {
+    // Simple hex shade
+    let r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    r = Math.max(0,Math.min(255,r+amt));
+    g = Math.max(0,Math.min(255,g+amt));
+    b = Math.max(0,Math.min(255,b+amt));
+    return '#' + [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+
+// Render avatar — handles both SVG string and plain emoji
+function renderAvatar(container, avatarStr, sizePx) {
+    if (!avatarStr) { container.textContent = '❓'; return; }
+    if (avatarStr.startsWith('<svg') || avatarStr.startsWith('<?xml')) {
+        container.innerHTML = avatarStr;
+        const svg = container.querySelector('svg');
+        if (svg) { svg.setAttribute('width', sizePx); svg.setAttribute('height', Math.round(sizePx*1.17)); }
+    } else {
+        container.textContent = avatarStr;
+    }
 }
 
 function abReset() {
-    const s = tempSetup.avatarSlots;
-    Object.keys(s).forEach(k => s[k] = '');
-    tempSetup.avatar = '';
-    document.querySelectorAll('.ab-e').forEach(b => b.classList.remove('sel'));
-    abRefresh();
+    AV.skin = '#FDBCB4'; AV.hairStyle = 'none'; AV.hairColor = '#3d2b1f';
+    AV.eyeStyle = 'normal'; AV.eyeColor = '#3d2b1f'; AV.browStyle = 'normal';
+    AV.noseStyle = 'normal'; AV.mouthStyle = 'smile'; AV.cheeks = 'none';
+    AV.extras = 'none'; AV.bodyColor = '#4a90d9';
+    abUpdateSVG();
+    abRenderOptions();
 }
 
 function showPlayerSetup() {
     const idx = gameState.currentSetupPlayer;
     document.getElementById('playerSetupTitle').textContent = `Player ${idx+1} Setup`;
     document.getElementById('playerName').value = '';
+    // Reset first tab
+    abCurrentCat = 'skin';
+    document.querySelectorAll('.ab-tab').forEach((t,i) => t.classList.toggle('active', i===0));
     abReset();
     document.getElementById('nextPlayerBtn').textContent =
         idx === gameState.numPlayers-1 ? 'START CHAOS!' : 'NEXT PLAYER';
 }
 
 function selectAvatar(emoji) { tempSetup.avatar = emoji; }
+
+
 
 function nextPlayer() {
     const name = document.getElementById('playerName').value.trim();
@@ -449,7 +776,7 @@ function nextPlayer() {
     });
     gameState.currentSetupPlayer++;
     if (gameState.currentSetupPlayer >= gameState.numPlayers) startGame();
-    else showPlayerSetup();
+    else { showPlayerSetup(); setTimeout(() => { abUpdateSVG(); abRenderOptions(); }, 50); }
 }
 
 // ── START GAME ────────────────────────────────────────────
@@ -505,8 +832,8 @@ function updatePlayerPieces() {
         if (el) {
             const span = document.createElement('span');
             span.className = 'space-piece';
-            span.textContent = p.avatar;
             span.title = p.name;
+            renderAvatar(span, p.avatar, 36);
             el.appendChild(span);
         }
     });
@@ -524,7 +851,7 @@ function renderPlayerBar() {
         div.className = `player-token ${i===gameState.currentPlayerIndex?'active-player':''}`;
         div.innerHTML = `
             <div class="token-row1">
-                <span class="token-avatar">${p.avatar}</span>
+                <span class="token-avatar" data-av="${p.id}"></span>
                 <span class="token-name">${p.name}</span>
             </div>
             <div class="token-money">${fmt(p.money)}</div>
@@ -538,6 +865,9 @@ function renderPlayerBar() {
             ${p.inJail?`<div class="token-jail">⛓️ JAIL (${p.jailReason})</div>`:''}
         `;
         bar.appendChild(div);
+        // Render SVG avatar after div is in DOM
+        const avEl = div.querySelector('.token-avatar');
+        if (avEl) renderAvatar(avEl, p.avatar, 28);
     });
     updateActivePlayerPanel();
 }
@@ -548,7 +878,7 @@ function updateActivePlayerPanel() {
     const p = gameState.players[gameState.currentPlayerIndex];
     if (!p) return;
     const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
-    set('apAvatar', p.avatar);
+    const apAvEl = document.getElementById('apAvatar'); if(apAvEl) renderAvatar(apAvEl, p.avatar, 60);
     set('apName', p.name);
     set('apMoney', fmt(p.money));
     set('apJob', '💼 ' + p.job + ' | ' + fmt(p.jobPay));
@@ -1497,7 +1827,7 @@ function showWin(player) {
         ws.innerHTML=`<div class="win-content"><h1>🏆 WINNER! 🏆</h1><div id="winnerAvatar" style="font-size:5em"></div><div id="winnerName" style="font-size:2em;color:#4ecca3;margin:10px 0"></div><div class="win-stats" id="winStats"></div><button class="btn" onclick="location.reload()">PLAY AGAIN!</button></div>`;
         document.body.appendChild(ws);
     }
-    document.getElementById('winnerAvatar').textContent=player.avatar;
+    renderAvatar(document.getElementById('winnerAvatar'), player.avatar, 80);
     document.getElementById('winnerName').textContent=`${player.name} WON!`;
     document.getElementById('winStats').innerHTML=`
         <div class="win-stat"><div class="win-stat-label">Final Money</div><div class="win-stat-value">${fmt(player.money)}</div></div>
@@ -1513,7 +1843,7 @@ function showGameOver(player) {
         ws.innerHTML=`<div class="win-content" style="border-color:#e94560;box-shadow:0 0 50px rgba(233,69,96,0.5)"><h1 style="color:#e94560">🚔 GAME OVER 🚔</h1><div id="winnerAvatar" style="font-size:5em"></div><div id="winnerName" style="font-size:2em;color:#e94560;margin:10px 0"></div><p style="color:#a8a8b3">Rotting in prison. Better luck next time!</p><button class="btn" onclick="location.reload()">TRY AGAIN!</button></div>`;
         document.body.appendChild(ws);
     }
-    document.getElementById('winnerAvatar').textContent=player.avatar;
+    renderAvatar(document.getElementById('winnerAvatar'), player.avatar, 80);
     document.getElementById('winnerName').textContent=`${player.name} is done!`;
     showScreen('winScreen');
 }
