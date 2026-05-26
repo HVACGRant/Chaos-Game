@@ -410,17 +410,37 @@ const SKIN_TONES = [
 ];
 
 const HAIR_STYLES = {
-    none:     { label:'Bald',       front:'', back:'' },
-    short:    { label:'Short',      back:'<ellipse cx="60" cy="48" rx="34" ry="22" fill="HCOLOR"/>', front:'<path d="M26 62 Q28 42 60 35 Q92 42 94 62 Q90 52 60 48 Q30 52 26 62Z" fill="HCOLOR"/>' },
-    medium:   { label:'Medium',     back:'<ellipse cx="60" cy="50" rx="34" ry="26" fill="HCOLOR"/>', front:'<path d="M26 68 Q24 45 60 34 Q96 45 94 68 Q90 55 60 50 Q30 55 26 68Z" fill="HCOLOR"/><path d="M26 75 Q22 90 26 100 Q30 88 26 75Z" fill="HCOLOR"/><path d="M94 75 Q98 90 94 100 Q90 88 94 75Z" fill="HCOLOR"/>' },
-    long:     { label:'Long',       back:'<ellipse cx="60" cy="52" rx="34" ry="28" fill="HCOLOR"/><rect x="24" y="70" width="12" height="50" rx="6" fill="HCOLOR"/><rect x="84" y="70" width="12" height="50" rx="6" fill="HCOLOR"/>', front:'<path d="M26 70 Q24 45 60 33 Q96 45 94 70 Q90 55 60 48 Q30 55 26 70Z" fill="HCOLOR"/>' },
-    curly:    { label:'Curly',      back:'', front:'<path d="M28 62 Q20 42 40 32 Q30 25 45 28 Q50 15 60 20 Q70 15 75 28 Q90 25 80 32 Q100 42 92 62 Q88 45 72 40 Q65 30 60 35 Q55 30 48 40 Q32 45 28 62Z" fill="HCOLOR"/>' },
-    ponytail: { label:'Ponytail',   back:'<ellipse cx="60" cy="44" rx="32" ry="18" fill="HCOLOR"/><rect x="55" y="30" width="10" height="60" rx="5" fill="HCOLOR"/>', front:'<path d="M28 62 Q26 40 60 33 Q94 40 92 62 Q88 48 60 44 Q32 48 28 62Z" fill="HCOLOR"/>' },
-    mohawk:   { label:'Mohawk',     back:'', front:'<rect x="54" y="16" width="12" height="30" rx="6" fill="HCOLOR"/>' },
-    afro:     { label:'Afro',       back:'', front:'<ellipse cx="60" cy="50" rx="42" ry="30" fill="HCOLOR"/><ellipse cx="60" cy="72" rx="34" ry="16" fill="SKIN"/>' },
-    braids:   { label:'Braids',     back:'<ellipse cx="60" cy="48" rx="34" ry="22" fill="HCOLOR"/>', front:'<path d="M28 65 Q26 42 60 34 Q94 42 92 65 Q88 50 60 45 Q32 50 28 65Z" fill="HCOLOR"/><rect x="44" y="96" width="8" height="40" rx="4" fill="HCOLOR"/><rect x="68" y="96" width="8" height="40" rx="4" fill="HCOLOR"/>' },
-    spiky:    { label:'Spiky',      back:'', front:'<path d="M30 60 L40 30 L50 55 L60 22 L70 55 L80 30 L90 60 Q86 44 60 38 Q34 44 30 60Z" fill="HCOLOR"/>' },
-    bun:      { label:'Bun',        back:'<ellipse cx="60" cy="46" rx="32" ry="18" fill="HCOLOR"/>', front:'<path d="M28 65 Q26 42 60 35 Q94 42 92 65 Q88 50 60 46 Q32 50 28 65Z" fill="HCOLOR"/><circle cx="60" cy="30" r="12" fill="HCOLOR"/>' },
+    none:     { label:'Bald',      back:'', front:'' },
+    // Short: tight cap on top, barely past ears
+    short:    { label:'Short',     back:'<ellipse cx="60" cy="44" rx="35" ry="20" fill="HCOLOR"/>',
+                                   front:'<path d="M25 70 Q25 42 60 33 Q95 42 95 70 Q90 58 60 52 Q30 58 25 70Z" fill="HCOLOR" clip-path="url(#hairFrontClip)"/>' },
+    // Medium: flows down sides but clipped at forehead
+    medium:   { label:'Medium',    back:'<ellipse cx="60" cy="46" rx="35" ry="24" fill="HCOLOR"/><rect x="22" y="68" width="13" height="36" rx="6" fill="HCOLOR"/><rect x="85" y="68" width="13" height="36" rx="6" fill="HCOLOR"/>',
+                                   front:'<path d="M25 68 Q25 40 60 32 Q95 40 95 68 Q90 55 60 49 Q30 55 25 68Z" fill="HCOLOR" clip-path="url(#hairFrontClip)"/>' },
+    // Long: long sides flowing down
+    long:     { label:'Long',      back:'<ellipse cx="60" cy="48" rx="35" ry="26" fill="HCOLOR"/><rect x="20" y="68" width="14" height="62" rx="7" fill="HCOLOR"/><rect x="86" y="68" width="14" height="62" rx="7" fill="HCOLOR"/>',
+                                   front:'<path d="M25 66 Q25 38 60 30 Q95 38 95 66 Q90 53 60 47 Q30 53 25 66Z" fill="HCOLOR" clip-path="url(#hairFrontClip)"/>' },
+    // Curly: fluffy cloud on top
+    curly:    { label:'Curly',     back:'',
+                                   front:'<path d="M25 60 Q20 38 40 28 Q30 20 48 25 Q50 12 60 16 Q70 12 72 25 Q90 20 80 28 Q100 38 95 60 Q88 44 74 38 Q68 26 60 30 Q52 26 46 38 Q32 44 25 60Z" fill="HCOLOR" clip-path="url(#hairFrontClip)"/>' },
+    // Ponytail: top cap + ponytail at back
+    ponytail: { label:'Ponytail',  back:'<ellipse cx="60" cy="42" rx="33" ry="18" fill="HCOLOR"/><rect x="54" y="28" width="12" height="65" rx="6" fill="HCOLOR"/>',
+                                   front:'<path d="M27 65 Q27 40 60 32 Q93 40 93 65 Q88 52 60 46 Q32 52 27 65Z" fill="HCOLOR" clip-path="url(#hairFrontClip)"/>' },
+    // Mohawk: strip down center top only
+    mohawk:   { label:'Mohawk',    back:'',
+                                   front:'<rect x="53" y="10" width="14" height="36" rx="7" fill="HCOLOR"/>' },
+    // Afro: big round puff, clipped below forehead
+    afro:     { label:'Afro',      back:'<ellipse cx="60" cy="46" rx="44" ry="32" fill="HCOLOR"/>',
+                                   front:'<ellipse cx="60" cy="46" rx="44" ry="32" fill="HCOLOR" clip-path="url(#hairFrontClip)"/>' },
+    // Braids: top cap + two braid rectangles hanging
+    braids:   { label:'Braids',    back:'<ellipse cx="60" cy="44" rx="35" ry="20" fill="HCOLOR"/>',
+                                   front:'<path d="M27 65 Q27 40 60 32 Q93 40 93 65 Q88 52 60 46 Q32 52 27 65Z" fill="HCOLOR" clip-path="url(#hairFrontClip)"/><rect x="43" y="103" width="9" height="42" rx="4" fill="HCOLOR"/><rect x="68" y="103" width="9" height="42" rx="4" fill="HCOLOR"/>' },
+    // Spiky: jagged points on top only
+    spiky:    { label:'Spiky',     back:'',
+                                   front:'<path d="M28 60 L38 26 L50 52 L60 18 L70 52 L82 26 L92 60 Q86 44 60 38 Q34 44 28 60Z" fill="HCOLOR" clip-path="url(#hairFrontClip)"/>' },
+    // Bun: tight cap + circle bun on top
+    bun:      { label:'Bun',       back:'<ellipse cx="60" cy="44" rx="33" ry="18" fill="HCOLOR"/>',
+                                   front:'<path d="M27 66 Q27 42 60 34 Q93 42 93 66 Q88 53 60 47 Q32 53 27 66Z" fill="HCOLOR" clip-path="url(#hairFrontClip)"/><circle cx="60" cy="24" r="14" fill="HCOLOR"/>' },
 };
 
 const HAIR_COLORS = [
@@ -659,6 +679,11 @@ function abUpdateSVG() {
     ['svgHead','svgNeck','svgEarL','svgEarR'].forEach(id => {
         const el = svg.getElementById(id);
         if (el) el.setAttribute('fill', skin);
+    });
+    // Inner ear gets slightly darker skin
+    ['svgEarLi','svgEarRi'].forEach(id => {
+        const el = svg.getElementById(id);
+        if (el) el.setAttribute('fill', shadeColor(skin, -20));
     });
 
     // Body color
