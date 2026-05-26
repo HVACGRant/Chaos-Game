@@ -68,45 +68,66 @@
             <!-- SVG Preview -->
             <div class="ab-preview-col">
                 <div class="ab-face-wrap">
-                    <svg id="avatarSVG" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg" width="150" height="175">
-                        <!-- Body -->
-                        <ellipse id="svgBody" cx="60" cy="125" rx="30" ry="18" fill="#4a90d9"/>
+                    <svg id="avatarSVG" viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg" width="150" height="188">
+                        <defs>
+                            <!-- Clip: only the top/sides of head for hair front overlay -->
+                            <clipPath id="hairFrontClip">
+                                <rect x="0" y="0" width="120" height="62"/>
+                            </clipPath>
+                            <!-- Clip: full head shape for tight hair styles -->
+                            <clipPath id="headClip">
+                                <ellipse cx="60" cy="72" rx="35" ry="39"/>
+                            </clipPath>
+                        </defs>
+
+                        <!-- Body + shoulders -->
+                        <ellipse id="svgBody" cx="60" cy="135" rx="38" ry="22" fill="#4a90d9"/>
                         <!-- Neck -->
-                        <rect id="svgNeck" x="52" y="95" width="16" height="14" fill="#FDBCB4"/>
-                        <!-- Head -->
-                        <ellipse id="svgHead" cx="60" cy="72" rx="34" ry="38" fill="#FDBCB4"/>
-                        <!-- Ears -->
-                        <ellipse id="svgEarL" cx="26" cy="75" rx="6" ry="9" fill="#FDBCB4"/>
-                        <ellipse id="svgEarR" cx="94" cy="75" rx="6" ry="9" fill="#FDBCB4"/>
-                        <!-- Hair back layer -->
+                        <rect id="svgNeck" x="52" y="100" width="16" height="14" fill="#FDBCB4"/>
+
+                        <!-- HAIR BACK — behind everything -->
                         <g id="svgHairBack"></g>
-                        <!-- Eyes -->
-                        <g id="svgEyes">
-                            <ellipse cx="46" cy="68" rx="7" ry="8" fill="white"/>
-                            <ellipse cx="74" cy="68" rx="7" ry="8" fill="white"/>
-                            <circle cx="47" cy="69" r="4" fill="#3d2b1f"/>
-                            <circle cx="75" cy="69" r="4" fill="#3d2b1f"/>
-                            <circle cx="48" cy="68" r="1.5" fill="white"/>
-                            <circle cx="76" cy="68" r="1.5" fill="white"/>
-                        </g>
+
+                        <!-- Ears — behind head, in front of hair back -->
+                        <ellipse id="svgEarL" cx="25" cy="76" rx="7" ry="10" fill="#FDBCB4"/>
+                        <ellipse id="svgEarR" cx="95" cy="76" rx="7" ry="10" fill="#FDBCB4"/>
+                        <!-- Inner ear detail -->
+                        <ellipse id="svgEarLi" cx="25" cy="76" rx="4" ry="6" fill="#e8a882" opacity="0.5"/>
+                        <ellipse id="svgEarRi" cx="95" cy="76" rx="4" ry="6" fill="#e8a882" opacity="0.5"/>
+
+                        <!-- HEAD -->
+                        <ellipse id="svgHead" cx="60" cy="72" rx="35" ry="39" fill="#FDBCB4"/>
+
+                        <!-- FACE FEATURES — all on top of head, below hair front -->
                         <!-- Eyebrows -->
                         <g id="svgBrows">
-                            <path d="M39 59 Q46 55 53 59" stroke="#5a3e2b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                            <path d="M67 59 Q74 55 81 59" stroke="#5a3e2b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                            <path d="M39 57 Q47 53 55 57" stroke="#5a3e2b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                            <path d="M65 57 Q73 53 81 57" stroke="#5a3e2b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                        </g>
+                        <!-- Eyes -->
+                        <g id="svgEyes">
+                            <ellipse cx="47" cy="68" rx="7" ry="8" fill="white"/>
+                            <ellipse cx="73" cy="68" rx="7" ry="8" fill="white"/>
+                            <circle cx="48" cy="69" r="4" fill="#3d2b1f"/>
+                            <circle cx="74" cy="69" r="4" fill="#3d2b1f"/>
+                            <circle cx="49" cy="68" r="1.5" fill="white"/>
+                            <circle cx="75" cy="68" r="1.5" fill="white"/>
                         </g>
                         <!-- Nose -->
                         <g id="svgNose">
-                            <path d="M57 72 Q55 82 52 84 Q60 87 68 84 Q65 82 63 72" stroke="#d4956a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                        </g>
-                        <!-- Mouth -->
-                        <g id="svgMouth">
-                            <path d="M48 95 Q60 103 72 95" stroke="#c0605a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                            <path d="M57 76 Q55 85 52 87 Q60 90 68 87 Q65 85 63 76" stroke="#d4956a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
                         </g>
                         <!-- Cheeks -->
                         <g id="svgCheeks"></g>
-                        <!-- Hair front layer -->
+                        <!-- Mouth -->
+                        <g id="svgMouth">
+                            <path d="M48 98 Q60 106 72 98" stroke="#c0605a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                        </g>
+
+                        <!-- HAIR FRONT — clipped to forehead/top only so face stays clear -->
                         <g id="svgHairFront"></g>
-                        <!-- Extras (hat, glasses etc) -->
+
+                        <!-- EXTRAS — hats, glasses etc, on very top -->
                         <g id="svgExtras"></g>
                     </svg>
                 </div>
