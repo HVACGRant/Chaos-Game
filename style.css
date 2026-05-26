@@ -311,30 +311,6 @@ body {
 .center-sub   { color: var(--grey); font-size: clamp(0.38em,1vmin,0.6em); letter-spacing: 2px; }
 .center-goal  { color: var(--gold); font-size: clamp(0.38em,0.95vmin,0.6em); font-weight: 600; }
 
-/* Card deck stack in center */
-.card-stacks {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    margin-top: 6px;
-    flex-wrap: wrap;
-}
-.card-stack {
-    background: rgba(15,52,96,0.7);
-    border: 2px solid var(--gold);
-    border-radius: 8px;
-    padding: 6px 8px;
-    text-align: center;
-    font-size: clamp(0.45em,1.1vmin,0.65em);
-    min-width: 54px;
-    cursor: pointer;
-    transition: all 0.2s;
-    touch-action: manipulation;
-}
-.card-stack:hover { background: rgba(245,166,35,0.2); transform: translateY(-2px); }
-.card-stack-icon { font-size: 1.8em; line-height: 1; }
-.card-stack-label { color: var(--gold); font-weight: 700; margin-top: 2px; }
-
 /* RIGHT COLUMN — compact */
 .right-col {
     display: flex;
