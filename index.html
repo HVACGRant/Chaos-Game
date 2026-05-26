@@ -55,6 +55,26 @@
                 <button class="goal-btn" onclick="setGoal(5000000)">$5M</button>
             </div>
         </div>
+        <div class="setup-section">
+            <h3>Board Mode?</h3>
+            <div class="mode-buttons">
+                <button class="mode-btn selected" onclick="setMode('normal',this)">
+                    <div class="mode-icon">🎯</div>
+                    <div class="mode-label">NORMAL</div>
+                    <div class="mode-desc">Classic CHAOS — real life struggles</div>
+                </button>
+                <button class="mode-btn" onclick="setMode('funny',this)">
+                    <div class="mode-icon">😂</div>
+                    <div class="mode-label">FUNNY</div>
+                    <div class="mode-desc">Ridiculous outcomes &amp; silly names</div>
+                </button>
+                <button class="mode-btn" onclick="setMode('sarcastic',this)">
+                    <div class="mode-icon">😈</div>
+                    <div class="mode-label">SARCASTIC</div>
+                    <div class="mode-desc">Adult humor — brutally honest chaos</div>
+                </button>
+            </div>
+        </div>
         <button id="setupDoneBtn" class="btn hidden" onclick="setupPlayers()">NEXT — Setup Players</button>
     </div>
 
