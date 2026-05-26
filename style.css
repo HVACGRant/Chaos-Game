@@ -728,11 +728,20 @@ body {
 /* SVG in token/piece — scale to fit */
 .token-avatar svg, .space-piece svg, .ap-avatar svg {
     display: block;
-    max-width: 100%;
-    height: auto;
+    overflow: visible;
 }
-.token-avatar { display: flex; align-items: center; justify-content: center; width: 32px; height: 37px; flex-shrink: 0; }
-.space-piece  { display: flex; align-items: center; justify-content: center; }
+.token-avatar {
+    display: flex; align-items: center; justify-content: center;
+    width: 22px; height: 35px; flex-shrink: 0; overflow: visible;
+}
+.space-piece {
+    display: flex; align-items: center; justify-content: center;
+    overflow: visible; position: relative; z-index: 3;
+}
+.ap-avatar {
+    display: flex; align-items: center; justify-content: center;
+    margin: 2px auto;
+}
 
 /* Mobile */
 @media (max-width: 500px) {
