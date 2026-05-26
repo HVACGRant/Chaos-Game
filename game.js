@@ -225,6 +225,10 @@ function carLapRequired(level) {
 }
 
 function upgradeCar(p, lvls) {
+    // Must visit a car dealer to get your first car — cards can't give you one
+    if (p.carLevel <= 1) {
+        return p.name + " needs to visit a Car Dealer to buy their first car — cards can't do it!";
+    }
     const nl = Math.min(CARS.length-1, p.carLevel + lvls);
     if (nl === p.carLevel) return p.name + ' already has max car!';
     const lapsNeeded = carLapRequired(nl);
@@ -484,21 +488,7 @@ function buildBoard() {
                     div.innerHTML=`
                         <div class="center-title">⚡ CHAOS ⚡</div>
                         <div class="center-sub">The Game of Life</div>
-                        <div class="center-goal">🏆 Win: ${fmt(gameState.winGoal)}</div>
-                        <div class="card-stacks">
-                            <div class="card-stack" onclick="drawFromDeck('good')">
-                                <div class="card-stack-icon">✅</div>
-                                <div class="card-stack-label">GOOD</div>
-                            </div>
-                            <div class="card-stack" onclick="drawFromDeck('bad')">
-                                <div class="card-stack-icon">❌</div>
-                                <div class="card-stack-label">BAD</div>
-                            </div>
-                            <div class="card-stack" onclick="drawFromDeck('sarcastic')">
-                                <div class="card-stack-icon">😏</div>
-                                <div class="card-stack-label">CHAOS</div>
-                            </div>
-                        </div>`;
+                        <div class="center-goal">🏆 Win: ${fmt(gameState.winGoal)}</div>`;
                 } else { div.style.display='none'; }
             } else { div.style.background='transparent'; div.style.border='none'; }
             board.appendChild(div);
@@ -507,18 +497,6 @@ function buildBoard() {
     updatePlayerPieces();
 }
 
-// Draw from center deck stack (#13)
-function drawFromDeck(type) {
-    if (gameState.phase !== 'playing') return;
-    const p = gameState.players[gameState.currentPlayerIndex];
-    let card, result;
-    if (type === 'good') { card = drawCard(GOOD_CARDS); result = card.effect(p); }
-    else if (type === 'bad') { card = drawCard(BAD_CARDS); result = card.effect(p); }
-    else { card = drawCard(SARCASTIC_CARDS); result = card.effect(p); }
-    renderPlayerBar();
-    const typeLabel = type==='good'?'GOOD CARD':type==='bad'?'BAD CARD':'CHAOS CARD';
-    showCardOverlay(card.icon, typeLabel, card.name, result[1], result[2]||type, () => { checkWinThenEnd(p); });
-}
 
 function updatePlayerPieces() {
     document.querySelectorAll('.space-players').forEach(el=>el.innerHTML='');
