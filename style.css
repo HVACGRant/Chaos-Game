@@ -148,7 +148,7 @@ body {
 .game-layout {
     flex-direction: row !important;
     align-items: stretch !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
     padding: 4px !important;
     gap: 4px;
     min-height: 100vh;
@@ -156,54 +156,75 @@ body {
     overflow: hidden;
 }
 
-/* LEFT COLUMN — wide enough for 2 player cards side by side */
-.left-col {
+/* LEFT SIDEBAR — 2 columns of player cards, 5 rows each */
+.top-strip {
     display: flex;
     flex-direction: column;
-    width: 200px;
+    gap: 3px;
+    width: 210px;
     flex-shrink: 0;
-    gap: 4px;
 }
-
-.all-players-label {
+.top-strip-title {
     font-family: 'Bebas Neue', sans-serif;
     color: var(--red);
-    font-size: 0.8em;
-    letter-spacing: 1px;
+    font-size: 0.85em;
+    letter-spacing: 2px;
     text-align: center;
-    padding: 4px 2px;
+    line-height: 1.3;
+    padding: 4px;
     background: rgba(0,0,0,0.4);
     border: 1px solid var(--red);
     border-radius: 8px;
-    line-height: 1.3;
 }
-.win-goal-display { color: var(--gold); font-size: 0.62em; font-weight: 600; letter-spacing: 0.5px; font-family: 'Oswald', sans-serif; }
+.win-goal-display { color: var(--gold); font-size: 0.7em; font-weight: 600; letter-spacing: 1px; font-family: 'Oswald', sans-serif; }
 
-.player-info-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; overflow-y: auto; flex: 1; align-content: start; }
+/* 2 columns × 5 rows = 10 player cards */
+.player-info-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: 1fr;
+    gap: 3px;
+    flex: 1;
+    overflow: hidden;
+}
 
 .player-token {
-    background: rgba(0,0,0,0.45);
+    background: rgba(0,0,0,0.5);
     border: 1px solid var(--navy);
     border-radius: 6px;
-    padding: 4px 4px;
-    font-size: 0.56em;
-    transition: all 0.3s;
+    padding: 4px 5px;
+    font-size: 0.58em;
+    transition: border-color 0.3s, background 0.3s;
     min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 .player-token.active-player {
     border-color: var(--red);
     box-shadow: 0 0 8px rgba(233,69,96,0.5);
-    background: rgba(233,69,96,0.12);
+    background: rgba(233,69,96,0.15);
 }
-.token-row1 { display: flex; align-items: center; gap: 2px; }
-.token-avatar { font-size: 1.5em; }
-.token-name { font-weight: 700; color: var(--green); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 52px; }
-.token-money { color: var(--gold); font-weight: 600; font-size: 0.95em; margin-top: 1px; }
-.token-details { color: var(--grey); font-size: 0.78em; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.token-happy { font-size: 0.75em; margin-top: 1px; }
-.token-jail { color: var(--red); font-size: 0.8em; }
+.token-row1 { display: flex; align-items: center; gap: 3px; margin-bottom: 1px; }
+.token-avatar { font-size: 1.6em; flex-shrink: 0; }
+.token-name { font-weight: 700; color: var(--green); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.token-money { color: var(--gold); font-weight: 600; font-size: 1em; }
+.token-details { color: var(--grey); font-size: 0.82em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.token-happy { font-size: 0.82em; }
+.token-jail { color: var(--red); font-size: 0.82em; font-weight: 700; }
 
-/* CENTER COLUMN — take all remaining space */
+/* MAIN ROW — sidebar + board + right panel */
+.bottom-row {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+}
+
+/* CENTER COLUMN — board fills remaining space */
 .center-col {
     display: flex;
     flex-direction: column;
@@ -213,18 +234,16 @@ body {
     min-width: 0;
 }
 
-/* ── GAME BOARD — fills the center column ── */
+/* ── GAME BOARD ── */
 .game-board {
     display: grid;
-    /* Edge squares are 2.2x wider/taller than inner cells = much bigger squares */
     grid-template-columns: 2.2fr repeat(8, 1fr) 2.2fr;
     grid-template-rows: 2.2fr repeat(8, 1fr) 2.2fr;
     gap: 2px;
-    /* Fill almost all available vertical space */
-    width: min(calc(100vh - 16px), calc(100vw - 220px));
-    height: min(calc(100vh - 16px), calc(100vw - 220px));
-    max-width: 760px;
-    max-height: 760px;
+    width: min(calc(100vh - 16px), calc(100vw - 380px));
+    height: min(calc(100vh - 16px), calc(100vw - 380px));
+    max-width: 780px;
+    max-height: 780px;
     background: var(--darker);
     border: 2px solid var(--red);
     border-radius: 10px;
@@ -316,7 +335,7 @@ body {
 .right-col {
     display: flex;
     flex-direction: column;
-    width: 155px;
+    width: 160px;
     flex-shrink: 0;
     gap: 6px;
 }
