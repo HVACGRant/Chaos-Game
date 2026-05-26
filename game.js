@@ -59,8 +59,8 @@ const HOUSING = [
 
 // ── CARS ─────────────────────────────────────────────────
 const CARS = [
-    { level:0,  name:'No Car',      icon:'🚶',  price:0,     payment:0,   impound:0,   isHoopty:false, isBike:false },
-    { level:1,  name:'Bike',        icon:'🚲',  price:200,   payment:0,   impound:50,  isHoopty:false, isBike:true  },
+    { level:0,  name:'On Foot',      icon:'🚶',  price:0,     payment:0,   impound:0,   isHoopty:false, isBike:false },
+    { level:1,  name:'Bicycle',      icon:'🚲',  price:200,   payment:0,   impound:50,  isHoopty:false, isBike:true  },
     { level:2,  name:'Hoopty',      icon:'🚗',  price:1000,  payment:100, impound:150, isHoopty:true,  isBike:false },
     { level:3,  name:'Daily Fixer', icon:'🚙',  price:3000,  payment:150, impound:200, isHoopty:false, isBike:false },
     { level:4,  name:'Gas Car',     icon:'🚗',  price:8000,  payment:250, impound:250, isHoopty:false, isBike:false },
@@ -599,9 +599,9 @@ function updateCurrentPlayerDisplay() {
     } else if (hoopty) {
         rollMsg = '🚗 Hoopty! First roll 1 die — 1-3 = dead battery (walk 1 die), 4-6 = starts (roll 2 dice).';
     } else if (p.carLevel === 0) {
-        rollMsg = '🚶 Walking — roll 1 die.';
+        rollMsg = '🚶 On Foot — roll 1 die.';
     } else if (isBike) {
-        rollMsg = '🚲 On your bike — roll 1 die.';
+        rollMsg = '🚲 Bicycle — roll 1 die.';
     } else {
         rollMsg = `🚗 In the ${CARS[p.carLevel].name} — roll 2 dice!`;
     }
@@ -680,7 +680,7 @@ function rollDice() {
 
     if (player.carLevel <= 1) {
         // Walking or bike: 1 die
-        const label = player.carLevel===0?'🚶 Walking':'🚲 Biking';
+        const label = player.carLevel===0?'🚶 On Foot':'🚲 Bicycle';
         const die1 = Math.ceil(Math.random()*6);
         document.getElementById('gameMessage').textContent = `Rolling 1 die (${label})...`;
         animateDice(d1El, d2El, die1, null, () => {
