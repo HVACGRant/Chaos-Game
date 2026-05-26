@@ -145,46 +145,51 @@ body {
    Center: Board
    Right: Dice + Active player
 ══════════════════════════════════════════ */
+/* ══════════════════════════════════════
+   GAME LAYOUT — 3 columns: players | board | controls
+   ══════════════════════════════════════ */
 .game-layout {
     flex-direction: row !important;
     align-items: stretch !important;
     justify-content: flex-start !important;
     padding: 4px !important;
     gap: 4px;
-    min-height: 100vh;
-    min-height: 100dvh;
+    height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
-/* LEFT SIDEBAR — 2 columns of player cards, 5 rows each */
-.top-strip {
+/* ── LEFT COL — player cards fill full board height ── */
+.left-col {
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    width: 210px;
+    width: 170px;
     flex-shrink: 0;
+    gap: 3px;
+    height: 100%;
 }
-.top-strip-title {
+.col-title {
     font-family: 'Bebas Neue', sans-serif;
     color: var(--red);
-    font-size: 0.85em;
+    font-size: 0.82em;
     letter-spacing: 2px;
     text-align: center;
-    line-height: 1.3;
-    padding: 4px;
+    padding: 3px 4px;
     background: rgba(0,0,0,0.4);
     border: 1px solid var(--red);
-    border-radius: 8px;
+    border-radius: 6px;
+    line-height: 1.3;
+    flex-shrink: 0;
 }
-.win-goal-display { color: var(--gold); font-size: 0.7em; font-weight: 600; letter-spacing: 1px; font-family: 'Oswald', sans-serif; }
+.win-goal-display { color: var(--gold); font-size: 0.68em; font-family: 'Oswald', sans-serif; }
 
-/* 2 columns × 5 rows = 10 player cards */
+/* 2 cols × up to 5 rows */
 .player-info-bar {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-auto-rows: 1fr;
     gap: 3px;
     flex: 1;
+    min-height: 0;
     overflow: hidden;
 }
 
@@ -192,39 +197,30 @@ body {
     background: rgba(0,0,0,0.5);
     border: 1px solid var(--navy);
     border-radius: 6px;
-    padding: 4px 5px;
-    font-size: 0.58em;
-    transition: border-color 0.3s, background 0.3s;
-    min-width: 0;
+    padding: 3px 4px;
+    font-size: 0.52em;
+    transition: border-color 0.25s, background 0.25s;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
+    min-height: 0;
 }
 .player-token.active-player {
     border-color: var(--red);
-    box-shadow: 0 0 8px rgba(233,69,96,0.5);
+    box-shadow: 0 0 6px rgba(233,69,96,0.5);
     background: rgba(233,69,96,0.15);
 }
-.token-row1 { display: flex; align-items: center; gap: 3px; margin-bottom: 1px; }
-.token-avatar { font-size: 1.6em; flex-shrink: 0; }
+.token-row1 { display: flex; align-items: center; gap: 2px; }
+.token-avatar { display: flex; align-items: center; justify-content: center; width: 26px; height: 30px; flex-shrink: 0; }
+.token-avatar svg { display: block; }
 .token-name { font-weight: 700; color: var(--green); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
-.token-money { color: var(--gold); font-weight: 600; font-size: 1em; }
+.token-money { color: var(--gold); font-weight: 700; }
 .token-details { color: var(--grey); font-size: 0.82em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .token-happy { font-size: 0.82em; }
 .token-jail { color: var(--red); font-size: 0.82em; font-weight: 700; }
 
-/* MAIN ROW — sidebar + board + right panel */
-.bottom-row {
-    display: flex;
-    flex-direction: row;
-    gap: 4px;
-    flex: 1;
-    min-height: 0;
-    align-items: stretch;
-}
-
-/* CENTER COLUMN — board fills remaining space */
+/* ── CENTER COL — board ── */
 .center-col {
     display: flex;
     flex-direction: column;
@@ -232,112 +228,34 @@ body {
     justify-content: center;
     flex: 1;
     min-width: 0;
+    height: 100%;
 }
 
-/* ── GAME BOARD ── */
+/* Board — square, fills height */
 .game-board {
     display: grid;
     grid-template-columns: 2.2fr repeat(8, 1fr) 2.2fr;
     grid-template-rows: 2.2fr repeat(8, 1fr) 2.2fr;
     gap: 2px;
-    width: min(calc(100vh - 16px), calc(100vw - 380px));
-    height: min(calc(100vh - 16px), calc(100vw - 380px));
-    max-width: 780px;
-    max-height: 780px;
+    width:  min(calc(100vh - 8px), calc(100vw - 344px));
+    height: min(calc(100vh - 8px), calc(100vw - 344px));
+    max-width: 820px;
+    max-height: 820px;
     background: var(--darker);
     border: 2px solid var(--red);
     border-radius: 10px;
     padding: 2px;
 }
 
-/* Board spaces — bigger text, readable */
-.board-space {
-    background: rgba(15,52,96,0.65);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 3px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 2px 1px;
-    text-align: center;
-    position: relative;
-    overflow: visible;
-    cursor: pointer;
-    transition: border-color 0.2s;
-}
-.board-space:hover { border-color: var(--gold); }
-.board-space.clickable-space { border-color: rgba(245,166,35,0.4); }
-
-.space-icon {
-    font-size: clamp(1.4em, 4vmin, 2.6em);
-    line-height: 1;
-    flex-shrink: 0;
-}
-.space-name {
-    font-size: clamp(0.5em, 1.4vmin, 0.85em);
-    line-height: 1.2;
-    word-break: break-word;
-    color: #eee;
-    font-weight: 700;
-    margin-top: 2px;
-    letter-spacing: 0.3px;
-}
-.space-players {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0;
-    justify-content: center;
-    position: absolute;
-    bottom: 0;
-    left: 0; right: 0;
-    overflow: visible;
-    z-index: 2;
-}
-.space-piece {
-    font-size: clamp(2em, 5.5vmin, 3.8em);
-    line-height: 1;
-    cursor: default;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.9));
-}
-
-/* Space type colours */
-.board-space.corner  { background: rgba(233,69,96,0.3);   border-color: var(--red); }
-.board-space.payday  { background: rgba(78,204,163,0.25); border-color: var(--green); }
-.board-space.good    { background: rgba(78,204,163,0.15); border-color: var(--green); }
-.board-space.bad     { background: rgba(233,69,96,0.15);  border-color: var(--red); }
-.board-space.house   { background: rgba(78,204,163,0.22); border-color: #4ecca3; }
-.board-space.car     { background: rgba(245,166,35,0.22); border-color: #f5a623; }
-.board-space.hcard   { background: rgba(78,204,163,0.15); border-color: #4ecca3; }
-.board-space.ccard   { background: rgba(245,166,35,0.15); border-color: #f5a623; }
-.board-space.job     { background: rgba(138,43,226,0.25); border-color: #8a2be2; }
-.board-space.jcard   { background: rgba(138,43,226,0.15); border-color: #8a2be2; }
-.board-space.hustle  { background: rgba(255,140,0,0.18);  border-color: #ff8c00; }
-.board-space.fastfood{ background: rgba(220,50,50,0.22);  border-color: #ff2a2a; }
-.board-space.blank   { background: rgba(10,10,26,0.3);    border-color: rgba(255,255,255,0.05); opacity:0.6; }
-
-/* CENTER OF BOARD — smaller to allow bigger edge spaces */
-.center-area {
-    grid-column: 2/10; grid-row: 2/10;
-    background: rgba(0,0,0,0.7);
-    border: 1px solid var(--navy);
-    border-radius: 6px;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 3px; padding: 6px;
-    overflow: hidden;
-}
-.center-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(0.9em,2.5vmin,1.6em); color: var(--red); letter-spacing: 3px; text-shadow: 0 0 20px rgba(233,69,96,0.7); }
-.center-sub   { color: var(--grey); font-size: clamp(0.38em,1vmin,0.6em); letter-spacing: 2px; }
-.center-goal  { color: var(--gold); font-size: clamp(0.38em,0.95vmin,0.6em); font-weight: 600; }
-
-/* RIGHT COLUMN — compact */
+/* ── RIGHT COL — dice + current player ── */
 .right-col {
     display: flex;
     flex-direction: column;
-    width: 160px;
+    width: 162px;
     flex-shrink: 0;
     gap: 6px;
+    height: 100%;
+    overflow-y: auto;
 }
 
 /* Game Controls (dice on top) */
@@ -614,81 +532,47 @@ body {
     }
 }
 
-/* ── AVATAR BUILDER ─────────────────────────────────────── */
-.ab-wrap {
+/* ── SVG AVATAR BUILDER ─────────────────────────────────── */
+.ab-builder {
     display: flex;
-    gap: 12px;
+    gap: 14px;
     width: 100%;
-    max-width: 600px;
-    height: 420px;
+    max-width: 620px;
+    min-height: 360px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--navy);
+    border-radius: 12px;
+    padding: 14px;
 }
 
-/* Left column — preview + slots */
-.ab-left {
+/* Left — SVG preview */
+.ab-preview-col {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 6px;
     flex-shrink: 0;
-    width: 120px;
 }
-.ab-preview {
-    font-size: 3.2em;
-    background: rgba(15,52,96,0.7);
-    border: 3px solid var(--green);
-    border-radius: 14px;
-    width: 90px;
-    height: 90px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    letter-spacing: -3px;
+.ab-face-wrap {
+    background: linear-gradient(160deg, var(--mid), var(--navy));
+    border: 2px solid var(--green);
+    border-radius: 16px;
+    padding: 10px;
     box-shadow: 0 0 16px rgba(78,204,163,0.3);
-    flex-shrink: 0;
 }
 .ab-preview-label {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 0.62em;
+    font-size: 0.65em;
     letter-spacing: 3px;
     color: var(--green);
 }
-.ab-slots {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    background: rgba(0,0,0,0.3);
-    border-radius: 8px;
-    padding: 6px;
-    flex: 1;
-    overflow-y: auto;
-}
-.ab-slot-row {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    font-size: 0.65em;
-}
-.ab-slot-lbl { color: var(--grey); min-width: 36px; }
-.ab-slot-val { font-size: 1.4em; min-width: 24px; }
-.ab-clear-btn {
-    background: none;
-    border: none;
-    color: var(--red);
-    cursor: pointer;
-    font-size: 0.8em;
-    padding: 0 2px;
-    opacity: 0.7;
-    touch-action: manipulation;
-}
-.ab-clear-btn:hover { opacity: 1; }
 .ab-reset-btn {
     background: transparent;
     border: 1px solid var(--grey);
     color: var(--grey);
     border-radius: 6px;
-    padding: 4px 8px;
-    font-size: 0.65em;
+    padding: 4px 10px;
+    font-size: 0.7em;
     font-family: 'Oswald', sans-serif;
     cursor: pointer;
     touch-action: manipulation;
@@ -696,55 +580,108 @@ body {
 }
 .ab-reset-btn:hover { border-color: var(--red); color: var(--red); }
 
-/* Right column — scrollable emoji picker */
-.ab-right {
+/* Right — options */
+.ab-options-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+/* Category tabs */
+.ab-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.ab-tab {
+    background: var(--navy);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--grey);
+    border-radius: 6px;
+    padding: 5px 9px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.72em;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+.ab-tab:hover  { border-color: var(--green); color: #fff; }
+.ab-tab.active { background: var(--green); border-color: var(--green); color: var(--dark); font-weight: 700; }
+
+/* Options area */
+.ab-options-grid {
     flex: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding-right: 4px;
+    gap: 6px;
+    padding-right: 2px;
 }
-.ab-cat {
+
+.ab-opt-label {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 0.72em;
+    font-size: 0.68em;
     letter-spacing: 3px;
     color: var(--gold);
-    padding: 4px 0 2px;
-    border-bottom: 1px solid rgba(245,166,35,0.25);
     margin-top: 4px;
 }
-.ab-cat:first-child { margin-top: 0; }
-.ab-grid {
+
+/* Style picker buttons */
+.ab-opt-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
-    padding: 4px 0;
+    gap: 5px;
 }
-.ab-e {
+.ab-opt-btn {
     background: rgba(15,52,96,0.7);
-    border: 2px solid rgba(255,255,255,0.08);
-    border-radius: 8px;
-    width: 42px;
-    height: 42px;
-    font-size: 1.5em;
+    border: 2px solid rgba(255,255,255,0.1);
+    color: #ddd;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 0.75em;
+    font-family: 'Oswald', sans-serif;
     cursor: pointer;
     touch-action: manipulation;
-    transition: border-color 0.12s, background 0.12s, transform 0.1s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    line-height: 1;
+    transition: all 0.12s;
+    white-space: nowrap;
 }
-.ab-e:hover  { border-color: var(--green); background: rgba(78,204,163,0.15); transform: scale(1.1); }
-.ab-e.sel    { border-color: var(--gold);  background: rgba(245,166,35,0.25); }
+.ab-opt-btn:hover { border-color: var(--green); color: #fff; }
+.ab-opt-btn.sel   { border-color: var(--gold); background: rgba(245,166,35,0.2); color: var(--gold); }
 
-/* Mobile: stack vertically */
+/* Color swatch buttons */
+.ab-swatch-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+.ab-swatch {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.15);
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform 0.12s, border-color 0.12s;
+    flex-shrink: 0;
+}
+.ab-swatch.sm { width: 26px; height: 26px; border-radius: 6px; }
+.ab-swatch:hover { transform: scale(1.15); border-color: rgba(255,255,255,0.5); }
+.ab-swatch.sel   { border-color: var(--gold); box-shadow: 0 0 8px rgba(245,166,35,0.6); transform: scale(1.1); }
+
+/* SVG in token/piece — scale to fit */
+.token-avatar svg, .space-piece svg, .ap-avatar svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+.token-avatar { display: flex; align-items: center; justify-content: center; width: 32px; height: 37px; flex-shrink: 0; }
+.space-piece  { display: flex; align-items: center; justify-content: center; }
+
+/* Mobile */
 @media (max-width: 500px) {
-    .ab-wrap { flex-direction: column; height: auto; }
-    .ab-left { flex-direction: row; width: 100%; align-items: flex-start; flex-wrap: wrap; }
-    .ab-preview { width: 72px; height: 72px; font-size: 2.4em; }
-    .ab-slots { flex-direction: row; flex-wrap: wrap; flex: none; }
-    .ab-right { max-height: 300px; }
+    .ab-builder { flex-direction: column; min-height: auto; }
+    .ab-preview-col { flex-direction: row; align-items: flex-start; }
 }
