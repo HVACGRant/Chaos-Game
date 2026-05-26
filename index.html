@@ -142,25 +142,20 @@
     <!-- GAME SCREEN — 3-col layout: LEFT (players) | CENTER (board) | RIGHT (dice + active panel) -->
     <div id="gameScreen" class="screen hidden game-layout">
 
-        <!-- TOP STRIP: All Players (5 per row) + title -->
-        <div class="top-strip">
-            <div class="top-strip-title">⚡ CHAOS ⚡ &nbsp;<span class="win-goal-display" id="winGoalDisplay"></span></div>
+        <!-- LEFT: Player cards stacked vertically -->
+        <div class="left-col">
+            <div class="col-title">⚡ CHAOS ⚡<br><span class="win-goal-display" id="winGoalDisplay"></span></div>
             <div id="playerInfoBar" class="player-info-bar"></div>
         </div>
 
-        <!-- BOTTOM ROW: Board + Right Panel -->
-        <div class="bottom-row">
-
-        <!-- CENTER COLUMN: Board -->
+        <!-- CENTER: Board -->
         <div class="center-col">
-        <!-- Last drawn card banner — stays visible so all players can see -->
-        <div id="lastCardBanner" class="last-card-banner hidden"></div>
-        <div id="gameBoard" class="game-board"></div>
+            <div id="lastCardBanner" class="last-card-banner hidden"></div>
+            <div id="gameBoard" class="game-board"></div>
         </div>
 
-        <!-- RIGHT COLUMN: Dice on top, then Active Player Panel -->
+        <!-- RIGHT: Dice + Active Player -->
         <div class="right-col">
-            <!-- DICE + CONTROLS -->
             <div class="game-controls">
                 <div class="dice-area">
                     <div id="die1" class="die">🎲</div>
@@ -171,7 +166,6 @@
                 <div id="gameMessage" class="game-message"></div>
             </div>
 
-            <!-- ACTIVE PLAYER PANEL -->
             <div id="activePlayerPanel" class="active-player-panel">
                 <div class="ap-label">CURRENT TURN</div>
                 <div id="apAvatar" class="ap-avatar"></div>
@@ -181,8 +175,6 @@
                 <div id="apHappiness" class="ap-detail"></div>
                 <div id="apLaps" class="ap-detail" style="font-size:0.65em;color:#6a6a7f;margin-top:2px;"></div>
                 <div id="apJail" class="ap-jail hidden"></div>
-
-                <!-- HOUSING UPGRADE TRACK -->
                 <div class="asset-section">
                     <div class="asset-label">🏠 HOUSING</div>
                     <div id="apHousingDisplay" class="asset-display">
@@ -191,8 +183,6 @@
                         <div class="upgrade-track" id="housingTrack"></div>
                     </div>
                 </div>
-
-                <!-- CAR UPGRADE TRACK -->
                 <div class="asset-section">
                     <div class="asset-label">🚗 CAR / TRANSPORT</div>
                     <div id="apCarDisplay" class="asset-display">
@@ -203,7 +193,6 @@
                 </div>
             </div>
         </div>
-        </div><!-- end bottom-row -->
     </div>
 
     <!-- CARD OVERLAY — stays face-up, button advances the game -->
