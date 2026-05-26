@@ -367,7 +367,12 @@ function checkSetupReady() {
         document.getElementById('setupDoneBtn').classList.remove('hidden');
 }
 
-function setMode(mode, btn) {
+function setMode(e) {
+    // Walk up to the button in case a child div was clicked
+    const btn = e.target.closest('.mode-btn');
+    if (!btn) return;
+    const mode = btn.dataset.mode;
+    if (!mode) return;
     gameState.boardMode = mode;
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
