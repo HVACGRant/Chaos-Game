@@ -84,7 +84,6 @@
         <h2 id="playerSetupTitle" class="setup-heading">Player 1 Setup</h2>
 
         <div class="ab-builder">
-            <!-- SVG Preview -->
             <div class="ab-preview-col">
                 <div class="ab-face-wrap">
                     <svg id="avatarSVG" viewBox="0 0 100 160" width="160" height="256" xmlns="http://www.w3.org/2000/svg">
@@ -145,8 +144,6 @@
                 <div class="ab-preview-label">YOUR AVATAR</div>
                 <button class="ab-reset-btn" onclick="abReset()">↺ RESET</button>
             </div>
-
-            <!-- Options -->
             <div class="ab-options-col">
                 <div class="ab-tabs">
                     <button class="ab-tab active" data-cat="skin"   onclick="abSwitchCat(this)">🎨 Skin</button>
@@ -170,10 +167,9 @@
         <button id="nextPlayerBtn" class="btn" onclick="nextPlayer()">NEXT PLAYER</button>
     </div>
 
-    <!-- GAME SCREEN — 3-col layout: LEFT (players) | CENTER (board) | RIGHT (dice + active panel) -->
+    <!-- GAME SCREEN -->
     <div id="gameScreen" class="screen hidden game-layout">
-
-        <!-- LEFT: Player cards stacked vertically -->
+        <!-- LEFT: Player cards -->
         <div class="left-col">
             <div class="col-title">⚡ CHAOS ⚡<br><span class="win-goal-display" id="winGoalDisplay"></span></div>
             <div id="playerInfoBar" class="player-info-bar"></div>
@@ -182,7 +178,14 @@
         <!-- CENTER: Board -->
         <div class="center-col">
             <div id="lastCardBanner" class="last-card-banner hidden"></div>
-            <div id="gameBoard" class="game-board"></div>
+            <div id="gameBoard" class="game-board">
+                <!-- Center area — absolutely positioned inside the board -->
+                <div class="center-area" id="centerArea">
+                    <div class="center-title">⚡ CHAOS ⚡</div>
+                    <div class="center-sub" id="centerMode">The Game of Life</div>
+                    <div class="center-goal" id="centerGoal"></div>
+                </div>
+            </div>
         </div>
 
         <!-- RIGHT: Dice + Active Player -->
@@ -226,7 +229,7 @@
         </div>
     </div>
 
-    <!-- CARD OVERLAY — stays face-up, button advances the game -->
+    <!-- CARD OVERLAY -->
     <div id="cardOverlay" class="card-overlay hidden">
         <div id="cardDisplay" class="card-display">
             <div class="card-type-label" id="cardTypeLabel"></div>
@@ -255,16 +258,26 @@
         </div>
     </div>
 
-    <!-- STEAL OVERLAY -->
+    <!-- VEHICLE SHOWDOWN OVERLAY -->
     <div id="stealOverlay" class="popup hidden">
         <div class="popup-content">
             <h2 id="stealTitle" style="color:var(--gold)">⚡ VEHICLE SHOWDOWN ⚡</h2>
-            <p id="stealDesc"></p>
-            <div class="dice-area" style="justify-content:center;margin:10px 0">
-                <div id="stealDie1" class="die">🎲</div>
-                <div id="stealDie2" class="die">🎲</div>
+            <p id="stealDesc" style="white-space:pre-line;font-size:0.85em;color:#ccc;margin-bottom:8px"></p>
+            <!-- Avatar showdown display -->
+            <div class="showdown-avatars">
+                <div class="showdown-player">
+                    <div class="showdown-av" id="showdownAv1"></div>
+                    <div class="showdown-name" id="showdownName1">Player 1</div>
+                    <div id="showdownDie1" class="die" style="margin:4px auto">🎲</div>
+                </div>
+                <div class="vs-badge">VS</div>
+                <div class="showdown-player">
+                    <div class="showdown-av" id="showdownAv2"></div>
+                    <div class="showdown-name" id="showdownName2">Player 2</div>
+                    <div id="showdownDie2" class="die" style="margin:4px auto">🎲</div>
+                </div>
             </div>
-            <div id="stealResult" style="color:var(--gold);font-size:1.1em;min-height:30px;margin:8px 0"></div>
+            <div id="stealResult" style="color:var(--gold);font-size:1em;min-height:36px;margin:10px 0;font-weight:700;line-height:1.4"></div>
             <button id="stealRollBtn" class="btn" onclick="resolveSteal()">🎲 ROLL OFF!</button>
         </div>
     </div>
