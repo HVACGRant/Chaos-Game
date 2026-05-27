@@ -624,7 +624,12 @@ function payBailEarly(){
 }
 
 function collectRent(player){
-    const gross=player.jobPay;const rent=(player.housingLevel>=2&&player.housingLevel<13)?HOUSING[player.housingLevel].rent:0;const carPay=(player.carLevel>=2)?CARS[player.carLevel].payment:0;const bills=rent+carPay;const net=gross-bills;player.money+=gross;charge(player,bills);return{gross,rent,carPay,bills,net};
+    const gross=player.job==='Unemployed'?0:player.jobPay;
+    const rent=(player.housingLevel>=2&&player.housingLevel<13)?HOUSING[player.housingLevel].rent:0;
+    const carPay=(player.carLevel>=2)?CARS[player.carLevel].payment:0;
+    const bills=rent+carPay;const net=gross-bills;
+    player.money+=gross;charge(player,bills);
+    return{gross,rent,carPay,bills,net};
 }
 
 // ── SHOWDOWN — same square vehicle steal ──────────────────
@@ -690,6 +695,21 @@ function handleCorner(player,space){
     else if(space.id===27){sendToJail(player);renderPlayerBar();updatePlayerPieces();showCardOverlay('🚔','GO TO JAIL','Busted!',`${player.name} is going to jail!\nReason: ${player.jailReason}\nUp to ${player.jailMaxTurns} turns | Bail: ${fmt(player.jailFine)}${player.vehicleSeized>0?'\n'+CARS[player.vehicleSeized].icon+' '+CARS[player.vehicleSeized].name+' impounded!':''}`, 'bad',()=>endTurn());}
 }
 function handlePayday(player){
+    if(player.job==='Unemployed'){
+        const rent=(player.housingLevel>=2&&player.housingLevel<13)?HOUSING[player.housingLevel].rent:0;
+        const carPay=(player.carLevel>=2)?CARS[player.carLevel].payment:0;
+        const bills=rent+carPay;
+        charge(player,bills);
+        adjustHappiness(player,-0.5);
+        renderPlayerBar();
+        let body=`😤 No job, no paycheck!\n━━━━━━━━━━━━━━━━━━\n`;
+        if(rent>0)   body+=`🏠 ${HOUSING[player.housingLevel].name}:  -${fmt(rent)}\n`;
+        if(carPay>0) body+=`🚗 ${CARS[player.carLevel].name}:    -${fmt(carPay)}\n`;
+        if(bills===0) body+='Nothing owed either. Go find a job!\n';
+        body+=`━━━━━━━━━━━━━━━━━━\n💰 Balance: ${fmt(player.money)}\n\nVisit the Job Office!`;
+        showCardOverlay('💸','NO PAYDAY','Get a Job!',body,'bad',()=>endTurn());
+        return;
+    }
     const bill=collectRent(player);adjustHappiness(player,0.5);renderPlayerBar();
     const house=HOUSING[player.housingLevel],car=CARS[player.carLevel];
     let body=`💼 ${player.job}\n━━━━━━━━━━━━━━━━━━\n📥 Payday:        ${fmt(bill.gross)}\n`;
