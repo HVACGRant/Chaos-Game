@@ -34,16 +34,16 @@ const HOUSING = [
     { level:1,  name:'Cardboard Box',  icon:'📦',  price:0,      rent:0,    lapReq:0   },
     { level:2,  name:"Friend's Couch", icon:'🛋️',  price:500,    rent:100,  lapReq:0   },
     { level:3,  name:'Apartment',      icon:'🏢',  price:2000,   rent:300,  lapReq:0   },
-    { level:4,  name:'Mobile Home',    icon:'🏠',  price:4000,   rent:400,  lapReq:25  },
-    { level:5,  name:'RV',             icon:'🚌',  price:6000,   rent:500,  lapReq:25  },
-    { level:6,  name:'Duplex',         icon:'🏘️',  price:10000,  rent:700,  lapReq:25  },
-    { level:7,  name:'Studio',         icon:'🏙️',  price:15000,  rent:900,  lapReq:50  },
-    { level:8,  name:'1 Bedroom',      icon:'🏡',  price:20000,  rent:1100, lapReq:50  },
-    { level:9,  name:'2 Bedroom',      icon:'🏡',  price:30000,  rent:1400, lapReq:50  },
-    { level:10, name:'3 Bedroom',      icon:'🏠',  price:45000,  rent:1800, lapReq:75  },
-    { level:11, name:'4 Bedroom',      icon:'🏠',  price:65000,  rent:2200, lapReq:75  },
-    { level:12, name:'Skyline Apt',    icon:'🌆',  price:90000,  rent:3000, lapReq:75  },
-    { level:13, name:'Mansion',        icon:'🏰',  price:150000, rent:0,    lapReq:100 },
+    { level:4,  name:'Mobile Home',    icon:'🏠',  price:4000,   rent:400,  lapReq:15  },
+    { level:5,  name:'RV',             icon:'🚌',  price:6000,   rent:500,  lapReq:15  },
+    { level:6,  name:'Duplex',         icon:'🏘️',  price:10000,  rent:700,  lapReq:15  },
+    { level:7,  name:'Studio',         icon:'🏙️',  price:15000,  rent:900,  lapReq:30  },
+    { level:8,  name:'1 Bedroom',      icon:'🏡',  price:20000,  rent:1100, lapReq:30  },
+    { level:9,  name:'2 Bedroom',      icon:'🏡',  price:30000,  rent:1400, lapReq:30  },
+    { level:10, name:'3 Bedroom',      icon:'🏠',  price:45000,  rent:1800, lapReq:45  },
+    { level:11, name:'4 Bedroom',      icon:'🏠',  price:65000,  rent:2200, lapReq:45  },
+    { level:12, name:'Skyline Apt',    icon:'🌆',  price:90000,  rent:3000, lapReq:45  },
+    { level:13, name:'Mansion',        icon:'🏰',  price:150000, rent:0,    lapReq:60 },
 ];
 const CARS = [
     { level:0,  name:'On Foot',     icon:'🚶',  price:0,     payment:0,   impound:0,   isHoopty:false, isBike:false },
@@ -134,8 +134,8 @@ const ALL_JOBS = [
     { name:'Realtor',        icon:'🏠', pay:8000,  tier:3 },
     { name:'Microsoft',      icon:'💻', pay:12000, tier:3 },
 ];
-function getTier(laps) { return laps>=75?3:laps>=50?2:laps>=25?1:0; }
-function getTierLabel(laps) { return laps>=75?'Senior Level (Lap 75+)':laps>=50?'Mid Level (Lap 50+)':laps>=25?'Entry Level (Lap 25+)':'Starting Out'; }
+function getTier(laps) { return laps>=45?3:laps>=30?2:laps>=15?1:0; }
+function getTierLabel(laps) { return laps>=45?'Senior Level (Lap 45+)':laps>=30?'Mid Level (Lap 30+)':laps>=15?'Entry Level (Lap 15+)':'Starting Out'; }
 function getAvailableJobs(p) { return ALL_JOBS.filter(j => j.tier <= getTier(p.laps||0)); }
 
 function upgradeHousing(p) {
@@ -147,7 +147,7 @@ function upgradeHousing(p) {
     if (p.money>=cost) { p.money-=cost; p.housingLevel=nl; animateAssetIcon('apHousingIcon'); return p.name+' upgraded to '+HOUSING[nl].name+'!'; }
     return p.name+" can't afford "+HOUSING[nl].name+'. Need '+fmt(cost)+'.';
 }
-function carLapRequired(level) { return level>=9?75:level>=6?50:level>=3?25:0; }
+function carLapRequired(level) { return level>=9?45:level>=6?30:level>=3?15:0; }
 function upgradeCar(p, lvls) {
     if (p.carLevel<=1) return p.name+" needs to visit a Car Dealer first!";
     const nl = Math.min(CARS.length-1, p.carLevel+lvls);
@@ -801,16 +801,14 @@ function handleFastFood(player,space){
 function handleHustle(player,space){
     const data=(gameState.boardMode==='funny'&&FUNNY_HUSTLE_OVERRIDES[space.name])?FUNNY_HUSTLE_OVERRIDES[space.name]:HUSTLE_DATA[space.name];
     if(!data){endTurn();return;}
-    const d1El=document.getElementById('die1'),d2El=document.getElementById('die2');
-    const die=Math.ceil(Math.random()*6);
-    document.getElementById('gameMessage').textContent=`${player.name} hustling — ${space.name}! Rolling...`;
-    animateDice(d1El,d2El,die,null,()=>{
-        document.getElementById('diceResult').textContent=DICE_FACES[die]+' = '+die+(die<=3?' 😬 Bad luck!':' 😎 Nice roll!');
-        const outcomes=die<=3?data.bad:data.good;const picked=outcomes[die<=3?die-1:die-4];const earn=picked.earn;
-        if(earn>0){player.money+=earn;adjustHappiness(player,0.5);}else if(earn<0){charge(player,Math.abs(earn));adjustHappiness(player,-0.5);}
-        renderPlayerBar();
-        showCardOverlay(space.icon,'HUSTLE — '+space.name+' (rolled '+die+')',earn>0?'+'+fmt(earn):earn<0?'-'+fmt(Math.abs(earn)):'Nothing',picked.msg,earn>0?'good':earn<0?'bad':'sarcastic',()=>checkWinThenEnd(player));
-    });
+    // Pure random — pick from the full combined pool, no dice involved
+    const allOutcomes=[...data.bad,...data.good];
+    const picked=allOutcomes[Math.floor(Math.random()*allOutcomes.length)];
+    const earn=picked.earn;
+    if(earn>0){player.money+=earn;adjustHappiness(player,0.5);}else if(earn<0){charge(player,Math.abs(earn));adjustHappiness(player,-0.5);}
+    renderPlayerBar();
+    document.getElementById('gameMessage').textContent=`${player.name} hustling — ${space.name}!`;
+    showCardOverlay(space.icon,'HUSTLE — '+space.name,earn>0?'+'+fmt(earn):earn<0?'-'+fmt(Math.abs(earn)):'Nothing',picked.msg,earn>0?'good':earn<0?'bad':'sarcastic',()=>checkWinThenEnd(player));
 }
 
 // ── WIN / END ─────────────────────────────────────────────
