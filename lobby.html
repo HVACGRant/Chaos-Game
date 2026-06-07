@@ -11,7 +11,10 @@
 body{background:radial-gradient(ellipse at center,#1a1a2e 0%,#0a0a1a 100%);color:#fff;font-family:'Oswald',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;}
 .wrap{width:min(560px,96vw);}
 .logo{font-family:'Bebas Neue',sans-serif;color:var(--red);letter-spacing:6px;font-size:3em;text-align:center;text-shadow:0 0 20px rgba(233,69,96,.7);line-height:1;}
-.logo-sub{color:var(--grey);letter-spacing:4px;text-align:center;font-size:.8em;margin-bottom:18px;}
+.logo-sub{color:var(--grey);letter-spacing:4px;text-align:center;font-size:.8em;margin-bottom:10px;}
+.status{text-align:center;font-size:.82em;letter-spacing:1px;color:var(--grey);margin-bottom:14px;min-height:18px;}
+.status.ok{color:var(--green);}
+.status.bad{color:var(--red);}
 .panel{background:rgba(0,0,0,.45);border:2px solid var(--navy);border-radius:16px;padding:20px;margin-bottom:14px;}
 .panel.hidden{display:none;}
 h2{font-family:'Bebas Neue',sans-serif;color:var(--green);letter-spacing:3px;font-size:1.5em;margin-bottom:14px;}
@@ -53,6 +56,7 @@ input#joinCode{text-transform:uppercase;font-family:'Bebas Neue',sans-serif;lett
 <div class="wrap">
   <div class="logo">CHAOS</div>
   <div class="logo-sub">MULTIPLAYER LOBBY · PHASE 1</div>
+  <div class="status" id="status">Loading…</div>
 
   <!-- CONFIG NOT SET -->
   <div class="panel" id="configPanel" style="display:none;">
@@ -147,24 +151,29 @@ let listeners = [];
 
 // ── boot ───────────────────────────────────────────────
 function configReady(){ return firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf('PASTE') === -1; }
+function setStatus(msg, kind){ const el=document.getElementById('status'); if(el){ el.textContent=msg; el.className='status '+(kind||''); } }
+function setReady(ready){ ['goCreate','goJoin'].forEach(id=>{ const b=document.getElementById(id); if(b) b.disabled=!ready; }); }
 
 function show(id){ ['configPanel','homePanel','createPanel','joinPanel','lobbyPanel'].forEach(p=>{ const el=document.getElementById(p); if(el) el.classList.add('hidden'); el.style.display=(p===id?'block':'none'); }); }
 
+window.addEventListener('error', e => setStatus('Script error: '+(e.message||'unknown'),'bad'));
+
 window.addEventListener('DOMContentLoaded', () => {
   buildPickers();
-  if(!configReady()){ show('configPanel'); return; }
+  setReady(false);
+  if(!configReady()){ show('configPanel'); setStatus('Config not set','bad'); return; }
+  if(typeof firebase === 'undefined'){ show('homePanel'); setStatus('Firebase SDK did not load — check connection / ad-blocker, then reload.','bad'); return; }
+  show('homePanel');
+  setStatus('Connecting…');
   try{
     firebase.initializeApp(firebaseConfig);
     auth = firebase.auth();
     db = firebase.database();
-    auth.signInAnonymously().catch(e => toast('homeToast','Sign-in failed: '+e.message));
     auth.onAuthStateChanged(user => {
-      if(!user) return;
-      uid = user.uid;
-      show('homePanel');
-      offerResume();
+      if(user){ uid = user.uid; setStatus('Connected ✓','ok'); setReady(true); offerResume(); }
     });
-  }catch(e){ show('configPanel'); }
+    auth.signInAnonymously().catch(e => { setStatus('Sign-in failed ['+(e.code||'?')+']: '+e.message,'bad'); });
+  }catch(e){ setStatus('Startup error: '+(e.message||e),'bad'); }
 });
 
 // ── pickers / UI ───────────────────────────────────────
