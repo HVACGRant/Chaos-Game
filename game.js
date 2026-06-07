@@ -113,6 +113,7 @@ function sendToJail(p, reason) {
     p.jailMaxTurns = Math.ceil(Math.random() * 5);
     p.jailFine = 100 + Math.floor(Math.random() * 6) * 100;
     if (p.carLevel > 0) { p.vehicleSeized = p.carLevel; p.carLevel = 0; p.carImpounded = true; }
+    p.jailCount = (p.jailCount||0) + 1; if(p.jailCount>=3) unlockAch(p,'repeat_offender');
 }
 
 const ALL_JOBS = [
@@ -548,7 +549,7 @@ function nextPlayer(){
     const name=document.getElementById('playerName').value.trim();
     if(!tempSetup.avatar){alert('Pick an avatar!');return;}
     if(!name){alert('Enter your name!');return;}
-    gameState.players.push({id:gameState.currentSetupPlayer,name,avatar:tempSetup.avatar,job:'Unemployed',jobPay:2000,money:20000,position:0,housingLevel:0,carLevel:0,inJail:false,jailTurns:0,jailMaxTurns:3,jailReason:'',jailFine:200,vehicleSeized:0,carImpounded:false,jailFreeCards:0,happiness:5.0,turnsPlayed:0,laps:0,skipTurn:false,rentDue:0,carPaymentDue:0});
+    gameState.players.push({id:gameState.currentSetupPlayer,name,avatar:tempSetup.avatar,job:'Unemployed',jobPay:2000,money:20000,position:0,housingLevel:0,carLevel:0,inJail:false,jailTurns:0,jailMaxTurns:3,jailReason:'',jailFine:200,vehicleSeized:0,carImpounded:false,jailFreeCards:0,happiness:5.0,turnsPlayed:0,laps:0,skipTurn:false,rentDue:0,carPaymentDue:0,achievements:[],jailCount:0});
     gameState.currentSetupPlayer++;
     if(gameState.currentSetupPlayer>=gameState.numPlayers) startGame();
     else{showPlayerSetup();setTimeout(()=>{abUpdateSVG();abRenderOptions();},50);}
@@ -559,7 +560,7 @@ function startGame(){
     gameState.currentPlayerIndex=0;gameState.phase='playing';
     showScreen('gameScreen');
     document.getElementById('winGoalDisplay').textContent='🏆 '+fmt(gameState.winGoal);
-    buildBoard();renderPlayerBar();updateCurrentPlayerDisplay();
+    buildBoard();renderPlayerBar();updateCurrentPlayerDisplay();injectAchUI();
 }
 
 // ── BOARD — uniform 10×10, center absolutely positioned ───
@@ -618,6 +619,7 @@ function renderPlayerBar(){
         div.innerHTML=`<div class="token-row1"><span class="token-avatar"></span><span class="token-name">${p.name}</span></div><div class="token-money">${fmt(p.money)}</div><div class="token-details">${p.job}</div><div class="token-details">${HOUSING[p.housingLevel].icon} ${HOUSING[p.housingLevel].name}</div><div class="token-details">${CARS[p.carLevel].icon} ${CARS[p.carLevel].name}</div><div class="happiness-bar-wrap"><span style="font-size:0.75em;color:${hColor}">${h.toFixed(1)}😊</span><div class="happiness-bar"><div class="happiness-fill" style="width:${hPct}%;background:${hColor}"></div></div></div>${p.inJail?'<div class="token-jail">⛓️ JAIL</div>':''}`;
         bar.appendChild(div);
         renderAvatar(div.querySelector('.token-avatar'),p.avatar,22);
+        checkAchievements(p);
     });
     updateActivePlayerPanel();
 }
@@ -635,7 +637,7 @@ function updateActivePlayerPanel(){
     const jailEl=document.getElementById('apJail');
     if(jailEl){if(p.inJail){jailEl.textContent=`⛓️ JAIL: ${p.jailReason} — Turn ${p.jailTurns+1}/${p.jailMaxTurns} | Bail: ${fmt(p.jailFine)}`;jailEl.classList.remove('hidden');}else jailEl.classList.add('hidden');}
     const house=housingDisplayName(p);set('apHousingIcon',house.icon);set('apHousingName',house.name);renderUpgradeTrack('housingTrack',p.housingLevel,HOUSING.length);
-    const car=CARS[p.carLevel];set('apCarIcon',car.icon);set('apCarName',car.name);renderUpgradeTrack('carTrack',p.carLevel,CARS.length);
+    const car=CARS[p.carLevel];set('apCarIcon',car.icon);set('apCarName',car.name);renderUpgradeTrack('carTrack',p.carLevel,CARS.length);updateRapSheetBtn();
 }
 function renderUpgradeTrack(trackId,currentLevel,totalLevels){
     const el=document.getElementById(trackId);if(!el) return;el.innerHTML='';
@@ -729,7 +731,7 @@ function afterRoll(player,steps){
 // ── JAIL ──────────────────────────────────────────────────
 function handleJailRoll(player,d1El,d2El){const die1=Math.ceil(Math.random()*6),die2=Math.ceil(Math.random()*6);animateDice(d1El,d2El,die1,die2,()=>{document.getElementById('diceResult').textContent=`${DICE_FACES[die1]} ${DICE_FACES[die2]} = ${die1+die2}${die1===die2?' 🎲 DOUBLES!':''}`;handleJailTurn(player,die1===die2,die1+die2);});}
 function handleJailTurn(player,doubles,total){
-    if(doubles){player.inJail=false;if(player.vehicleSeized>0){player.carLevel=player.vehicleSeized;player.vehicleSeized=0;player.carImpounded=false;}renderPlayerBar();showCardOverlay('🎲','JAIL BREAK','Doubles! Free!',`${player.name} rolled doubles and escaped from: ${player.jailReason}!`,'good',()=>afterRoll(player,total));return;}
+    if(doubles){player.inJail=false;unlockAch(player,'jailbreak');if(player.vehicleSeized>0){player.carLevel=player.vehicleSeized;player.vehicleSeized=0;player.carImpounded=false;}renderPlayerBar();showCardOverlay('🎲','JAIL BREAK','Doubles! Free!',`${player.name} rolled doubles and escaped from: ${player.jailReason}!`,'good',()=>afterRoll(player,total));return;}
     player.jailTurns++;
     if(player.jailTurns>=player.jailMaxTurns){
         const imp=player.vehicleSeized>0?CARS[player.vehicleSeized].impound:0,tot=player.jailFine+imp;
@@ -778,7 +780,7 @@ function resolveSteal(){
         sd1.textContent=DICE_FACES[Math.floor(Math.random()*6)+1];sd2.textContent=DICE_FACES[Math.floor(Math.random()*6)+1];ticks++;
         if(ticks>8){clearInterval(iv);sd1.classList.remove('rolling');sd2.classList.remove('rolling');sd1.textContent=DICE_FACES[d1];sd2.textContent=DICE_FACES[d2];
             let result='';
-            if(d1>d2){const sl=victim.carLevel;victim.carLevel=0;thief.carLevel=sl;adjustHappiness(thief,1);adjustHappiness(victim,-1);result=`🏆 ${thief.name} wins! (${d1} vs ${d2})\nSTEAL SUCCESS! Grabbed the ${CARS[sl].icon} ${CARS[sl].name}!\n${victim.name} is left on foot! 😤`;}
+            if(d1>d2){const sl=victim.carLevel;victim.carLevel=0;thief.carLevel=sl;adjustHappiness(thief,1);adjustHappiness(victim,-1);unlockAch(thief,'untouchable');unlockAch(victim,'jacked');result=`🏆 ${thief.name} wins! (${d1} vs ${d2})\nSTEAL SUCCESS! Grabbed the ${CARS[sl].icon} ${CARS[sl].name}!\n${victim.name} is left on foot! 😤`;}
             else if(d2>d1){adjustHappiness(victim,0.5);result=`🛡️ ${victim.name} defends! (${d2} vs ${d1})\n${victim.name} fought off ${thief.name} and kept their ride! 💪`;}
             else result=`🤝 TIE! Both rolled ${d1}!\n${victim.name} keeps the vehicle on a tie.`;
             document.getElementById('stealResult').textContent=result;renderPlayerBar();updatePlayerPieces();
@@ -928,7 +930,7 @@ function handleJobOffice(player){
     const available=getAvailableJobs(player);const better=available.filter(j=>j.pay>player.jobPay);const pool=better.length>0?better:available;const offer=rnd(pool);const laps=player.laps||0;
     let nu=laps<15?`\nEntry-level jobs unlock at Lap 15 (${15-laps} away)`:laps<30?`\nMid-level jobs at Lap 30 (${30-laps} away)`:laps<45?`\nSenior jobs at Lap 45 (${45-laps} away)`:'All jobs unlocked!';
     showUpgradePopup('💼 Job Office — '+getTierLabel(laps),`${player.name}, job offer:\n${offer.icon} ${offer.name} | Payday: ${fmt(offer.pay)}\nCurrent: ${player.job} (${fmt(player.jobPay)})${nu}`,'TAKE IT!',()=>{
-        player.job=offer.name;player.jobPay=offer.pay;adjustHappiness(player,0.5);renderPlayerBar();closePopup();
+        player.job=offer.name;player.jobPay=offer.pay;adjustHappiness(player,0.5);unlockAch(player,'first_job');renderPlayerBar();closePopup();
         showCardOverlay('💼','NEW JOB!',offer.icon+' '+offer.name,`${player.name} is now ${offer.name}! Payday: ${fmt(offer.pay)}`,'good',()=>checkWinThenEnd(player));
     },()=>{closePopup();endTurn();});
 }
@@ -957,12 +959,13 @@ function checkWinThenEnd(player){if(!checkWin(player)) endTurn();}
 function endTurn(){if(gameState.phase==='over') return;const player=gameState.players[gameState.currentPlayerIndex];if(checkWin(player)) return;gameState.currentPlayerIndex=(gameState.currentPlayerIndex+1)%gameState.numPlayers;renderPlayerBar();updateCurrentPlayerDisplay();}
 function checkWin(player){if(player.money>=gameState.winGoal){showWin(player);return true;}return false;}
 function showWin(player){
-    gameState.phase='over';let ws=document.getElementById('winScreen');
+    gameState.phase='over';unlockAch(player,'champion');sfx.fanfare();let ws=document.getElementById('winScreen');
     if(!ws){ws=document.createElement('div');ws.id='winScreen';ws.className='screen hidden';ws.innerHTML=`<div class="win-content"><h1>🏆 WINNER! 🏆</h1><div id="winnerAvatar" style="font-size:5em"></div><div id="winnerName" style="font-size:2em;color:#4ecca3;margin:10px 0"></div><div id="winStory" style="color:#cdd4e6;font-size:0.95em;line-height:1.6;margin:6px 0 14px;white-space:pre-line"></div><div class="win-stats" id="winStats"></div><button class="btn" onclick="location.reload()">PLAY AGAIN!</button></div>`;document.body.appendChild(ws);}
     renderAvatar(document.getElementById('winnerAvatar'),player.avatar,100);
     document.getElementById('winnerName').textContent=`${player.name} WON!`;
     const _ws=document.getElementById('winStory'); if(_ws) _ws.textContent='From a prison cot to '+HOUSING[player.housingLevel].name+' and '+fmt(player.money)+' in the bank.\n'+(player.laps||0)+' laps. Started with nothing but a parole slip.\n\n\u260E\uFE0F Sully (P.O.): "I had money on you failing. Best bet I ever lost. Get outta here, mogul."';
     document.getElementById('winStats').innerHTML=`<div class="win-stat"><div class="win-stat-label">Final Money</div><div class="win-stat-value">${fmt(player.money)}</div></div><div class="win-stat"><div class="win-stat-label">Mood</div><div class="win-stat-value">${player.happiness.toFixed(1)}/10</div></div><div class="win-stat"><div class="win-stat-label">Home</div><div class="win-stat-value">${HOUSING[player.housingLevel].icon} ${HOUSING[player.housingLevel].name}</div></div><div class="win-stat"><div class="win-stat-label">Car</div><div class="win-stat-value">${CARS[player.carLevel].icon} ${CARS[player.carLevel].name}</div></div><div class="win-stat"><div class="win-stat-label">Laps</div><div class="win-stat-value">\u{1F504} ${player.laps||0}</div></div>`;
+    const _wc=document.querySelector('#winScreen .win-content'); if(_wc){ let _wb=document.getElementById('winBadges'); if(!_wb){ _wb=document.createElement('div'); _wb.id='winBadges'; _wb.className='win-badges'; const _btn=_wc.querySelector('button'); _wc.insertBefore(_wb,_btn); } const earned=(player.achievements||[]).map(id=>ACH_BY_ID[id]).filter(Boolean); _wb.innerHTML='<div class="wb-title">RAP SHEET — '+earned.length+'/'+ACHIEVEMENTS.length+' EARNED</div>'+earned.map(a=>`<div class="wb" title="${a.name}">${a.icon}</div>`).join(''); }
     showScreen('winScreen');
 }
 function showGameOver(player){
@@ -974,3 +977,148 @@ function showGameOver(player){
 }
 function showPopup(title,message,type){document.getElementById('popupTitle').textContent=title;document.getElementById('popupMessage').textContent=message;const popup=document.getElementById('popup');const content=popup.querySelector('.popup-content');content.className='popup-content'+(type==='good'?' popup-good':type==='bad'?' popup-bad':'');content.querySelectorAll('button').forEach(b=>b.remove());const ok=document.createElement('button');ok.className='btn';ok.textContent='OK!!';ok.onclick=closePopup;content.appendChild(ok);popup.classList.remove('hidden');}
 function closePopup(){document.getElementById('popup').classList.add('hidden');}
+
+// ============================================================
+//  RAP SHEET — achievement system  (Drop 5 — self-contained)
+//  Injects its own CSS + DOM. Touches no thresholds/mechanics.
+// ============================================================
+const ACHIEVEMENTS = [
+    { id:'first_job',       icon:'💼', name:'Gainfully Employed', desc:'Land your first legit job.' },
+    { id:'first_wheels',    icon:'🚗', name:'Got Wheels',         desc:'Buy your first real car.' },
+    { id:'homeowner',       icon:'🏠', name:'Off the Streets',    desc:'Move into real housing.' },
+    { id:'loaded',          icon:'💰', name:'Six Figures',        desc:'Stack $100,000 in the bank.' },
+    { id:'lap_machine',     icon:'🔄', name:'Marathon',           desc:'Complete 25 laps around the block.' },
+    { id:'sully_proud',     icon:'📞', name:"Sully's Pride",      desc:'Reach Lap 45 — senior-tier life.' },
+    { id:'mood_master',     icon:'😊', name:'Living Good',        desc:'Max out your mood at 10/10.' },
+    { id:'untouchable',     icon:'⚡', name:'Untouchable',        desc:'Win a vehicle showdown.' },
+    { id:'jacked',          icon:'😤', name:'Got Jacked',         desc:'Lose your ride in a showdown.' },
+    { id:'repeat_offender', icon:'⛓️', name:'Repeat Offender',    desc:'Get locked up 3 times.' },
+    { id:'jailbreak',       icon:'🎲', name:'Jailbreak',          desc:'Roll doubles and bust out of jail.' },
+    { id:'mansion',         icon:'🏰', name:'Made It',            desc:'Buy the top-tier home.' },
+    { id:'champion',        icon:'👑', name:'Free at Last',       desc:'Win the game.' }
+];
+const ACH_BY_ID = Object.fromEntries(ACHIEVEMENTS.map(a => [a.id, a]));
+
+// ── procedural sound (no assets) ─────────────────────────
+const sfx = {
+    ctx:null, muted:(localStorage.getItem('chaosMuted')==='1'),
+    _ac(){ if(this.muted) return null; try{ if(!this.ctx) this.ctx=new (window.AudioContext||window.webkitAudioContext)(); if(this.ctx.state==='suspended') this.ctx.resume(); return this.ctx; }catch(e){ return null; } },
+    _note(freq,start,dur,type,vol){ const ac=this.ctx; const o=ac.createOscillator(),g=ac.createGain(); o.type=type||'sine'; o.frequency.value=freq; o.connect(g); g.connect(ac.destination); const t=ac.currentTime+start; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.18,t+0.015); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.start(t); o.stop(t+dur+0.02); },
+    chime(){ const ac=this._ac(); if(!ac) return; [[784,0],[1047,0.09],[1319,0.18]].forEach(([f,s])=>this._note(f,s,0.32,'triangle',0.16)); },
+    fanfare(){ const ac=this._ac(); if(!ac) return; [[523,0],[659,0.13],[784,0.26],[1047,0.42]].forEach(([f,s])=>this._note(f,s,0.5,'sawtooth',0.14)); },
+    toggle(){ this.muted=!this.muted; localStorage.setItem('chaosMuted', this.muted?'1':'0'); if(!this.muted) this.chime(); const b=document.getElementById('rsMuteBtn'); if(b) b.textContent=this.muted?'🔇':'🔊'; }
+};
+
+// ── unlock + checks ──────────────────────────────────────
+function unlockAch(player, id){
+    if(!player || !player.achievements) return;
+    if(player.achievements.indexOf(id) !== -1) return;
+    const ach = ACH_BY_ID[id]; if(!ach) return;
+    player.achievements.push(id);
+    sfx.chime();
+    showAchToast(player, ach);
+    const rs=document.getElementById('rapSheetOverlay');
+    if(rs && !rs.classList.contains('hidden')) renderRapSheet();
+}
+function checkAchievements(p){
+    if(!p || !p.achievements) return;
+    if(p.money >= 100000) unlockAch(p,'loaded');
+    if(p.carLevel >= 2) unlockAch(p,'first_wheels');
+    if(p.housingLevel >= 2) unlockAch(p,'homeowner');
+    if(p.housingLevel >= HOUSING.length-1) unlockAch(p,'mansion');
+    if((p.laps||0) >= 25) unlockAch(p,'lap_machine');
+    if((p.laps||0) >= 45) unlockAch(p,'sully_proud');
+    if(p.happiness >= 10) unlockAch(p,'mood_master');
+}
+
+// ── UI injection (once) ──────────────────────────────────
+let _achUIReady = false;
+function injectAchUI(){
+    if(_achUIReady) return; _achUIReady = true;
+    const css = `
+    #rapSheetBtn{position:fixed;right:14px;bottom:14px;z-index:1200;background:linear-gradient(135deg,#16213e,#0f3460);color:#f5a623;border:2px solid #f5a623;border-radius:14px;padding:9px 13px;font-weight:800;font-size:0.82rem;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.5);letter-spacing:.5px}
+    #rapSheetBtn:hover{transform:translateY(-2px)}
+    #rapSheetBtn .rs-count{color:#4ecca3}
+    #rapSheetOverlay{position:fixed;inset:0;z-index:1300;background:rgba(6,8,22,.82);display:flex;align-items:center;justify-content:center;padding:18px}
+    #rapSheetOverlay.hidden{display:none}
+    .rs-card{width:min(560px,94vw);max-height:88vh;overflow:auto;background:linear-gradient(160deg,#1a1a2e,#0a0a1a);border:2px solid #f5a623;border-radius:18px;padding:18px 18px 22px;box-shadow:0 0 50px rgba(245,166,35,.35)}
+    .rs-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+    .rs-title{font-size:1.4rem;font-weight:900;color:#f5a623;letter-spacing:1px}
+    .rs-sub{color:#8b93ad;font-size:.78rem;margin-bottom:14px}
+    .rs-actions{display:flex;gap:8px}
+    .rs-iconbtn{background:#0f3460;border:1px solid #2a3a66;color:#cdd4e6;border-radius:10px;padding:6px 10px;cursor:pointer;font-size:1rem}
+    .rs-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:430px){.rs-grid{grid-template-columns:1fr}}
+    .rs-badge{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.03);border:1px solid #242a45;border-radius:12px;padding:10px}
+    .rs-badge.got{border-color:#4ecca3;background:linear-gradient(135deg,rgba(78,204,163,.14),rgba(78,204,163,.03))}
+    .rs-badge .ic{font-size:1.6rem;filter:grayscale(1) opacity(.4);line-height:1}
+    .rs-badge.got .ic{filter:none}
+    .rs-badge .nm{font-weight:800;color:#7e88a6;font-size:.9rem}
+    .rs-badge.got .nm{color:#eaf0ff}
+    .rs-badge .ds{font-size:.74rem;color:#727b97;margin-top:2px;line-height:1.3}
+    .rs-progress{margin:0 0 14px;height:8px;border-radius:6px;background:#11162b;overflow:hidden;border:1px solid #242a45}
+    .rs-progress>i{display:block;height:100%;background:linear-gradient(90deg,#4ecca3,#f5a623);transition:width .4s}
+    #achToastWrap{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:1400;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:min(400px,92vw)}
+    .ach-toast{pointer-events:none;background:linear-gradient(135deg,#1a1a2e,#0f3460);border:2px solid #4ecca3;border-radius:14px;padding:10px 14px;display:flex;gap:12px;align-items:center;box-shadow:0 8px 30px rgba(0,0,0,.6);animation:achIn .35s cubic-bezier(.2,1.3,.5,1) both}
+    .ach-toast.out{animation:achOut .4s ease forwards}
+    .ach-toast .ti{font-size:2rem;line-height:1}
+    .ach-toast .tt1{font-size:.66rem;letter-spacing:1.5px;color:#4ecca3;font-weight:800}
+    .ach-toast .tt2{font-size:.98rem;font-weight:900;color:#fff}
+    .ach-toast .tt3{font-size:.72rem;color:#aeb6cf}
+    @keyframes achIn{from{opacity:0;transform:translateY(-22px) scale(.92)}to{opacity:1;transform:none}}
+    @keyframes achOut{to{opacity:0;transform:translateY(-18px) scale(.96)}}
+    .win-badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0 4px}
+    .win-badges .wb{font-size:1.7rem;background:rgba(78,204,163,.12);border:1px solid #4ecca3;border-radius:12px;width:46px;height:46px;display:flex;align-items:center;justify-content:center}
+    .win-badges .wb-title{width:100%;text-align:center;color:#f5a623;font-weight:800;font-size:.8rem;letter-spacing:1px;margin-bottom:2px}`;
+    const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
+
+    const btn=document.createElement('button'); btn.id='rapSheetBtn';
+    btn.innerHTML='📋 RAP SHEET <span class="rs-count" id="rsBtnCount"></span>';
+    btn.onclick=toggleRapSheet; document.body.appendChild(btn);
+
+    const ov=document.createElement('div'); ov.id='rapSheetOverlay'; ov.className='hidden';
+    ov.innerHTML=`<div class="rs-card">
+        <div class="rs-head"><div class="rs-title">📋 RAP SHEET</div>
+        <div class="rs-actions"><button class="rs-iconbtn" id="rsMuteBtn" title="Sound">${sfx.muted?'🔇':'🔊'}</button><button class="rs-iconbtn" onclick="toggleRapSheet()" title="Close">✕</button></div></div>
+        <div class="rs-sub" id="rsSub"></div>
+        <div class="rs-progress"><i id="rsBar"></i></div>
+        <div class="rs-grid" id="rsGrid"></div></div>`;
+    document.body.appendChild(ov);
+    document.getElementById('rsMuteBtn').onclick=()=>sfx.toggle();
+    ov.addEventListener('click',e=>{ if(e.target===ov) toggleRapSheet(); });
+
+    const tw=document.createElement('div'); tw.id='achToastWrap'; document.body.appendChild(tw);
+    updateRapSheetBtn();
+}
+function updateRapSheetBtn(){
+    const c=document.getElementById('rsBtnCount'); if(!c) return;
+    const p=gameState.players[gameState.currentPlayerIndex]; if(!p||!p.achievements) return;
+    c.textContent=`${p.achievements.length}/${ACHIEVEMENTS.length}`;
+}
+function toggleRapSheet(){
+    const ov=document.getElementById('rapSheetOverlay'); if(!ov) return;
+    if(ov.classList.contains('hidden')){ renderRapSheet(); ov.classList.remove('hidden'); }
+    else ov.classList.add('hidden');
+}
+function renderRapSheet(){
+    const p=gameState.players[gameState.currentPlayerIndex]; if(!p||!p.achievements) return;
+    const got=p.achievements.length, tot=ACHIEVEMENTS.length;
+    const sub=document.getElementById('rsSub'); if(sub) sub.textContent=`${p.name}'s record — ${got} of ${tot} earned`;
+    const bar=document.getElementById('rsBar'); if(bar) bar.style.width=(got/tot*100)+'%';
+    const grid=document.getElementById('rsGrid'); if(!grid) return; grid.innerHTML='';
+    ACHIEVEMENTS.forEach(a=>{
+        const has=p.achievements.indexOf(a.id)!==-1;
+        const d=document.createElement('div'); d.className='rs-badge'+(has?' got':'');
+        d.innerHTML=`<div class="ic">${a.icon}</div><div><div class="nm">${has?a.name:'???'}</div><div class="ds">${has?a.desc:'Locked — keep grinding.'}</div></div>`;
+        grid.appendChild(d);
+    });
+}
+function showAchToast(player, ach){
+    injectAchUI();
+    const wrap=document.getElementById('achToastWrap'); if(!wrap) return;
+    const t=document.createElement('div'); t.className='ach-toast';
+    t.innerHTML=`<div class="ti">${ach.icon}</div><div><div class="tt1">RAP SHEET UNLOCKED</div><div class="tt2">${ach.name}</div><div class="tt3">${player.name} — ${ach.desc}</div></div>`;
+    wrap.appendChild(t);
+    setTimeout(()=>{ t.classList.add('out'); setTimeout(()=>t.remove(),420); }, 3400);
+    updateRapSheetBtn();
+}
