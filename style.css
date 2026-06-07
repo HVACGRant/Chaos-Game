@@ -206,9 +206,9 @@ body {
 ══════════════════════════════════════ */
 .game-board {
     display: grid;
-    /* 10 equal columns, 10 equal rows */
-    grid-template-columns: repeat(10, 1fr);
-    grid-template-rows: repeat(10, 1fr);
+    /* Fat outer ring, smaller center: edge tracks 2fr, inner 8 tracks 1fr */
+    grid-template-columns: 2fr repeat(8, 1fr) 2fr;
+    grid-template-rows: 2fr repeat(8, 1fr) 2fr;
     gap: 2px;
     width:  min(98vh, calc(100vw - 348px));
     height: min(98vh, calc(100vw - 348px));
@@ -255,12 +255,12 @@ body {
 
 /* Space content — fluid font so text stays readable */
 .space-icon {
-    font-size: clamp(1.1em, 2.7vmin, 2.1em);
+    font-size: clamp(1.2em, 2.9vmin, 2.3em);
     line-height: 1;
     flex-shrink: 0;
 }
 .space-name {
-    font-size: clamp(0.62em, 1.65vmin, 1.1em);
+    font-size: clamp(0.72em, 2vmin, 1.35em);
     line-height: 1.1;
     word-break: break-word;
     color: #f3f5fb;
@@ -325,11 +325,11 @@ body {
 .center-area {
     /* Positioned absolutely so it doesn't interfere with grid layout */
     position: absolute;
-    /* One square width from each edge (10% each) + gap */
-    top: calc(10% + 4px);
-    left: calc(10% + 4px);
-    right: calc(10% + 4px);
-    bottom: calc(10% + 4px);
+    /* Matches the fat outer ring (~16.7% per edge track) + gap */
+    top: calc(16.6% + 4px);
+    left: calc(16.6% + 4px);
+    right: calc(16.6% + 4px);
+    bottom: calc(16.6% + 4px);
     background: rgba(0,0,0,0.75);
     border: 2px solid var(--navy);
     border-radius: 10px;
