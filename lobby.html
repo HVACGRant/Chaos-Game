@@ -196,39 +196,48 @@ function makeCode(){ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s=''; for(l
 
 async function createGame(){
   toast('createToast','Creating…',true);
-  let code, ok=false, tries=0;
-  while(!ok && tries++ < 8){
-    code = makeCode();
-    const res = await db.ref('games/'+code+'/meta').transaction(cur => cur===null ? {
-      status:'lobby', host:uid, winGoal:pick.goal, boardMode:pick.mode,
-      createdAt: firebase.database.ServerValue.TIMESTAMP,
-      lastActivity: firebase.database.ServerValue.TIMESTAMP
-    } : undefined);
-    ok = res.committed;
+  try{
+    let code, ok=false, tries=0;
+    while(!ok && tries++ < 8){
+      code = makeCode();
+      const res = await db.ref('games/'+code+'/meta').transaction(cur => cur===null ? {
+        status:'lobby', host:uid, winGoal:pick.goal, boardMode:pick.mode,
+        createdAt: firebase.database.ServerValue.TIMESTAMP,
+        lastActivity: firebase.database.ServerValue.TIMESTAMP
+      } : undefined);
+      ok = res.committed;
+    }
+    if(!ok){ toast('createToast','Could not create a game, try again.'); return; }
+    await db.ref('games/'+code+'/players/0').set({ uid, name:playerName(), avatar:pick.avatar, online:true, joinedAt: firebase.database.ServerValue.TIMESTAMP });
+    enterLobby(code, 0);
+  }catch(e){
+    console.error('createGame failed:', e);
+    toast('createToast','Error: '+(e && e.message ? e.message : e));
   }
-  if(!ok){ toast('createToast','Could not create a game, try again.'); return; }
-  await db.ref('games/'+code+'/players/0').set({ uid, name:playerName(), avatar:pick.avatar, online:true, joinedAt: firebase.database.ServerValue.TIMESTAMP });
-  enterLobby(code, 0);
 }
 
 async function joinGame(){
   const code = document.getElementById('joinCode').value.trim().toUpperCase();
   if(code.length!==4){ toast('joinToast','Enter the 4-character code.'); return; }
   toast('joinToast','Joining…',true);
-  const metaSnap = await db.ref('games/'+code+'/meta').get();
-  if(!metaSnap.exists()){ toast('joinToast','No game found with that code.'); return; }
-  if(metaSnap.val().status !== 'lobby'){ toast('joinToast','That game has already started.'); return; }
+  try{
+    const metaSnap = await db.ref('games/'+code+'/meta').get();
+    if(!metaSnap.exists()){ toast('joinToast','No game found with that code.'); return; }
+    if(metaSnap.val().status !== 'lobby'){ toast('joinToast','That game has already started.'); return; }
 
-  let claimedSlot = null;
-  const res = await db.ref('games/'+code+'/players').transaction(players => {
-    players = players || {};
-    // already in this game from this device?
-    for(let i=0;i<MAX_PLAYERS;i++){ if(players[i] && players[i].uid===uid){ claimedSlot=i; players[i].online=true; return players; } }
-    for(let i=0;i<MAX_PLAYERS;i++){ if(!players[i]){ claimedSlot=i; players[i]={ uid, name:playerName(), avatar:pick.avatar, online:true, joinedAt: firebase.database.ServerValue.TIMESTAMP }; return players; } }
-    return; // full → abort
-  });
-  if(!res.committed || claimedSlot===null){ toast('joinToast','That game is full (10 players).'); return; }
-  enterLobby(code, claimedSlot);
+    let claimedSlot = null;
+    const res = await db.ref('games/'+code+'/players').transaction(players => {
+      players = players || {};
+      for(let i=0;i<MAX_PLAYERS;i++){ if(players[i] && players[i].uid===uid){ claimedSlot=i; players[i].online=true; return players; } }
+      for(let i=0;i<MAX_PLAYERS;i++){ if(!players[i]){ claimedSlot=i; players[i]={ uid, name:playerName(), avatar:pick.avatar, online:true, joinedAt: firebase.database.ServerValue.TIMESTAMP }; return players; } }
+      return;
+    });
+    if(!res.committed || claimedSlot===null){ toast('joinToast','That game is full (10 players).'); return; }
+    enterLobby(code, claimedSlot);
+  }catch(e){
+    console.error('joinGame failed:', e);
+    toast('joinToast','Error: '+(e && e.message ? e.message : e));
+  }
 }
 
 // ── lobby ──────────────────────────────────────────────
