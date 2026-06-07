@@ -181,6 +181,14 @@ const GOOD_CARDS = [
     { name:'Promoted!',        icon:'🏆', effect:p=>{ if(p.jobPay<=2000) return ['Free Pass!',p.name+' is unemployed.','sarcastic']; p.jobPay=Math.round(p.jobPay*1.3); adjustHappiness(p,0.5); return ['+30% Pay','Got promoted! Payday: '+fmt(p.jobPay),'good']; }},
     { name:'Found Crypto',     icon:'🪙', effect:p=>{ p.money+=1000; adjustHappiness(p,0.5); return ['+$1,000','Found an old crypto wallet!','good']; }},
     { name:'Bet on Sports',    icon:'🏅', effect:p=>{ p.money+=900;  adjustHappiness(p,0.5); return ['+$900','Won a sports bet!','good']; }},
+    { name:'Overtime Pay',     icon:'⏱️', effect:p=>{ if(p.jobPay<=2000) return ['Free Pass!',p.name+' is unemployed.','sarcastic']; const b=Math.round(p.jobPay*0.5); p.money+=b; adjustHappiness(p,0.5); return ['+'+fmt(b),'Picked up overtime! +'+fmt(b),'good']; }},
+    { name:'Cash Tips',        icon:'🤑', effect:p=>{ p.money+=350; adjustHappiness(p,0.5); return ['+$350','Pocketed $350 in cash tips!','good']; }},
+    { name:'Sold Old Phone',   icon:'📱', effect:p=>{ p.money+=250; adjustHappiness(p,0.5); return ['+$250','Sold your old phone for $250!','good']; }},
+    { name:'Class Action',     icon:'⚖️', effect:p=>{ p.money+=450; adjustHappiness(p,0.5); return ['+$450','Class-action settlement check arrived!','good']; }},
+    { name:'Recycling Run',    icon:'♻️', effect:p=>{ p.money+=150; adjustHappiness(p,0.5); return ['+$150','Cashed in cans and bottles!','good']; }},
+    { name:'Pawn Shop Win',    icon:'💎', effect:p=>{ p.money+=550; adjustHappiness(p,0.5); return ['+$550','Pawned a thrift-store find for $550!','good']; }},
+    { name:'Cashback Bonus',   icon:'💳', effect:p=>{ p.money+=200; adjustHappiness(p,0.5); return ['+$200','Credit card cashback hit your account!','good']; }},
+    { name:'Tool Resale',      icon:'🔧', effect:p=>{ p.money+=650; adjustHappiness(p,0.5); return ['+$650','Flipped some tools for a tidy profit!','good']; }},
 ];
 const BAD_CARDS = [
     { name:'Speeding Ticket',   icon:'🚨', effect:p=>{ const f=scaledFine(p,200); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Speeding ticket! -'+fmt(f),'bad']; }},
@@ -201,6 +209,14 @@ const BAD_CARDS = [
     { name:'Gambling Debt',     icon:'🎲', effect:p=>{ const f=scaledFine(p,700); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Gambling debt! -'+fmt(f),'bad']; }},
     { name:'Car Stolen',        icon:'🔑', effect:p=>{ if(p.carLevel===0) return ['Free Pass!','No car.','sarcastic']; p.carLevel=Math.max(0,p.carLevel-1); adjustHappiness(p,-0.5); return ['Car Downgraded','Car got stolen!','bad']; }},
     { name:'Move Back w/ Parents',icon:'🏚️',effect:p=>{ p.housingLevel=Math.max(0,p.housingLevel-2); adjustHappiness(p,-1); return ['Housing Downgraded','Had to move back with parents!','bad']; }},
+    { name:'Parking Ticket',   icon:'🅿️', effect:p=>{ const f=scaledFine(p,120); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Parking ticket! -'+fmt(f),'bad']; }},
+    { name:'Phone Repair',     icon:'📲', effect:p=>{ const f=scaledFine(p,300); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Cracked your screen! -'+fmt(f),'bad']; }},
+    { name:'Overdraft Fees',   icon:'🏦', effect:p=>{ const f=scaledFine(p,250); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Overdraft fees stacked up! -'+fmt(f),'bad']; }},
+    { name:'Flat Tire',        icon:'🛞', effect:p=>{ if(p.carLevel===0) return ['Free Pass!','No car to flatten.','sarcastic']; const f=scaledFine(p,180); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Flat tire! -'+fmt(f),'bad']; }},
+    { name:'Late Fees',        icon:'📅', effect:p=>{ const f=scaledFine(p,150); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Late on every bill again. -'+fmt(f),'bad']; }},
+    { name:'Vet Bill',         icon:'🐈', effect:p=>{ const f=scaledFine(p,600); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Pet emergency at the vet! -'+fmt(f),'bad']; }},
+    { name:'AC Broke',         icon:'❄️', effect:p=>{ if(p.housingLevel<3) return ['Free Pass!',p.name+' has no AC anyway.','sarcastic']; const f=scaledFine(p,900); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'AC died in a heatwave! -'+fmt(f),'bad']; }},
+    { name:'Scammed Online',   icon:'📧', effect:p=>{ const f=scaledFine(p,400); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Fell for a scam email. -'+fmt(f),'bad']; }},
 ];
 const SARCASTIC_CARDS = [
     { name:'Galaxy Brain',      icon:'🧠', effect:p=>{ const f=scaledFine(p,300); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),"Made a 'genius' play. Down "+fmt(f)+". Big brain, dumbass.",'sarcastic']; }},
@@ -223,6 +239,12 @@ const SARCASTIC_CARDS = [
     { name:'Quit Caffeine',     icon:'☕', effect:p=>{ adjustHappiness(p,-1); return ['-1 Happiness',"Quit caffeine to 'optimize.' Now you're tired AND insufferable.",'sarcastic']; }},
     { name:'Budgeting App',     icon:'💰', effect:p=>{ charge(p,50); adjustHappiness(p,-0.5); return ['-$50',"App told you you're broke. No shit. -$50",'sarcastic']; }},
     { name:'Hustle Culture',    icon:'💼', effect:p=>{ adjustHappiness(p,-1); return ['-1 Happiness',"Grinded 80 hours this week. Made the same damn money. Love the grind!",'sarcastic']; }},
+    { name:'Side Hustle #7',    icon:'🧾', effect:p=>{ const f=scaledFine(p,350); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),"Started your 7th side hustle. Lost money on all 7, dipshit. -"+fmt(f),'sarcastic']; }},
+    { name:'Subscription Hell', icon:'📺', effect:p=>{ charge(p,90); adjustHappiness(p,-0.5); return ['-$90',"Paying for 11 streaming services. Watch none of the fuckers. -$90",'sarcastic']; }},
+    { name:'Energy Drink Diet', icon:'⚡', effect:p=>{ charge(p,70); adjustHappiness(p,-0.5); return ['-$70',"Replaced sleep with energy drinks. Your heart's pissed and so's your wallet.",'sarcastic']; }},
+    { name:'Drop Shipping 2',   icon:'📦', effect:p=>{ const f=scaledFine(p,500); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),"Second dropshipping store. Sold the same as the first: not a damn thing.",'sarcastic']; }},
+    { name:'Day Trading',       icon:'📉', effect:p=>{ const f=scaledFine(p,900); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),"Quit your job to day-trade. Market said get fucked. -"+fmt(f),'sarcastic']; }},
+    { name:'Lucky Streak',      icon:'🍀', effect:p=>{ p.money+=120; adjustHappiness(p,0.5); return ['+$120',"Holy shit, an actual win? Found $120. Don't get used to it.",'good']; }},
 ];
 const FUNNY_GOOD_CARDS = [
     { name:'Accidental Influencer',icon:'🤳',effect:p=>{ p.money+=800; adjustHappiness(p,0.5); return ['+$800','You tripped on camera and went viral. Brand deal landed!','good']; }},
@@ -233,6 +255,12 @@ const FUNNY_GOOD_CARDS = [
     { name:'Goat Yoga Instructor', icon:'🐐',effect:p=>{ p.money+=800; adjustHappiness(p,0.5); return ['+$800','Certified goat yoga instructor. Goats loved you.','good']; }},
     { name:'Dumpster Picasso',     icon:'🎨',effect:p=>{ p.money+=1500;adjustHappiness(p,0.5); return ['+$1,500','Trash sculpture sold at auction. Art world is wild.','good']; }},
     { name:'Duck Army',            icon:'🦆',effect:p=>{ p.money+=600; adjustHappiness(p,0.5); return ['+$600','Duck army you trained finally paid dividends.','good']; }},
+    { name:'Goose Bodyguard',  icon:'🪿', effect:p=>{ p.money+=500; adjustHappiness(p,0.5); return ['+$500','Your goose chased off a mugger. Reward money rolled in!','good']; }},
+    { name:'Viral Sneeze',     icon:'🤧', effect:p=>{ p.money+=800; adjustHappiness(p,0.5); return ['+$800','Your sneeze went viral. Brands love you now!','good']; }},
+    { name:'Found a Sandwich', icon:'🥪', effect:p=>{ p.money+=300; adjustHappiness(p,1); return ['+$300 +😊','Found a $20 in a sandwich, then found more cash. Magic sandwich.','good']; }},
+    { name:'Pigeon Investor',  icon:'🐦', effect:p=>{ p.money+=650; adjustHappiness(p,0.5); return ['+$650','A pigeon pecked the right stock on your screen. Genius bird.','good']; }},
+    { name:'Toddler Jingle',   icon:'🧒', effect:p=>{ p.money+=400; adjustHappiness(p,0.5); return ['+$400','Your kid screamed a jingle. It landed on a cereal box.','good']; }},
+    { name:'Trampoline Fame',  icon:'🤸', effect:p=>{ p.money+=550; adjustHappiness(p,0.5); return ['+$550','Bounced into internet stardom. Endorsement deal!','good']; }},
 ];
 const FUNNY_BAD_CARDS = [
     { name:'Tripped into a Puddle',icon:'💦',effect:p=>{ const f=scaledFine(p,200); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Fell in puddle on way to interview. New clothes: '+fmt(f),'bad']; }},
@@ -242,6 +270,12 @@ const FUNNY_BAD_CARDS = [
     { name:'Crypto Bro Advice',    icon:'🪙',effect:p=>{ const f=scaledFine(p,900); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Took advice from guy in Lamborghini hat. Lost '+fmt(f),'bad']; }},
     { name:'Wrong Burrito Order',  icon:'🌯',effect:p=>{ const f=scaledFine(p,100); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Ordered mild. Got ghost pepper. Hospital: '+fmt(f),'bad']; }},
     { name:'Overslept Interview',  icon:'⏰',effect:p=>{ adjustHappiness(p,-1); return ['Lost Opportunity','Overslept the interview. No money lost. Just your future.','bad']; }},
+    { name:'Raccoon Heist',     icon:'🦝', effect:p=>{ const f=scaledFine(p,300); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Raccoons raided your fridge AND your wallet. -'+fmt(f),'bad']; }},
+    { name:'Wet Paint Chair',   icon:'🪑', effect:p=>{ const f=scaledFine(p,150); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Sat in wet paint. New pants: -'+fmt(f),'bad']; }},
+    { name:'Karaoke Lawsuit',   icon:'🎤', effect:p=>{ const f=scaledFine(p,500); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Sued for emotional damage after your karaoke. -'+fmt(f),'bad']; }},
+    { name:'Llama Rampage',     icon:'🦙', effect:p=>{ const f=scaledFine(p,700); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Rented a party llama. It ate the whole buffet. -'+fmt(f),'bad']; }},
+    { name:'Wrong Group Chat',  icon:'📱', effect:p=>{ adjustHappiness(p,-1); return ['Pure Cringe','Sent it to the family group chat. No money lost. Dignity? Gone.','bad']; }},
+    { name:'Slipped on a Grape',icon:'🍇', effect:p=>{ const f=scaledFine(p,250); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'One grape. One ER visit. -'+fmt(f),'bad']; }},
 ];
 const FUNNY_SARCASTIC_CARDS = [
     { name:'Meditation App',      icon:'🧘',effect:p=>{ charge(p,50); adjustHappiness(p,-0.5); return ['-$50',"Paid $50 for a calm app. Opened it once. Now stressed AND broke.",'sarcastic']; }},
@@ -264,6 +298,11 @@ const FUNNY_SARCASTIC_CARDS = [
     { name:'Dopamine Detox',      icon:'📵',effect:p=>{ adjustHappiness(p,-1); return ['-1 Mood',"Did a dopamine detox. Lasted 4 hours. Reward: a snack.",'sarcastic']; }},
     { name:'Wellness Retreat',    icon:'🌿',effect:p=>{ const f=scaledFine(p,400); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),"Wellness retreat fixed nothing but emptied your account. -"+fmt(f),'sarcastic']; }},
     { name:'Internet Life Hack',  icon:'💡',effect:p=>{ adjustHappiness(p,-0.5); return ['Nothing',"Tried a life hack from the internet. Now you have a new problem.",'sarcastic']; }},
+    { name:'Vision Board 2.0',  icon:'🗂️', effect:p=>{ charge(p,40); adjustHappiness(p,-0.5); return ['-$40',"Made a vision board for your vision board. Still no vision.",'sarcastic']; }},
+    { name:'Almond Mom Phase',  icon:'🥛', effect:p=>{ charge(p,60); adjustHappiness(p,-0.5); return ['-$60',"Swapped meals for almonds and vibes. Hungry AND broke.",'sarcastic']; }},
+    { name:'Becoming a Runner', icon:'🏃', effect:p=>{ charge(p,120); adjustHappiness(p,-0.5); return ['-$120',"Bought $120 of running gear. Ran straight to the couch.",'sarcastic']; }},
+    { name:'Side Quest Energy', icon:'🎮', effect:p=>{ adjustHappiness(p,-0.5); return ['Nothing',"Did every side quest, ignored the main quest: your actual life.",'sarcastic']; }},
+    { name:'Romanticize It',    icon:'🌸', effect:p=>{ charge(p,80); adjustHappiness(p,-0.5); return ['-$80',"Romanticized your commute with an $80 latte habit. So aesthetic.",'sarcastic']; }},
 ];
 const ADULT_GOOD_CARDS = [
     { name:'Ex Paid Back',       icon:'💔',effect:p=>{ p.money+=600; adjustHappiness(p,0.5); return ['+$600','Ex finally paid back that $600. 3 years later. In Venmo pennies.','good']; }},
@@ -271,6 +310,14 @@ const ADULT_GOOD_CARDS = [
     { name:'Happy Hour Victory', icon:'🥂',effect:p=>{ p.money+=200; adjustHappiness(p,1);   return ['+$200 +😊','Two-for-one happy hour. Met a financial advisor. UP.','good']; }},
     { name:'Functioning Adult',  icon:'✅',effect:p=>{ p.money+=400; adjustHappiness(p,0.5); return ['+$400','Actually filed taxes on time. Adulthood: 1, Chaos: 0.','good']; }},
     { name:'Petty but Profitable',icon:'😏',effect:p=>{ p.money+=700; adjustHappiness(p,0.5); return ['+$700','Bet coworker $700 on promotion. You won. No regrets.','good']; }},
+    { name:'Venmo Comeback',    icon:'📲', effect:p=>{ p.money+=400; adjustHappiness(p,0.5); return ['+$400','That deadbeat friend finally paid you back. Shocking shit.','good']; }},
+    { name:'Petty Win',         icon:'😏', effect:p=>{ p.money+=350; adjustHappiness(p,1); return ['+$350 +😊','Got the last laugh AND $350. Tastes fucking great.','good']; }},
+    { name:'Side Gig Payout',   icon:'🛠️', effect:p=>{ p.money+=900; adjustHappiness(p,0.5); return ['+$900','Weekend side gig paid out big. Hustle pays, baby.','good']; }},
+    { name:'No-Show Refund',    icon:'🎫', effect:p=>{ p.money+=250; adjustHappiness(p,0.5); return ['+$250','Got refunded for the wedding you "forgot." Worth it.','good']; }},
+    { name:'Drunk Genius',      icon:'🍻', effect:p=>{ p.money+=600; adjustHappiness(p,0.5); return ['+$600','A drunk idea actually worked for once. +$600.','good']; }},
+    { name:'Quit With Style',   icon:'🚪', effect:p=>{ p.money+=500; adjustHappiness(p,1); return ['+$500 +😊','Rage-quit, they begged you back with a raise. Power move.','good']; }},
+    { name:'Won the Pool',      icon:'🎰', effect:p=>{ p.money+=700; adjustHappiness(p,0.5); return ['+$700','Won the office pool. Everyone hates you. Worth $700.','good']; }},
+    { name:'Garage Gold',       icon:'📦', effect:p=>{ p.money+=450; adjustHappiness(p,0.5); return ['+$450','Sold the junk your ex left behind. +$450.','good']; }},
 ];
 const ADULT_BAD_CARDS = [
     { name:'Situationship Tax',   icon:'💔',effect:p=>{ const f=scaledFine(p,400); charge(p,f); adjustHappiness(p,-1); return ['-'+fmt(f),'Situationship ended. Paid half of "our" vacation. -'+fmt(f),'bad']; }},
@@ -278,6 +325,14 @@ const ADULT_BAD_CARDS = [
     { name:'Work Happy Hour',     icon:'🥃',effect:p=>{ const f=scaledFine(p,500); charge(p,f); adjustHappiness(p,-1); return ['-'+fmt(f),'Said too much at happy hour. HR meeting cost: '+fmt(f),'bad']; }},
     { name:'Gas Station Sushi',   icon:'🍣',effect:p=>{ const f=scaledFine(p,800); charge(p,f); adjustHappiness(p,-1); return ['-'+fmt(f),'Gas station sushi on a dare. Hospital: '+fmt(f)+'. Dare money: $20.','bad']; }},
     { name:'Drunk Online Shopping',icon:'🛒',effect:p=>{ const f=scaledFine(p,450); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Woke up to 8 confirmation emails. Returned none.','bad']; }},
+    { name:'Bar Tab Shock',     icon:'🍸', effect:p=>{ const f=scaledFine(p,400); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Bought rounds for strangers. Tab was -'+fmt(f)+'. Dumbass.','bad']; }},
+    { name:'3AM Surge Ride',    icon:'🚕', effect:p=>{ const f=scaledFine(p,200); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'3am surge-priced ride across town. -'+fmt(f),'bad']; }},
+    { name:'Tattoo Regret',     icon:'🖋️', effect:p=>{ const f=scaledFine(p,500); charge(p,f); adjustHappiness(p,-1); return ['-'+fmt(f),'Drunk tattoo. Now paying to remove the bullshit. -'+fmt(f),'bad']; }},
+    { name:'Ghosted & Charged', icon:'👻', effect:p=>{ const f=scaledFine(p,350); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'Paid for the whole date. Got ghosted. -'+fmt(f),'bad']; }},
+    { name:'HR Wants a Word',   icon:'📎', effect:p=>{ const f=scaledFine(p,600); charge(p,f); adjustHappiness(p,-1); return ['-'+fmt(f),'That "joke" cost you a sensitivity course. -'+fmt(f),'bad']; }},
+    { name:'Vegas Blackout',    icon:'🎲', effect:p=>{ const f=scaledFine(p,1200); charge(p,f); adjustHappiness(p,-1); return ['-'+fmt(f),'What happens in Vegas costs -'+fmt(f)+' and stays on your card forever.','bad']; }},
+    { name:'Speakeasy Scam',    icon:'🥃', effect:p=>{ const f=scaledFine(p,450); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),'$30 for an ice cube and "ambiance." -'+fmt(f),'bad']; }},
+    { name:'Texted Your Ex',    icon:'📱', effect:p=>{ adjustHappiness(p,-1); return ['-1 Mood','Texted your ex at 2am. No money lost. Just your whole damn peace.','bad']; }},
 ];
 const ADULT_SARCASTIC_CARDS = [
     { name:'Work-Life Balance',    icon:'⚖️',effect:p=>{ adjustHappiness(p,-1); return ['-1 Mood',"Found work-life balance. Work laughed and took both fucking halves.",'sarcastic']; }},
@@ -300,6 +355,11 @@ const ADULT_SARCASTIC_CARDS = [
     { name:'Self-Sabotage',        icon:'🔥',effect:p=>{ adjustHappiness(p,-1); return ['-1 Mood',"Self-sabotaged right before things got good. A classic. Nailed it.",'sarcastic']; }},
     { name:'Healing Era',          icon:'🩹',effect:p=>{ const f=scaledFine(p,350); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),"In your 'healing era.' Turns out healing is expensive as hell. -"+fmt(f),'sarcastic']; }},
     { name:'Living My Best Life',  icon:'🍸',effect:p=>{ const f=scaledFine(p,550); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),"Living your best life. Best life cost "+fmt(f)+" you didn't have.",'sarcastic']; }},
+    { name:'Living My Truth',   icon:'🪞', effect:p=>{ const f=scaledFine(p,300); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),"Living your truth. Your truth is broke as hell. -"+fmt(f),'sarcastic']; }},
+    { name:'Protect My Energy', icon:'🔋', effect:p=>{ adjustHappiness(p,-0.5); return ['Nothing',"Protected your energy so hard you ghosted your own job interview.",'sarcastic']; }},
+    { name:'That Girl',         icon:'🥗', effect:p=>{ charge(p,110); adjustHappiness(p,-0.5); return ['-$110',"Became 'that girl.' That girl is also fucking broke. -$110",'sarcastic']; }},
+    { name:'No Thoughts',       icon:'🫥', effect:p=>{ adjustHappiness(p,-1); return ['-1 Mood',"No thoughts, head empty, bank account also empty.",'sarcastic']; }},
+    { name:'Treat Yourself',    icon:'💅', effect:p=>{ const f=scaledFine(p,400); charge(p,f); adjustHappiness(p,-0.5); return ['-'+fmt(f),"Treated yourself into an overdraft. Self-care, bitch. -"+fmt(f),'sarcastic']; }},
 ];
 const HOUSING_CARDS = [
     { name:'Free Upgrade!',        icon:'🏠', effect:p=>{ const r=upgradeHousing(p); adjustHappiness(p,r.includes('upgraded')?0.5:-0.5); return [r.includes('upgraded')?'UPGRADE!':'No change',r,r.includes('upgraded')?'good':'bad']; }},
