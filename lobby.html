@@ -271,18 +271,37 @@ function bindLobby(code){
   const metaRef = db.ref('games/'+code+'/meta');
   const mcb = metaRef.on('value', snap => {
     const m = snap.val(); if(!m) return;
+    if(m.status==='playing'){ location.href='play.html?code='+current.code+'&slot='+current.slot; return; }
     const goal = (GOALS.find(g=>g.v===m.winGoal)||{}).l || ('$'+m.winGoal);
     const mode = (MODES.find(x=>x.v===m.boardMode)||{}).l || m.boardMode;
     document.getElementById('lobbyMeta').textContent = 'Goal: '+goal+'  ·  Mode: '+mode+'  ·  '+(m.status==='lobby'?'Waiting in lobby':m.status);
     const isHost = m.host===uid;
     const sb = document.getElementById('startBtn');
-    sb.textContent = isHost ? 'START GAME (unlocks in Phase 3)' : 'Waiting for host…';
+    if(isHost){ sb.disabled=false; sb.textContent='START GAME'; sb.onclick=startGame; }
+    else { sb.disabled=true; sb.textContent='Waiting for host to start…'; }
   });
   listeners.push({ ref: metaRef, cb: mcb });
 
   const pRef = db.ref('games/'+code+'/players');
   const pcb = pRef.on('value', snap => renderPlayers(snap.val()||{}));
   listeners.push({ ref: pRef, cb: pcb });
+}
+
+async function startGame(){
+  const sb=document.getElementById('startBtn'); sb.disabled=true; toast('lobbyToast','Starting…',true);
+  try{
+    await db.ref('games/'+current.code+'/players').transaction(ps=>{
+      if(!ps) return ps;
+      Object.keys(ps).forEach(k=>{ const p=ps[k]; if(!p) return;
+        p.money=20000; p.position=0; p.housingLevel=0; p.carLevel=0;
+        p.job='Unemployed'; p.jobPay=2000; p.inJail=false; p.jailTurns=0;
+        p.jailMaxTurns=3; p.jailReason=''; p.jailFine=200; p.vehicleSeized=0;
+        p.happiness=5; p.laps=0; p.rolls={date:'',used:0};
+      });
+      return ps;
+    });
+    await db.ref('games/'+current.code+'/meta').update({ status:'playing', startedAt: firebase.database.ServerValue.TIMESTAMP });
+  }catch(e){ toast('lobbyToast','Start failed: '+(e.message||e)); sb.disabled=false; }
 }
 
 function renderPlayers(players){
