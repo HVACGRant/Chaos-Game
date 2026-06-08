@@ -225,6 +225,12 @@ async function createGame(){
   }
 }
 
+function gameInitFields(){
+  return { money:20000, position:0, housingLevel:0, carLevel:0, job:'Unemployed', jobPay:2000,
+    inJail:false, jailTurns:0, jailMaxTurns:3, jailReason:'', jailFine:200, vehicleSeized:0,
+    happiness:5, laps:0, rolls:{date:'',used:0} };
+}
+
 async function joinGame(){
   const code = document.getElementById('joinCode').value.trim().toUpperCase();
   if(code.length!==4){ toast('joinToast','Enter the 4-character code.'); return; }
@@ -232,16 +238,19 @@ async function joinGame(){
   try{
     const metaSnap = await db.ref('games/'+code+'/meta').get();
     if(!metaSnap.exists()){ toast('joinToast','No game found with that code.'); return; }
-    if(metaSnap.val().status !== 'lobby'){ toast('joinToast','That game has already started.'); return; }
+    const status = metaSnap.val().status;
+    if(status==='over'){ toast('joinToast','That game has already finished.'); return; }
+    const live = (status==='playing');
 
     let claimedSlot = null;
     const res = await db.ref('games/'+code+'/players').transaction(players => {
       players = players || {};
       for(let i=0;i<MAX_PLAYERS;i++){ if(players[i] && players[i].uid===uid){ claimedSlot=i; players[i].online=true; return players; } }
-      for(let i=0;i<MAX_PLAYERS;i++){ if(!players[i]){ claimedSlot=i; players[i]={ uid, name:playerName(), avatar:pick.avatar, online:true, joinedAt: firebase.database.ServerValue.TIMESTAMP }; return players; } }
+      for(let i=0;i<MAX_PLAYERS;i++){ if(!players[i]){ claimedSlot=i; const np={ uid, name:playerName(), avatar:pick.avatar, online:true, joinedAt: firebase.database.ServerValue.TIMESTAMP }; if(live) Object.assign(np, gameInitFields()); players[i]=np; return players; } }
       return;
     });
     if(!res.committed || claimedSlot===null){ toast('joinToast','That game is full (10 players).'); return; }
+    if(live){ localStorage.setItem('chaosLastGame', JSON.stringify({ code, slot:claimedSlot, uid })); location.href='play.html?code='+code+'&slot='+claimedSlot; return; }
     enterLobby(code, claimedSlot);
   }catch(e){
     console.error('joinGame failed:', e);
@@ -292,12 +301,7 @@ async function startGame(){
   try{
     await db.ref('games/'+current.code+'/players').transaction(ps=>{
       if(!ps) return ps;
-      Object.keys(ps).forEach(k=>{ const p=ps[k]; if(!p) return;
-        p.money=20000; p.position=0; p.housingLevel=0; p.carLevel=0;
-        p.job='Unemployed'; p.jobPay=2000; p.inJail=false; p.jailTurns=0;
-        p.jailMaxTurns=3; p.jailReason=''; p.jailFine=200; p.vehicleSeized=0;
-        p.happiness=5; p.laps=0; p.rolls={date:'',used:0};
-      });
+      Object.keys(ps).forEach(k=>{ const p=ps[k]; if(!p) return; Object.assign(p, gameInitFields()); });
       return ps;
     });
     await db.ref('games/'+current.code+'/meta').update({ status:'playing', startedAt: firebase.database.ServerValue.TIMESTAMP });
