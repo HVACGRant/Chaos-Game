@@ -86,7 +86,7 @@ input#joinCode{text-transform:uppercase;font-family:'Bebas Neue',sans-serif;lett
   <!-- CREATE -->
   <div class="panel hidden" id="createPanel">
     <h2>Create Game</h2>
-    <label>Win goal</label>
+    <label>Net worth goal <span style="opacity:.6;font-size:.8em">(cash + home + car)</span></label>
     <div class="pick-row" id="goalPicker"></div>
     <label>Board mode</label>
     <div class="pick-row" id="modePicker"></div>
@@ -102,6 +102,7 @@ input#joinCode{text-transform:uppercase;font-family:'Bebas Neue',sans-serif;lett
     <input id="joinCode" maxlength="4" placeholder="ABCD" autocomplete="off">
     <button class="btn gold block" id="joinConfirm">JOIN</button>
     <button class="btn ghost block" id="joinBack" style="margin-top:8px;">Back</button>
+    <div id="seatPicker" style="margin-top:10px"></div>
     <div class="toast" id="joinToast"></div>
   </div>
 
@@ -112,7 +113,7 @@ input#joinCode{text-transform:uppercase;font-family:'Bebas Neue',sans-serif;lett
     <div class="hint">Tap the code to copy &amp; share</div>
     <div class="code-display" id="lobbyCode" title="Tap to copy">----</div>
     <div class="players" id="playerList"></div>
-    <button class="btn block" id="startBtn" disabled>START GAME (Phase 3)</button>
+    <button class="btn block" id="startBtn" disabled>START GAME</button>
     <button class="btn ghost block" id="leaveBtn" style="margin-top:8px;">Leave Lobby</button>
     <div class="toast" id="lobbyToast"></div>
   </div>
@@ -242,6 +243,28 @@ async function joinGame(){
     if(status==='over'){ toast('joinToast','That game has already finished.'); return; }
     const live = (status==='playing');
 
+    // Already seated on this device? -> falls through to the normal rejoin below.
+    // New phone/device? Offer to TAKE OVER an existing player's seat instead of making a duplicate.
+    const existing = (await db.ref('games/'+code+'/players').get()).val() || {};
+    const mine = Object.keys(existing).some(k => existing[k] && existing[k].uid===uid);
+    const offline = Object.keys(existing).filter(k => existing[k] && existing[k].uid!==uid && !existing[k].online);
+    if(!mine && offline.length && !window.__skipSeatPick){
+      const box = document.getElementById('seatPicker'); box.innerHTML='';
+      const t=document.createElement('div'); t.style.cssText='margin:6px 0;font-weight:600'; t.textContent='Are you one of these players? Tap your name to take your seat back:'; box.appendChild(t);
+      offline.forEach(k=>{
+        const b=document.createElement('button'); b.className='btn gold block'; b.style.marginTop='6px';
+        b.textContent=(existing[k].avatar||'')+' '+(existing[k].name||'Player')+'  (offline)';
+        b.onclick=()=>takeSeat(code, +k);
+        box.appendChild(b);
+      });
+      const nb=document.createElement('button'); nb.className='btn ghost block'; nb.style.marginTop='6px'; nb.textContent="No, I'm a new player";
+      nb.onclick=()=>{ window.__skipSeatPick=true; box.innerHTML=''; joinGame(); };
+      box.appendChild(nb);
+      toast('joinToast','');
+      return;
+    }
+    document.getElementById('seatPicker').innerHTML='';
+
     let claimedSlot = null;
     const res = await db.ref('games/'+code+'/players').transaction(players => {
       players = players || {};
@@ -256,6 +279,24 @@ async function joinGame(){
     console.error('joinGame failed:', e);
     toast('joinToast','Error: '+(e && e.message ? e.message : e));
   }
+}
+
+// Take over an offline player's seat from a new device (keeps all their money, car, house...)
+async function takeSeat(code, slot){
+  toast('joinToast','Taking seat…',true);
+  try{
+    const res = await db.ref('games/'+code+'/players/'+slot).transaction(p=>{
+      if(!p) return p;
+      if(p.uid===uid) return p;
+      if(p.online) return;               // someone is actively playing it - can't steal their seat
+      p.uid = uid; p.online = true; return p;
+    });
+    if(!res.committed){ toast('joinToast','That player is online right now — ask them to close the game first.'); return; }
+    const st = (await db.ref('games/'+code+'/meta/status').get()).val();
+    localStorage.setItem('chaosLastGame', JSON.stringify({ code, slot, uid }));
+    if(st==='playing'){ location.href='play.html?code='+code+'&slot='+slot; return; }
+    enterLobby(code, slot);
+  }catch(e){ toast('joinToast','Error: '+(e.message||e)); }
 }
 
 // ── lobby ──────────────────────────────────────────────
@@ -283,7 +324,7 @@ function bindLobby(code){
     if(m.status==='playing'){ location.href='play.html?code='+current.code+'&slot='+current.slot; return; }
     const goal = (GOALS.find(g=>g.v===m.winGoal)||{}).l || ('$'+m.winGoal);
     const mode = (MODES.find(x=>x.v===m.boardMode)||{}).l || m.boardMode;
-    document.getElementById('lobbyMeta').textContent = 'Goal: '+goal+'  ·  Mode: '+mode+'  ·  '+(m.status==='lobby'?'Waiting in lobby':m.status);
+    document.getElementById('lobbyMeta').textContent = 'Net worth goal: '+goal+'  ·  Mode: '+mode+'  ·  '+(m.status==='lobby'?'Waiting in lobby':m.status);
     const isHost = m.host===uid;
     const sb = document.getElementById('startBtn');
     if(isHost){ sb.disabled=false; sb.textContent='START GAME'; sb.onclick=startGame; }
