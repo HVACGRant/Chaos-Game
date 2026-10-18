@@ -1,290 +1,410 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CHAOS - The Game of Life</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHAOS — Multiplayer Lobby</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--red:#e94560;--green:#4ecca3;--gold:#f5a623;--dark:#1a1a2e;--darker:#0a0a1a;--mid:#16213e;--navy:#0f3460;--grey:#a8a8b3;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:radial-gradient(ellipse at center,#1a1a2e 0%,#0a0a1a 100%);color:#fff;font-family:'Oswald',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;}
+.wrap{width:min(560px,96vw);}
+.logo{font-family:'Bebas Neue',sans-serif;color:var(--red);letter-spacing:6px;font-size:3em;text-align:center;text-shadow:0 0 20px rgba(233,69,96,.7);line-height:1;}
+.logo-sub{color:var(--grey);letter-spacing:4px;text-align:center;font-size:.8em;margin-bottom:10px;}
+.status{text-align:center;font-size:.82em;letter-spacing:1px;color:var(--grey);margin-bottom:14px;min-height:18px;}
+.status.ok{color:var(--green);}
+.status.bad{color:var(--red);}
+.panel{background:rgba(0,0,0,.45);border:2px solid var(--navy);border-radius:16px;padding:20px;margin-bottom:14px;}
+.panel.hidden{display:none;}
+h2{font-family:'Bebas Neue',sans-serif;color:var(--green);letter-spacing:3px;font-size:1.5em;margin-bottom:14px;}
+label{display:block;color:var(--grey);font-size:.8em;letter-spacing:1px;margin:10px 0 4px;}
+input{width:100%;padding:11px 13px;font-size:1.05em;font-family:'Oswald',sans-serif;background:rgba(255,255,255,.06);border:1px solid var(--navy);border-radius:10px;color:#fff;letter-spacing:1px;}
+input:focus{outline:none;border-color:var(--gold);}
+input#joinCode{text-transform:uppercase;font-family:'Bebas Neue',sans-serif;letter-spacing:6px;font-size:1.4em;text-align:center;}
+.row{display:flex;gap:8px;flex-wrap:wrap;}
+.btn{padding:12px 20px;font-size:1em;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;border:none;border-radius:10px;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--red),#b91c47);transition:transform .15s,box-shadow .15s;}
+.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.5);}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+.btn.green{background:linear-gradient(135deg,var(--green),#2f9c7a);}
+.btn.ghost{background:transparent;border:1px solid var(--navy);}
+.btn.gold{background:linear-gradient(135deg,var(--gold),#c47f12);color:#1a1a2e;}
+.btn.block{width:100%;margin-top:14px;}
+.pick-row{display:flex;flex-wrap:wrap;gap:6px;}
+.pick{font-size:1.6em;width:46px;height:46px;border-radius:10px;border:2px solid transparent;background:rgba(255,255,255,.06);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.pick.sel{border-color:var(--gold);background:rgba(245,166,35,.18);}
+.opt{padding:8px 12px;border-radius:8px;border:1px solid var(--navy);background:rgba(255,255,255,.04);color:#ddd;cursor:pointer;font-size:.9em;letter-spacing:1px;}
+.opt.sel{border-color:var(--green);background:rgba(78,204,163,.18);color:#fff;}
+.code-display{font-family:'Bebas Neue',sans-serif;font-size:3em;letter-spacing:10px;color:var(--gold);text-align:center;background:rgba(245,166,35,.08);border:2px dashed var(--gold);border-radius:12px;padding:10px;margin:6px 0 4px;cursor:pointer;}
+.hint{color:var(--grey);font-size:.78em;text-align:center;letter-spacing:1px;}
+.players{display:flex;flex-direction:column;gap:8px;margin:14px 0;}
+.pcard{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.05);border:1px solid var(--navy);border-radius:12px;padding:10px 12px;}
+.pcard .av{font-size:1.8em;width:42px;text-align:center;}
+.pcard .nm{font-weight:700;flex:1;letter-spacing:.5px;}
+.pcard .tag{font-size:.7em;letter-spacing:1px;color:var(--gold);border:1px solid var(--gold);border-radius:6px;padding:2px 6px;}
+.pcard .dot{width:10px;height:10px;border-radius:50%;background:#555;flex-shrink:0;}
+.pcard .dot.on{background:var(--green);box-shadow:0 0 8px var(--green);}
+.empty-slot{opacity:.4;font-style:italic;}
+.toast{min-height:20px;text-align:center;color:var(--red);font-size:.85em;letter-spacing:1px;margin-top:6px;}
+.toast.ok{color:var(--green);}
+.meta-line{color:var(--grey);font-size:.82em;letter-spacing:1px;text-align:center;margin-bottom:6px;}
+.config-warn{background:rgba(233,69,96,.12);border:1px solid var(--red);border-radius:12px;padding:16px;color:#ffd;font-size:.9em;line-height:1.5;}
+.config-warn code{color:var(--gold);}
+</style>
 </head>
 <body>
+<div class="wrap">
+  <div class="logo">CHAOS</div>
+  <div class="logo-sub">MULTIPLAYER LOBBY · PHASE 1</div>
+  <div class="status" id="status">Loading…</div>
 
-    <!-- INTRO SCREEN -->
-    <div id="introScreen" class="screen">
-        <div class="prison-gates">
-            <div class="logo-wrap">
-                <h1 class="logo">⛓️ CHAOS ⛓️</h1>
-                <p class="logo-sub">The Game of Life</p>
-            </div>
-            <p class="intro-text">You just got out of Prison...</p>
-            <p class="intro-text">It is your right to do whatever you want</p>
-            <p class="intro-text">But you have to follow the rules!</p>
-            <p class="money-text">💰 Here is $20,000 to start a new life!</p>
-            <button id="startBtn" class="btn">WALK OUT THE GATES</button>
-            <p class="intro-text" style="margin-top:6px;font-size:0.8em;opacity:0.7;">Solo / pass &amp; play on this device</p>
-            <a href="lobby.html" class="btn" style="display:inline-block;margin-top:14px;text-decoration:none;background:linear-gradient(135deg,#4ecca3,#2f9c7a);">🎮 PLAY ONLINE (MULTIPLAYER)</a>
-            <p class="intro-text" style="margin-top:6px;font-size:0.8em;opacity:0.7;">Up to 10 players · roll daily · live standings</p>
-        </div>
+  <!-- CONFIG NOT SET -->
+  <div class="panel" id="configPanel" style="display:none;">
+    <div class="config-warn">
+      <b>Firebase config not set yet.</b><br>
+      Open <code>lobby.html</code> and paste your project's config into the
+      <code>firebaseConfig</code> block near the top of the script, then re-upload.
+      The lobby will light up automatically once it's filled in.
     </div>
+  </div>
 
-    <!-- SETUP SCREEN -->
-    <div id="setupScreen" class="screen hidden">
-        <div class="logo-wrap">
-            <h1 class="logo">⚡ CHAOS ⚡</h1>
-            <p class="logo-sub">The Game of Life</p>
-        </div>
-        <h2 class="setup-heading">Game Setup</h2>
-        <div class="setup-section">
-            <h3>How Many Players?</h3>
-            <div class="player-buttons">
-                <button class="player-btn" onclick="setPlayers(2)">2</button>
-                <button class="player-btn" onclick="setPlayers(3)">3</button>
-                <button class="player-btn" onclick="setPlayers(4)">4</button>
-                <button class="player-btn" onclick="setPlayers(5)">5</button>
-                <button class="player-btn" onclick="setPlayers(6)">6</button>
-                <button class="player-btn" onclick="setPlayers(7)">7</button>
-                <button class="player-btn" onclick="setPlayers(8)">8</button>
-                <button class="player-btn" onclick="setPlayers(9)">9</button>
-                <button class="player-btn" onclick="setPlayers(10)">10</button>
-            </div>
-        </div>
-        <div class="setup-section">
-            <h3>Win Goal?</h3>
-            <div class="goal-buttons">
-                <button class="goal-btn" onclick="setGoal(100000)">$100K</button>
-                <button class="goal-btn" onclick="setGoal(250000)">$250K</button>
-                <button class="goal-btn" onclick="setGoal(500000)">$500K</button>
-                <button class="goal-btn" onclick="setGoal(1000000)">$1M</button>
-                <button class="goal-btn" onclick="setGoal(5000000)">$5M</button>
-            </div>
-        </div>
-        <div class="setup-section">
-            <h3>Board Mode?</h3>
-            <div class="mode-buttons">
-                <button class="mode-btn selected" data-mode="normal" onclick="setMode(event)">
-                    <div class="mode-icon">🎯</div>
-                    <div class="mode-label">NORMAL</div>
-                    <div class="mode-desc">Classic CHAOS — real life struggles</div>
-                </button>
-                <button class="mode-btn" data-mode="funny" onclick="setMode(event)">
-                    <div class="mode-icon">😂</div>
-                    <div class="mode-label">FUNNY</div>
-                    <div class="mode-desc">Ridiculous outcomes &amp; silly names</div>
-                </button>
-                <button class="mode-btn" data-mode="sarcastic" onclick="setMode(event)">
-                    <div class="mode-icon">😈</div>
-                    <div class="mode-label">SARCASTIC</div>
-                    <div class="mode-desc">Adult humor — brutally honest chaos</div>
-                </button>
-            </div>
-        </div>
-        <button id="setupDoneBtn" class="btn hidden" onclick="setupPlayers()">NEXT — Setup Players</button>
+  <!-- HOME -->
+  <div class="panel hidden" id="homePanel">
+    <h2>Start or Join</h2>
+    <label>Your name</label>
+    <input id="playerName" maxlength="16" placeholder="e.g. Danny" autocomplete="off">
+    <label>Pick your token</label>
+    <div class="pick-row" id="avatarPicker"></div>
+    <div class="row" style="margin-top:16px;">
+      <button class="btn green" id="goCreate">＋ Create Game</button>
+      <button class="btn ghost" id="goJoin">→ Join by Code</button>
     </div>
+    <div class="toast" id="homeToast"></div>
+    <div class="hint" id="resumeHint" style="margin-top:10px;"></div>
+  </div>
 
-    <!-- PLAYER SETUP SCREEN -->
-    <div id="playerSetupScreen" class="screen hidden">
-        <div class="logo-wrap"><h1 class="logo">⚡ CHAOS ⚡</h1></div>
-        <h2 id="playerSetupTitle" class="setup-heading">Player 1 Setup</h2>
+  <!-- CREATE -->
+  <div class="panel hidden" id="createPanel">
+    <h2>Create Game</h2>
+    <label>Net worth goal <span style="opacity:.6;font-size:.8em">(cash + home + car)</span></label>
+    <div class="pick-row" id="goalPicker"></div>
+    <label>Board mode</label>
+    <div class="pick-row" id="modePicker"></div>
+    <button class="btn green block" id="createConfirm">CREATE &amp; OPEN LOBBY</button>
+    <button class="btn ghost block" id="createBack" style="margin-top:8px;">Back</button>
+    <div class="toast" id="createToast"></div>
+  </div>
 
-        <div class="ab-builder">
-            <div class="ab-preview-col">
-                <div class="ab-face-wrap">
-                    <svg id="avatarSVG" viewBox="0 0 100 160" width="160" height="256" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <clipPath id="foreheadClip"><rect x="0" y="0" width="100" height="50"/></clipPath>
-                        </defs>
-                        <ellipse cx="50" cy="157" rx="18" ry="3" fill="rgba(0,0,0,0.3)"/>
-                        <g id="svgLegs">
-                            <rect x="34" y="118" width="12" height="28" rx="5" fill="#1565c0"/>
-                            <rect x="54" y="118" width="12" height="28" rx="5" fill="#1565c0"/>
-                        </g>
-                        <g id="svgShoes">
-                            <ellipse cx="40" cy="147" rx="9" ry="5" fill="#1a1a1a"/>
-                            <ellipse cx="60" cy="147" rx="9" ry="5" fill="#1a1a1a"/>
-                        </g>
-                        <g id="svgBody">
-                            <rect x="29" y="80" width="42" height="42" rx="8" fill="#1976d2"/>
-                            <path d="M42 80 L50 90 L58 80" fill="#fff" opacity="0.9"/>
-                        </g>
-                        <g id="svgArms">
-                            <rect x="16" y="82" width="13" height="30" rx="6" fill="#1976d2"/>
-                            <rect x="71" y="82" width="13" height="30" rx="6" fill="#1976d2"/>
-                        </g>
-                        <g id="svgHands">
-                            <ellipse cx="22" cy="116" rx="7" ry="6" fill="#FDBCB4"/>
-                            <ellipse cx="78" cy="116" rx="7" ry="6" fill="#FDBCB4"/>
-                        </g>
-                        <rect id="svgNeck" x="43" y="75" width="14" height="10" fill="#FDBCB4"/>
-                        <g id="svgHairBack"></g>
-                        <ellipse id="svgEarL" cx="23" cy="60" rx="5" ry="7" fill="#FDBCB4"/>
-                        <ellipse id="svgEarR" cx="77" cy="60" rx="5" ry="7" fill="#FDBCB4"/>
-                        <ellipse cx="23" cy="60" rx="3" ry="4.5" fill="#e8a882" opacity="0.5"/>
-                        <ellipse cx="77" cy="60" rx="3" ry="4.5" fill="#e8a882" opacity="0.5"/>
-                        <ellipse id="svgHead" cx="50" cy="58" rx="26" ry="28" fill="#FDBCB4"/>
-                        <g id="svgBrows">
-                            <path d="M34 46 Q40 43 46 46" stroke="#5a3e2b" stroke-width="2" fill="none" stroke-linecap="round"/>
-                            <path d="M54 46 Q60 43 66 46" stroke="#5a3e2b" stroke-width="2" fill="none" stroke-linecap="round"/>
-                        </g>
-                        <g id="svgEyes">
-                            <ellipse cx="40" cy="54" rx="6" ry="6.5" fill="white"/>
-                            <ellipse cx="60" cy="54" rx="6" ry="6.5" fill="white"/>
-                            <circle cx="41" cy="55" r="3.5" fill="#3d2b1f"/>
-                            <circle cx="61" cy="55" r="3.5" fill="#3d2b1f"/>
-                            <circle cx="42" cy="54" r="1.2" fill="white"/>
-                            <circle cx="62" cy="54" r="1.2" fill="white"/>
-                        </g>
-                        <g id="svgNose">
-                            <path d="M47 60 Q45 68 43 70 Q50 73 57 70 Q55 68 53 60" stroke="#d4956a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-                        </g>
-                        <g id="svgCheeks"></g>
-                        <g id="svgMouth">
-                            <path d="M40 77 Q50 85 60 77" stroke="#c0605a" stroke-width="2" fill="none" stroke-linecap="round"/>
-                        </g>
-                        <g id="svgHairFront"></g>
-                        <g id="svgExtras"></g>
-                    </svg>
-                </div>
-                <div class="ab-preview-label">YOUR AVATAR</div>
-                <button class="ab-reset-btn" onclick="abReset()">↺ RESET</button>
-            </div>
-            <div class="ab-options-col">
-                <div class="ab-tabs">
-                    <button class="ab-tab active" data-cat="skin"   onclick="abSwitchCat(this)">🎨 Skin</button>
-                    <button class="ab-tab" data-cat="hair"   onclick="abSwitchCat(this)">💇 Hair</button>
-                    <button class="ab-tab" data-cat="eyes"   onclick="abSwitchCat(this)">👁 Eyes</button>
-                    <button class="ab-tab" data-cat="brows"  onclick="abSwitchCat(this)">〰 Brows</button>
-                    <button class="ab-tab" data-cat="nose"   onclick="abSwitchCat(this)">👃 Nose</button>
-                    <button class="ab-tab" data-cat="mouth"  onclick="abSwitchCat(this)">👄 Mouth</button>
-                    <button class="ab-tab" data-cat="cheeks" onclick="abSwitchCat(this)">🌸 Cheeks</button>
-                    <button class="ab-tab" data-cat="outfit" onclick="abSwitchCat(this)">👕 Outfit</button>
-                    <button class="ab-tab" data-cat="extras" onclick="abSwitchCat(this)">🎩 Extras</button>
-                </div>
-                <div class="ab-options-grid" id="abOptions"></div>
-            </div>
-        </div>
+  <!-- JOIN -->
+  <div class="panel hidden" id="joinPanel">
+    <h2>Join Game</h2>
+    <label>Game code</label>
+    <input id="joinCode" maxlength="4" placeholder="ABCD" autocomplete="off">
+    <button class="btn gold block" id="joinConfirm">JOIN</button>
+    <button class="btn ghost block" id="joinBack" style="margin-top:8px;">Back</button>
+    <div id="seatPicker" style="margin-top:10px"></div>
+    <div class="toast" id="joinToast"></div>
+  </div>
 
-        <div class="setup-section" style="margin-top:10px">
-            <h3>Enter Your Name!</h3>
-            <input type="text" id="playerName" class="name-input" placeholder="Enter your name" autocomplete="off"/>
-        </div>
-        <button id="nextPlayerBtn" class="btn" onclick="nextPlayer()">NEXT PLAYER</button>
-    </div>
+  <!-- LOBBY -->
+  <div class="panel hidden" id="lobbyPanel">
+    <h2>Lobby</h2>
+    <div class="meta-line" id="lobbyMeta"></div>
+    <div class="hint">Tap the code to copy &amp; share</div>
+    <div class="code-display" id="lobbyCode" title="Tap to copy">----</div>
+    <div class="players" id="playerList"></div>
+    <button class="btn block" id="startBtn" disabled>START GAME</button>
+    <button class="btn ghost block" id="leaveBtn" style="margin-top:8px;">Leave Lobby</button>
+    <div class="toast" id="lobbyToast"></div>
+  </div>
+</div>
 
-    <!-- GAME SCREEN -->
-    <div id="gameScreen" class="screen hidden game-layout">
-        <!-- LEFT: Player cards -->
-        <div class="left-col">
-            <div class="col-title">⚡ CHAOS ⚡<br><span class="win-goal-display" id="winGoalDisplay"></span></div>
-            <div id="playerInfoBar" class="player-info-bar"></div>
-        </div>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+// ============================================================
+//  PASTE YOUR FIREBASE WEB CONFIG HERE
+//  (Project settings → Your apps → Web app → SDK setup → Config)
+//  This is public client config — safe to live in the page.
+//  databaseURL must be present (it appears once Realtime DB is created).
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyA_H6v3b9P9h8wjka5WbdL5rtwBvm1KabI",
+  authDomain: "chaos-14554.firebaseapp.com",
+  databaseURL: "https://chaos-14554-default-rtdb.firebaseio.com",
+  projectId: "chaos-14554",
+  storageBucket: "chaos-14554.firebasestorage.app",
+  messagingSenderId: "610689520950",
+  appId: "1:610689520950:web:4bd3aefe6e224f6b0b4f97"
+};
+// ============================================================
 
-        <!-- CENTER: Board -->
-        <div class="center-col">
-            <div id="lastCardBanner" class="last-card-banner hidden"></div>
-            <div id="gameBoard" class="game-board">
-                <!-- Center area — absolutely positioned inside the board -->
-                <div class="center-area" id="centerArea">
-                    <div class="center-title">⚡ CHAOS ⚡</div>
-                    <div class="center-sub" id="centerMode">The Game of Life</div>
-                    <div class="center-goal" id="centerGoal"></div>
-                </div>
-            </div>
-        </div>
+const AVATARS = ['🦊','🐯','🐼','🐸','🦁','🐺','🐲','🐵','🐷','🐙','👑','💀'];
+const GOALS = [{l:'$50K',v:50000},{l:'$100K',v:100000},{l:'$250K',v:250000},{l:'$500K',v:500000},{l:'$1M',v:1000000}];
+const MODES = [{l:'Normal',v:'normal'},{l:'Funny',v:'funny'},{l:'Sarcastic',v:'sarcastic'}];
+const MAX_PLAYERS = 10;
 
-        <!-- RIGHT: Dice + Active Player -->
-        <div class="right-col">
-            <div class="game-controls">
-                <div class="dice-area">
-                    <div id="die1" class="die">🎲</div>
-                    <div id="die2" class="die">🎲</div>
-                </div>
-                <button id="rollDiceBtn" class="btn dice-btn" onclick="rollDice()">🎲 ROLL DICE</button>
-                <div id="diceResult" class="dice-result"></div>
-                <div id="gameMessage" class="game-message"></div>
-            </div>
+let db, auth, uid;
+let pick = { avatar: AVATARS[0], goal: 100000, mode: 'normal' };
+let current = { code: null, slot: null };
+let listeners = [];
 
-            <div id="activePlayerPanel" class="active-player-panel">
-                <div class="ap-label">CURRENT TURN</div>
-                <div id="apAvatar" class="ap-avatar"></div>
-                <div id="apName" class="ap-name"></div>
-                <div id="apMoney" class="ap-money"></div>
-                <div id="apJob" class="ap-job"></div>
-                <div id="apHappiness" class="ap-detail"></div>
-                <div id="apLaps" class="ap-detail" style="font-size:0.65em;color:#6a6a7f;margin-top:2px;"></div>
-                <div id="apJail" class="ap-jail hidden"></div>
-                <div class="asset-section">
-                    <div class="asset-label">🏠 HOUSING</div>
-                    <div id="apHousingDisplay" class="asset-display">
-                        <div id="apHousingIcon" class="asset-icon"></div>
-                        <div id="apHousingName" class="asset-name"></div>
-                        <div class="upgrade-track" id="housingTrack"></div>
-                    </div>
-                </div>
-                <div class="asset-section">
-                    <div class="asset-label">🚗 CAR / TRANSPORT</div>
-                    <div id="apCarDisplay" class="asset-display">
-                        <div id="apCarIcon" class="asset-icon"></div>
-                        <div id="apCarName" class="asset-name"></div>
-                        <div class="upgrade-track" id="carTrack"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+// ── boot ───────────────────────────────────────────────
+function configReady(){ return firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf('PASTE') === -1; }
+function setStatus(msg, kind){ const el=document.getElementById('status'); if(el){ el.textContent=msg; el.className='status '+(kind||''); } }
+function setReady(ready){ ['goCreate','goJoin'].forEach(id=>{ const b=document.getElementById(id); if(b) b.disabled=!ready; }); }
 
-    <!-- CARD OVERLAY -->
-    <div id="cardOverlay" class="card-overlay hidden">
-        <div id="cardDisplay" class="card-display">
-            <div class="card-type-label" id="cardTypeLabel"></div>
-            <div class="card-icon" id="cardIcon"></div>
-            <div class="card-title" id="cardTitle"></div>
-            <div class="card-body" id="cardBody"></div>
-            <button id="cardContinueBtn" class="card-continue-btn" style="display:none">▶ CONTINUE</button>
-        </div>
-    </div>
+function show(id){ ['configPanel','homePanel','createPanel','joinPanel','lobbyPanel'].forEach(p=>{ const el=document.getElementById(p); if(el) el.classList.add('hidden'); el.style.display=(p===id?'block':'none'); }); }
 
-    <!-- POPUP -->
-    <div id="popup" class="popup hidden">
-        <div class="popup-content">
-            <h2 id="popupTitle"></h2>
-            <p id="popupMessage" style="white-space:pre-line"></p>
-            <button class="btn" onclick="closePopup()">OK!!</button>
-        </div>
-    </div>
+window.addEventListener('error', e => setStatus('Script error: '+(e.message||'unknown'),'bad'));
 
-    <!-- MINI GAME OVERLAY -->
-    <div id="miniGameOverlay" class="popup hidden">
-        <div class="popup-content mini-game-content">
-            <h2 id="mgTitle">Mini Game!</h2>
-            <p id="mgDesc"></p>
-            <div id="mgArea"></div>
-        </div>
-    </div>
+window.addEventListener('DOMContentLoaded', () => {
+  buildPickers();
+  setReady(false);
+  if(!configReady()){ show('configPanel'); setStatus('Config not set','bad'); return; }
+  if(typeof firebase === 'undefined'){ show('homePanel'); setStatus('Firebase SDK did not load — check connection / ad-blocker, then reload.','bad'); return; }
+  show('homePanel');
+  setStatus('Connecting…');
+  try{
+    firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.database();
+    auth.onAuthStateChanged(user => {
+      if(user){ uid = user.uid; setStatus('Connected ✓','ok'); setReady(true); offerResume(); }
+    });
+    auth.signInAnonymously().catch(e => { setStatus('Sign-in failed ['+(e.code||'?')+']: '+e.message,'bad'); });
+  }catch(e){ setStatus('Startup error: '+(e.message||e),'bad'); }
+});
 
-    <!-- VEHICLE SHOWDOWN OVERLAY -->
-    <div id="stealOverlay" class="popup hidden">
-        <div class="popup-content">
-            <h2 id="stealTitle" style="color:var(--gold)">⚡ VEHICLE SHOWDOWN ⚡</h2>
-            <p id="stealDesc" style="white-space:pre-line;font-size:0.85em;color:#ccc;margin-bottom:8px"></p>
-            <!-- Avatar showdown display -->
-            <div class="showdown-avatars">
-                <div class="showdown-player">
-                    <div class="showdown-av" id="showdownAv1"></div>
-                    <div class="showdown-name" id="showdownName1">Player 1</div>
-                    <div id="showdownDie1" class="die" style="margin:4px auto">🎲</div>
-                </div>
-                <div class="vs-badge">VS</div>
-                <div class="showdown-player">
-                    <div class="showdown-av" id="showdownAv2"></div>
-                    <div class="showdown-name" id="showdownName2">Player 2</div>
-                    <div id="showdownDie2" class="die" style="margin:4px auto">🎲</div>
-                </div>
-            </div>
-            <div id="stealResult" style="color:var(--gold);font-size:1em;min-height:36px;margin:10px 0;font-weight:700;line-height:1.4"></div>
-            <button id="stealRollBtn" class="btn" onclick="resolveSteal()">🎲 ROLL OFF!</button>
-        </div>
-    </div>
+// ── pickers / UI ───────────────────────────────────────
+function buildPickers(){
+  const ap = document.getElementById('avatarPicker');
+  AVATARS.forEach(a=>{ const b=document.createElement('button'); b.className='pick'+(a===pick.avatar?' sel':''); b.textContent=a; b.onclick=()=>{ pick.avatar=a; [...ap.children].forEach(c=>c.classList.remove('sel')); b.classList.add('sel'); }; ap.appendChild(b); });
+  const gp = document.getElementById('goalPicker');
+  GOALS.forEach(g=>{ const b=document.createElement('button'); b.className='opt'+(g.v===pick.goal?' sel':''); b.textContent=g.l; b.onclick=()=>{ pick.goal=g.v; [...gp.children].forEach(c=>c.classList.remove('sel')); b.classList.add('sel'); }; gp.appendChild(b); });
+  const mp = document.getElementById('modePicker');
+  MODES.forEach(m=>{ const b=document.createElement('button'); b.className='opt'+(m.v===pick.mode?' sel':''); b.textContent=m.l; b.onclick=()=>{ pick.mode=m.v; [...mp.children].forEach(c=>c.classList.remove('sel')); b.classList.add('sel'); }; mp.appendChild(b); });
 
-    <script src="game.js"></script>
+  document.getElementById('goCreate').onclick = () => { if(!nameOk('homeToast')) return; show('createPanel'); };
+  document.getElementById('goJoin').onclick   = () => { if(!nameOk('homeToast')) return; show('joinPanel'); };
+  document.getElementById('createBack').onclick = () => show('homePanel');
+  document.getElementById('joinBack').onclick   = () => show('homePanel');
+  document.getElementById('createConfirm').onclick = createGame;
+  document.getElementById('joinConfirm').onclick   = joinGame;
+  document.getElementById('leaveBtn').onclick      = leaveLobby;
+  document.getElementById('lobbyCode').onclick     = copyCode;
+  document.getElementById('joinCode').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,''); });
+}
+
+function playerName(){ return document.getElementById('playerName').value.trim(); }
+function nameOk(toastId){ if(!playerName()){ toast(toastId,'Enter your name first.'); return false; } return true; }
+function toast(id,msg,ok){ const el=document.getElementById(id); if(!el) return; el.textContent=msg||''; el.className='toast'+(ok?' ok':''); }
+
+// ── code generation ────────────────────────────────────
+function makeCode(){ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<4;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
+
+async function createGame(){
+  toast('createToast','Creating…',true);
+  try{
+    let code, ok=false, tries=0;
+    while(!ok && tries++ < 8){
+      code = makeCode();
+      const res = await db.ref('games/'+code+'/meta').transaction(cur => cur===null ? {
+        status:'lobby', host:uid, winGoal:pick.goal, boardMode:pick.mode,
+        createdAt: firebase.database.ServerValue.TIMESTAMP,
+        lastActivity: firebase.database.ServerValue.TIMESTAMP
+      } : undefined);
+      ok = res.committed;
+    }
+    if(!ok){ toast('createToast','Could not create a game, try again.'); return; }
+    await db.ref('games/'+code+'/players/0').set({ uid, name:playerName(), avatar:pick.avatar, online:true, joinedAt: firebase.database.ServerValue.TIMESTAMP });
+    enterLobby(code, 0);
+  }catch(e){
+    console.error('createGame failed:', e);
+    toast('createToast','Error: '+(e && e.message ? e.message : e));
+  }
+}
+
+function gameInitFields(){
+  return { money:20000, position:0, housingLevel:0, carLevel:0, job:'Unemployed', jobPay:2000,
+    inJail:false, jailTurns:0, jailMaxTurns:3, jailReason:'', jailFine:200, vehicleSeized:0,
+    happiness:5, laps:0, rolls:{date:'',used:0} };
+}
+
+async function joinGame(){
+  const code = document.getElementById('joinCode').value.trim().toUpperCase();
+  if(code.length!==4){ toast('joinToast','Enter the 4-character code.'); return; }
+  toast('joinToast','Joining…',true);
+  try{
+    const metaSnap = await db.ref('games/'+code+'/meta').get();
+    if(!metaSnap.exists()){ toast('joinToast','No game found with that code.'); return; }
+    const status = metaSnap.val().status;
+    if(status==='over'){ toast('joinToast','That game has already finished.'); return; }
+    const live = (status==='playing');
+
+    // Already seated on this device? -> falls through to the normal rejoin below.
+    // New phone/device? Offer to TAKE OVER an existing player's seat instead of making a duplicate.
+    const existing = (await db.ref('games/'+code+'/players').get()).val() || {};
+    const mine = Object.keys(existing).some(k => existing[k] && existing[k].uid===uid);
+    const offline = Object.keys(existing).filter(k => existing[k] && existing[k].uid!==uid && !existing[k].online);
+    if(!mine && offline.length && !window.__skipSeatPick){
+      const box = document.getElementById('seatPicker'); box.innerHTML='';
+      const t=document.createElement('div'); t.style.cssText='margin:6px 0;font-weight:600'; t.textContent='Are you one of these players? Tap your name to take your seat back:'; box.appendChild(t);
+      offline.forEach(k=>{
+        const b=document.createElement('button'); b.className='btn gold block'; b.style.marginTop='6px';
+        b.textContent=(existing[k].avatar||'')+' '+(existing[k].name||'Player')+'  (offline)';
+        b.onclick=()=>takeSeat(code, +k);
+        box.appendChild(b);
+      });
+      const nb=document.createElement('button'); nb.className='btn ghost block'; nb.style.marginTop='6px'; nb.textContent="No, I'm a new player";
+      nb.onclick=()=>{ window.__skipSeatPick=true; box.innerHTML=''; joinGame(); };
+      box.appendChild(nb);
+      toast('joinToast','');
+      return;
+    }
+    document.getElementById('seatPicker').innerHTML='';
+
+    let claimedSlot = null;
+    const res = await db.ref('games/'+code+'/players').transaction(players => {
+      players = players || {};
+      for(let i=0;i<MAX_PLAYERS;i++){ if(players[i] && players[i].uid===uid){ claimedSlot=i; players[i].online=true; return players; } }
+      for(let i=0;i<MAX_PLAYERS;i++){ if(!players[i]){ claimedSlot=i; const np={ uid, name:playerName(), avatar:pick.avatar, online:true, joinedAt: firebase.database.ServerValue.TIMESTAMP }; if(live) Object.assign(np, gameInitFields()); players[i]=np; return players; } }
+      return;
+    });
+    if(!res.committed || claimedSlot===null){ toast('joinToast','That game is full (10 players).'); return; }
+    if(live){ localStorage.setItem('chaosLastGame', JSON.stringify({ code, slot:claimedSlot, uid })); location.href='play.html?code='+code+'&slot='+claimedSlot; return; }
+    enterLobby(code, claimedSlot);
+  }catch(e){
+    console.error('joinGame failed:', e);
+    toast('joinToast','Error: '+(e && e.message ? e.message : e));
+  }
+}
+
+// Take over an offline player's seat from a new device (keeps all their money, car, house...)
+async function takeSeat(code, slot){
+  toast('joinToast','Taking seat…',true);
+  try{
+    const res = await db.ref('games/'+code+'/players/'+slot).transaction(p=>{
+      if(!p) return p;
+      if(p.uid===uid) return p;
+      if(p.online) return;               // someone is actively playing it - can't steal their seat
+      p.uid = uid; p.online = true; return p;
+    });
+    if(!res.committed){ toast('joinToast','That player is online right now — ask them to close the game first.'); return; }
+    const st = (await db.ref('games/'+code+'/meta/status').get()).val();
+    localStorage.setItem('chaosLastGame', JSON.stringify({ code, slot, uid }));
+    if(st==='playing'){ location.href='play.html?code='+code+'&slot='+slot; return; }
+    enterLobby(code, slot);
+  }catch(e){ toast('joinToast','Error: '+(e.message||e)); }
+}
+
+// ── lobby ──────────────────────────────────────────────
+function enterLobby(code, slot){
+  current = { code, slot };
+  localStorage.setItem('chaosLastGame', JSON.stringify({ code, slot, uid }));
+  document.getElementById('lobbyCode').textContent = code;
+  setupPresence(code, slot);
+  bindLobby(code);
+  show('lobbyPanel');
+}
+
+function setupPresence(code, slot){
+  const onlineRef = db.ref('games/'+code+'/players/'+slot+'/online');
+  const conn = db.ref('.info/connected');
+  const cb = snap => { if(snap.val()===true){ onlineRef.onDisconnect().set(false); onlineRef.set(true); } };
+  conn.on('value', cb);
+  listeners.push({ ref: conn, cb });
+}
+
+function bindLobby(code){
+  const metaRef = db.ref('games/'+code+'/meta');
+  const mcb = metaRef.on('value', snap => {
+    const m = snap.val(); if(!m) return;
+    if(m.status==='playing'){ location.href='play.html?code='+current.code+'&slot='+current.slot; return; }
+    const goal = (GOALS.find(g=>g.v===m.winGoal)||{}).l || ('$'+m.winGoal);
+    const mode = (MODES.find(x=>x.v===m.boardMode)||{}).l || m.boardMode;
+    document.getElementById('lobbyMeta').textContent = 'Net worth goal: '+goal+'  ·  Mode: '+mode+'  ·  '+(m.status==='lobby'?'Waiting in lobby':m.status);
+    const isHost = m.host===uid;
+    const sb = document.getElementById('startBtn');
+    if(isHost){ sb.disabled=false; sb.textContent='START GAME'; sb.onclick=startGame; }
+    else { sb.disabled=true; sb.textContent='Waiting for host to start…'; }
+  });
+  listeners.push({ ref: metaRef, cb: mcb });
+
+  const pRef = db.ref('games/'+code+'/players');
+  const pcb = pRef.on('value', snap => renderPlayers(snap.val()||{}));
+  listeners.push({ ref: pRef, cb: pcb });
+}
+
+async function startGame(){
+  const sb=document.getElementById('startBtn'); sb.disabled=true; toast('lobbyToast','Starting…',true);
+  try{
+    await db.ref('games/'+current.code+'/players').transaction(ps=>{
+      if(!ps) return ps;
+      Object.keys(ps).forEach(k=>{ const p=ps[k]; if(!p) return; Object.assign(p, gameInitFields()); });
+      return ps;
+    });
+    await db.ref('games/'+current.code+'/meta').update({ status:'playing', startedAt: firebase.database.ServerValue.TIMESTAMP });
+  }catch(e){ toast('lobbyToast','Start failed: '+(e.message||e)); sb.disabled=false; }
+}
+
+function renderPlayers(players){
+  const list = document.getElementById('playerList'); list.innerHTML='';
+  let count=0;
+  for(let i=0;i<MAX_PLAYERS;i++){
+    const p = players[i];
+    const card = document.createElement('div'); card.className='pcard';
+    if(p){
+      count++;
+      card.innerHTML = `<div class="av">${p.avatar||'❓'}</div><div class="nm">${escapeHtml(p.name||'Player')}</div>`;
+      if(i===current.slot){ const t=document.createElement('span'); t.className='tag'; t.textContent='YOU'; card.appendChild(t); }
+      const dot=document.createElement('div'); dot.className='dot'+(p.online?' on':''); card.appendChild(dot);
+    } else {
+      card.classList.add('empty-slot');
+      card.innerHTML = `<div class="av">＋</div><div class="nm">Open slot</div>`;
+    }
+    list.appendChild(card);
+  }
+  document.querySelector('#lobbyPanel h2').textContent = 'Lobby — '+count+'/'+MAX_PLAYERS+' players';
+}
+
+async function leaveLobby(){
+  if(current.code!==null && current.slot!==null){
+    try{ await db.ref('games/'+current.code+'/players/'+current.slot).remove(); }catch(e){}
+  }
+  detachAll();
+  localStorage.removeItem('chaosLastGame');
+  current = { code:null, slot:null };
+  toast('lobbyToast','');
+  show('homePanel');
+  offerResume();
+}
+
+function copyCode(){
+  if(!current.code) return;
+  navigator.clipboard?.writeText(current.code).then(()=>toast('lobbyToast','Code copied!',true)).catch(()=>{});
+}
+
+// ── resume ─────────────────────────────────────────────
+async function offerResume(){
+  const hint = document.getElementById('resumeHint'); hint.innerHTML='';
+  const raw = localStorage.getItem('chaosLastGame'); if(!raw) return;
+  let last; try{ last=JSON.parse(raw); }catch(e){ return; }
+  if(!last || last.uid!==uid) return;
+  const snap = await db.ref('games/'+last.code+'/players/'+last.slot).get();
+  if(snap.exists() && snap.val().uid===uid){
+    const b=document.createElement('button'); b.className='btn gold'; b.textContent='Rejoin '+last.code;
+    b.onclick=()=>enterLobby(last.code, last.slot);
+    hint.appendChild(b);
+  } else {
+    localStorage.removeItem('chaosLastGame');
+  }
+}
+
+// ── helpers ────────────────────────────────────────────
+function detachAll(){ listeners.forEach(l=>{ try{ l.ref.off('value', l.cb); }catch(e){} }); listeners=[]; }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+</script>
 </body>
 </html>
